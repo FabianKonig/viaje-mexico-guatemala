@@ -11,8 +11,8 @@
 - [ ] **Nach dem Merge von PR 9:** prüfen, dass unter Actions der Lauf „Deploy“ grün ist und
       https://viaje.fabiankonig.de die Seite zeigt. Falls „Deploy“ wegen der Umgebung `github-pages`
       abgelehnt wird: Settings → Environments → github-pages → Deployment branches → `main` erlauben.
-- [ ] **Domain verifizieren** (empfohlen, schützt vor Übernahme der Subdomain): Profil → Settings →
-      Pages → „Add a domain“ → `fabiankonig.de` → angezeigten TXT-Eintrag beim Domain-Anbieter setzen.
+- [x] Domain `fabiankonig.de` bei GitHub verifiziert (TXT-Eintrag `_github-pages-challenge-FabianKonig`,
+      geprüft), schützt die Subdomain vor Übernahme.
 - [x] Name, Anschrift und E-Mail eingetragen (wie im Impressum von Palabrita), in `src/config.ts` und `LICENSE`.
 - [ ] **Impressum und Datenschutz prüfen lassen** (z. B. mit einem Generator wie dem von eRecht24 oder
       durch eine Fachperson), bevor der Link geteilt wird. Die Texte sind keine Rechtsberatung.
