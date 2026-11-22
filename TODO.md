@@ -36,7 +36,7 @@
 - [x] PR 4: Fotos und Lightbox inkl. Bildskript, Zwei-Klick-Videos
 - [x] PR 5: Karte inkl. Ortsliste
 - [x] PR 6: Reisetag
-- [ ] PR 7: PWA
+- [x] PR 7: PWA
 - [ ] PR 8: Impressum, Datenschutz, noindex, Lizenzhinweise
 - [ ] PR 9: Deployment und Vorschauen
 - [ ] PR 10: Cross-Browser-Tests und manuelle Checkliste

@@ -199,6 +199,11 @@ npm run test:e2e         # Playwright (Projekte siehe playwright.config.ts)
 Lokal mit vorinstalliertem Chromium (andere Playwright-Version):
 `PW_CHROMIUM_PATH=/opt/pw-browsers/chromium npm run test:e2e`.
 
+## PWA
+
+Icons nur über `node scripts/make-icons.mjs` ändern (eigenes Motiv, keine fremden Grafiken). Der
+Service Worker wird beim Build erzeugt; neue Dateiarten im Zweifel network-first lassen.
+
 ## Deployment
 
 Wird in PR 9 eingerichtet (GitHub Actions → Branch `gh-pages`, Vorschauen unter `/pr-preview/pr-NN/`).

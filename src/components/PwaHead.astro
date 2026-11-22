@@ -1,0 +1,23 @@
+---
+/** Manifest, Apple-Angaben und Service-Worker-Registrierung (nicht in Vorschauen). */
+import { SITE } from '../config';
+import { BASE, href } from '../lib/site';
+import { serviceWorkerEnabled } from '../lib/pwa';
+
+const swEnabled = serviceWorkerEnabled(BASE, process.env.PREVIEW);
+---
+
+<link rel="manifest" href={href('manifest.webmanifest')} />
+<link rel="apple-touch-icon" href={href('icons/apple-touch-icon.png')} />
+<link rel="icon" href={href('icons/favicon-32.png')} sizes="32x32" type="image/png" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content={SITE.shortTitle} />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="application-name" content={SITE.shortTitle} />
+{swEnabled && (
+  <script
+    is:inline
+    set:html={`if('serviceWorker' in navigator){addEventListener('load',function(){navigator.serviceWorker.register(${JSON.stringify(BASE + 'sw.js')},{scope:${JSON.stringify(BASE)}}).catch(function(){})})}`}
+  />
+)}
