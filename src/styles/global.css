@@ -213,3 +213,9 @@ a:hover {
     transform: none;
   }
 }
+
+/* Seite hinter der Lightbox nicht scrollen (auch iOS) */
+html.has-lightbox,
+html.has-lightbox body {
+  overflow: hidden;
+}

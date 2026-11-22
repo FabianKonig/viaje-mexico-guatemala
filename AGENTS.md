@@ -184,7 +184,9 @@ Hash berechnen: `node scripts/hash-original.mjs content/posts/<ordner>/original.
 
 ```bash
 npm test                 # alles: lint, unit, build, e2e
-npm run lint             # Prettier + .gitignore-Prüfung
+npm run format           # Prettier anwenden (VOR den Tests ausführen)
+npm run lint             # Prettier-Prüfung + .gitignore-Prüfung
+npm run images           # nur Bildskript (Fotos verarbeiten und prüfen)
 npm run test:unit        # Vitest
 npm run build:e2e        # baut dist/ (echte Inhalte) und dist-preview/ (Testinhalte aus
                          # tests/fixtures/content unter /pr-preview/pr-1/)
