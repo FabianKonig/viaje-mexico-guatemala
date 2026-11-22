@@ -1,19 +1,18 @@
-# Tests bei jedem Pull-Request und bei jedem Push auf main.
+# Tests bei jedem Pull-Request (und als Teil des Deployments, siehe deploy.yml).
 # Ein Pull-Request darf nur gemergt werden, wenn dieser Workflow grün ist (Branch-Schutz, siehe TODO.md).
 name: Tests
 
 on:
   pull_request:
-  push:
-    branches: [main]
   workflow_call:
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
   group: tests-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   test:
@@ -35,16 +34,24 @@ jobs:
         run: npm ci
       - name: Sicherheitsprüfung der Abhängigkeiten
         run: npm audit --audit-level=moderate
-      - name: Lint und Formatierung
+      - name: Lint, Formatierung, .gitignore, Lizenzen
         run: npm run lint
       - name: Unit-Tests
         run: npm run test:unit
-      - name: Build (Hauptseite und Vorschau-Variante)
+      - name: Build (Hauptseite und Vorschau-Variante, inkl. Bild- und Build-Prüfungen)
         run: npm run build:e2e
       - name: Playwright-Browser installieren
         run: npx playwright install --with-deps chromium
       - name: Browser-Tests
         run: npm run test:e2e
+      - name: Screenshots hochladen (Handy und Computer)
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: screenshots
+          path: test-results/screens/
+          retention-days: 14
+          if-no-files-found: ignore
       - name: Testbericht hochladen
         if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -52,3 +59,13 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
+      - name: Gebaute Seite des Pull-Requests als Artefakt (Vorschau, ohne Service Worker)
+        if: github.event_name == 'pull_request'
+        run: PREVIEW=true OUT_DIR=dist-artifact npm run build
+      - name: Artefakt hochladen
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: website-vorschau
+          path: dist-artifact/
+          retention-days: 14

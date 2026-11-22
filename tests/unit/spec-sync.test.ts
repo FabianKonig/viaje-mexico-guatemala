@@ -73,11 +73,35 @@ describe('SPEC.md ↔ Code', () => {
     }
   });
 
-  it('CI nutzt die Node-Version aus .nvmrc und gepinnte Actions', () => {
-    const ci = fs.readFileSync('.github/workflows/ci.yml', 'utf8');
-    expect(ci).toContain('node-version-file: .nvmrc');
-    for (const line of ci.split('\n').filter((l) => l.includes('uses:'))) {
-      expect(line, line).toMatch(/@[0-9a-f]{40} # v\d/);
+  it('Workflows nutzen die Node-Version aus .nvmrc und gepinnte Actions', () => {
+    for (const f of ['ci.yml', 'deploy.yml']) {
+      const wf = fs.readFileSync('.github/workflows/' + f, 'utf8');
+      expect(wf, f).toContain('node-version-file: .nvmrc');
+      for (const line of wf
+        .split('\n')
+        .filter((l) => l.includes('uses:') && !l.includes('./.github/'))) {
+        expect(line, line).toMatch(/@[0-9a-f]{40} # v\d/);
+      }
+    }
+  });
+
+  it('Deployment: erst Tests, dann Build, dann Veröffentlichung; nur von main', () => {
+    const wf = fs.readFileSync('.github/workflows/deploy.yml', 'utf8');
+    expect(wf).toMatch(/push:\s+branches: \[main\]/);
+    expect(wf).toContain('uses: ./.github/workflows/ci.yml');
+    expect(wf).toMatch(/build:[\s\S]*needs: tests/);
+    expect(wf).toMatch(/deploy:[\s\S]*needs: build/);
+    expect(wf).toContain('SITE_URL: https://viaje.fabiankonig.de');
+  });
+});
+
+import YAML from 'yaml';
+describe('Workflows', () => {
+  it('sind gültiges YAML', () => {
+    for (const f of fs.readdirSync('.github/workflows')) {
+      const doc = YAML.parseDocument(fs.readFileSync('.github/workflows/' + f, 'utf8'));
+      expect(doc.errors, f).toEqual([]);
+      expect(Object.keys(doc.toJS().jobs ?? {}).length, f).toBeGreaterThan(0);
     }
   });
 });

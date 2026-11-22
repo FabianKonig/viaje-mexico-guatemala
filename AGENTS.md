@@ -174,7 +174,7 @@ Hash berechnen: `node scripts/hash-original.mjs content/posts/<ordner>/original.
 ## Datenschutz, noindex und Lizenz
 
 - Jede Seite: `<meta name="robots" content="noindex, nofollow, noimageindex">`, `robots.txt` mit
-  `Disallow: /` (auch Vorschauen).
+  `Disallow: /`.
 - **Keine** Tracker, Analytics, Cookies, externen Schriften, Karten, Skripte oder CDNs. Alles selbst gehostet.
 - Impressum und Datenschutz müssen zur tatsächlichen Technik passen. Bei neuer Technik anpassen.
 - Rechte: alle vorbehalten (`LICENSE`). Copyright-Zeile im Fußbereich jeder Seite und in
@@ -209,7 +209,11 @@ Service Worker wird beim Build erzeugt; neue Dateiarten im Zweifel network-first
 
 ## Deployment
 
-Wird in PR 9 eingerichtet (GitHub Actions → Branch `gh-pages`, Vorschauen unter `/pr-preview/pr-NN/`).
+- Pages-Quelle ist **„GitHub Actions“**. Jeder Merge in `main` startet `.github/workflows/deploy.yml`:
+  Tests → Build → Veröffentlichung. Rot = nichts wird veröffentlicht.
+- Pull-Requests: `ci.yml` testet und hängt **Screenshots** und die **gebaute Seite** als Artefakte an
+  (Actions-Lauf → „Artifacts“). Es gibt keine Vorschau-Seiten unter `/pr-preview/`.
+- Nach dem Merge eines neuen Beitrags prüfen, dass der Deploy-Lauf grün ist.
 
 ## NIE tun
 

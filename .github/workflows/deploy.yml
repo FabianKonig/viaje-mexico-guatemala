@@ -1,0 +1,68 @@
+# Veröffentlichung auf GitHub Pages (Quelle: „GitHub Actions“).
+# Bei jedem Merge in main: erst alle Tests, dann Build (inkl. Bildskript und Prüfungen), dann Deployment.
+# Schlägt ein Schritt fehl, wird nicht veröffentlicht.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  tests:
+    uses: ./.github/workflows/ci.yml
+
+  build:
+    name: Build
+    needs: tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          check-latest: true
+          cache: npm
+      - name: npm aktualisieren
+        run: npm install -g npm@12
+      - name: Abhängigkeiten installieren
+        run: npm ci
+      - name: Build (Bildskript, Astro, Metadaten- und Build-Prüfung)
+        run: npm run build
+        env:
+          SITE_URL: https://viaje.fabiankonig.de
+          BASE_PATH: /
+      - name: 'Größe prüfen (Limit von GitHub Pages: 1 GB)'
+        run: |
+          size=$(du -sm dist | cut -f1)
+          echo "Seitengröße: ${size} MB"
+          if [ "$size" -gt 900 ]; then echo "::error::Seite ist ${size} MB groß (Limit 1 GB)"; exit 1; fi
+          if [ "$size" -gt 700 ]; then echo "::warning::Seite ist ${size} MB groß, Limit 1 GB rückt näher"; fi
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: dist
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
