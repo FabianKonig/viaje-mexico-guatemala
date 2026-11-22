@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "node scripts/build.mjs",
-    "build:preview": "BASE_PATH=/pr-preview/pr-1/ OUT_DIR=dist-preview PREVIEW=true node scripts/build.mjs",
+    "build:preview": "CONTENT_DIR=tests/fixtures/content BASE_PATH=/pr-preview/pr-1/ OUT_DIR=dist-preview PREVIEW=true node scripts/build.mjs",
     "build:e2e": "npm run build && npm run build:preview",
     "serve": "node scripts/serve.mjs dist 4321",
     "test": "npm run lint && npm run test:unit && npm run build:e2e && npm run test:e2e",
@@ -21,6 +21,7 @@
     "format": "prettier --write ."
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
     "@playwright/test": "1.65.1",
     "astro": "7.4.13",
     "prettier": "3.10.1",

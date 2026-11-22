@@ -1,0 +1,108 @@
+---
+import { SITE } from '../config';
+import { href } from '../lib/site';
+
+interface Props {
+  /** Startseite: Titel ist h1, großes Profilbild. Sonst: kleiner. */
+  home?: boolean;
+  avatarSrc: string;
+}
+const { home = false, avatarSrc } = Astro.props;
+const TitleTag = home ? 'h1' : 'p';
+---
+
+<header class="site-header wrap">
+  <div class="site-header__row">
+    <TitleTag class="site-title">
+      <a href={href()} aria-current={home ? 'page' : undefined}>
+        {SITE.title}
+      </a>
+    </TitleTag>
+    <img
+      class:list={['avatar', { 'avatar--small': !home }]}
+      src={avatarSrc}
+      alt={`Profilbild von ${SITE.ownerName}`}
+      width={home ? 76 : 44}
+      height={home ? 76 : 44}
+      decoding="async"
+    />
+  </div>
+  <nav class="site-nav" aria-label="Hauptnavigation">
+    <ul>
+      <li>
+        <a href={href() + '#ruta'}>Ruta</a>
+      </li>
+      <li>
+        <a href={href() + '#entradas'}>Beiträge</a>
+      </li>
+    </ul>
+  </nav>
+</header>
+
+<style>
+  .site-header {
+    padding-top: 14px;
+  }
+  .site-header__row {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .site-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+    font-family: var(--font-head);
+    font-weight: 800;
+    font-size: clamp(32px, 5.5vw, 52px);
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    overflow-wrap: break-word;
+    hyphens: manual;
+  }
+  .site-title a {
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .site-title a:hover {
+    color: var(--terracotta-text);
+  }
+  .avatar {
+    flex: 0 0 auto;
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    border: var(--border);
+    box-shadow: 4px 4px 0 var(--ink);
+    object-fit: cover;
+    background: var(--turquoise);
+  }
+  .avatar--small {
+    width: 44px;
+    height: 44px;
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+  .site-nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    list-style: none;
+    margin: 6px 0 0 -12px;
+    padding: 0;
+  }
+  .site-nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 12px;
+    font-weight: 700;
+    color: var(--ink);
+    text-decoration-color: var(--terracotta);
+    text-decoration-thickness: 2px;
+  }
+  .site-nav a:hover {
+    color: var(--terracotta-text);
+  }
+</style>

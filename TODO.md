@@ -19,7 +19,8 @@
 - [ ] **LICENSE-Wortlaut** bei Bedarf rechtlich prüfen lassen.
 - [ ] **Profilfoto** ablegen (`content/profile.jpg`, quadratisch, mind. 300 × 300 px, ohne Standort).
 - [ ] **Manuelle Tests** auf echten Geräten (Checkliste folgt in PR 10: MANUAL-TESTS.md).
-- [ ] Beispielbeitrag vor dem ersten echten Beitrag löschen (folgt mit PR 2/3).
+- [ ] Beispielbeitrag `content/posts/2026-11-23-entrada-de-ejemplo/` vor dem ersten echten Beitrag löschen
+      (ein Agent macht das beim ersten echten Beitrag mit).
 
 ## Hinweise zu den Grenzen
 
@@ -29,7 +30,7 @@
 ## Umsetzung (Pull-Requests)
 
 - [x] PR 1: Grundgerüst, .gitignore, LICENSE, Dokumente, Test- und CI-Gerüst, Dependabot
-- [ ] PR 2: Design und Startseite (inkl. Beispielbeitrag)
+- [x] PR 2: Design und Startseite, Datenmodell, Beispielbeitrag, Layout- und axe-Tests
 - [ ] PR 3: Beitragsseite mit Zweisprachigkeit
 - [ ] PR 4: Fotos und Lightbox inkl. Bildskript, Zwei-Klick-Videos
 - [ ] PR 5: Karte inkl. Ortsliste

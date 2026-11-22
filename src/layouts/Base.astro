@@ -1,31 +1,76 @@
 ---
+import '../styles/global.css';
 import { SITE, COPYRIGHT_LINE } from '../config';
 import { href } from '../lib/site';
+import PapelPicado from '../components/PapelPicado.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
 
 interface Props {
   title?: string;
   description?: string;
+  home?: boolean;
 }
-const { title, description = SITE.description } = Astro.props;
+const { title, description = SITE.description, home = false } = Astro.props;
 const fullTitle = title ? `${title} · ${SITE.title}` : SITE.title;
+const avatarSrc = href('profile-placeholder.svg');
+const font = (f: string) => href(`fonts/${f}`);
+const LATIN =
+  'U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD';
+const LATIN_EXT =
+  'U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF';
+const fontFaces = [
+  ['Fraunces', 'normal', 'fraunces-latin-wght-normal.woff2', LATIN],
+  ['Fraunces', 'normal', 'fraunces-latin-ext-wght-normal.woff2', LATIN_EXT],
+  ['DM Sans', 'normal', 'dm-sans-latin-wght-normal.woff2', LATIN],
+  ['DM Sans', 'normal', 'dm-sans-latin-ext-wght-normal.woff2', LATIN_EXT],
+  ['DM Sans', 'italic', 'dm-sans-latin-wght-italic.woff2', LATIN],
+]
+  .map(
+    ([family, style, file, range]) =>
+      `@font-face{font-family:'${family}';font-style:${style};font-display:swap;font-weight:100 1000;src:url(${font(file)}) format('woff2');unicode-range:${range}}`,
+  )
+  .join('\n');
 ---
 
 <!doctype html>
 <html lang={SITE.lang}>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
     <meta name="copyright" content={COPYRIGHT_LINE} />
+    <meta name="author" content={SITE.ownerName} />
+    <meta name="theme-color" content="#F6EBD9" />
+    <meta name="format-detection" content="telephone=no" />
     <link rel="icon" href={href('favicon.svg')} type="image/svg+xml" />
+    <link
+      rel="preload"
+      href={font('fraunces-latin-wght-normal.woff2')}
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href={font('dm-sans-latin-wght-normal.woff2')}
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <style set:html={fontFaces}></style>
+    <slot name="head" />
   </head>
-  <body>
-    <main id="inhalt">
+  <body class:list={{ 'is-home': home }}>
+    <a class="skip-link" href="#inhalt">
+      Zum Inhalt springen
+    </a>
+    <PapelPicado />
+    <SiteHeader home={home} avatarSrc={avatarSrc} />
+    <main id="inhalt" tabindex="-1">
       <slot />
     </main>
-    <footer>
-      <p class="copyright">{COPYRIGHT_LINE}</p>
-    </footer>
+    <SiteFooter />
   </body>
 </html>

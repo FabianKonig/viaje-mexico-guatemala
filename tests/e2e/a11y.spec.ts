@@ -1,0 +1,42 @@
+import AxeBuilder from '@axe-core/playwright';
+import { test, expect, PREVIEW_URL } from './fixtures';
+
+const PAGES = [
+  { name: 'Startseite', url: './' },
+  { name: 'Startseite (Grenzfälle)', url: PREVIEW_URL },
+  { name: '404', url: './gibt-es-nicht/' },
+];
+
+for (const p of PAGES) {
+  test(`Barrierefreiheit (axe, inkl. Kontrast): ${p.name}`, async ({ page }) => {
+    await page.goto(p.url);
+    const results = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])
+      .analyze();
+    expect(
+      results.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target).join(', ')}`),
+    ).toEqual([]);
+  });
+}
+
+test('Tastatur: Sprunglink, sichtbarer Fokus, alle Links erreichbar', async ({ page }) => {
+  await page.goto('./');
+  await page.keyboard.press('Tab');
+  const skip = page.getByRole('link', { name: 'Zum Inhalt springen' });
+  await expect(skip).toBeFocused();
+  await expect(skip).toBeInViewport();
+  await page.keyboard.press('Tab');
+  const outline = await page.evaluate(() => getComputedStyle(document.activeElement!).outlineStyle);
+  expect(outline).not.toBe('none');
+});
+
+test('Touch-Ziele sind mindestens 44px hoch', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('./');
+  const small = await page.evaluate(() =>
+    [...document.querySelectorAll('.site-nav a, .btn, .palabrita__btn')]
+      .map((el) => [el.textContent?.trim(), el.getBoundingClientRect().height] as const)
+      .filter(([, h]) => h < 44),
+  );
+  expect(small).toEqual([]);
+});
