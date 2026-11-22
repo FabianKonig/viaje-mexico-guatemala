@@ -48,6 +48,25 @@ describe('SPEC.md ↔ Code', () => {
     }
   });
 
+  it('Farben in SPEC.md entsprechen den CSS-Variablen', () => {
+    const css = fs.readFileSync('src/styles/global.css', 'utf8');
+    const block = spec.split('<!-- colors:start -->')[1].split('<!-- colors:end -->')[0];
+    const rows = block.split('\n').filter((l) => /^\| [a-z-]+ \| #/.test(l));
+    expect(rows.length).toBeGreaterThanOrEqual(10);
+    for (const row of rows) {
+      const [, name, value] = row.split('|').map((c) => c.trim());
+      expect(css.toLowerCase(), name).toContain(`--${name}: ${value.toLowerCase()};`);
+    }
+  });
+
+  it('Texte und Adressen aus SPEC.md stehen so im Code', () => {
+    const cfg = fs.readFileSync('src/config.ts', 'utf8');
+    for (const t of ['https://palabrita.fabiankonig.de', 'Un viaje a México y Guatemala']) {
+      expect(spec).toContain(t);
+      expect(cfg).toContain(t);
+    }
+  });
+
   it('Squash-Merge ist dokumentiert', () => {
     for (const f of ['SPEC.md', 'AGENTS.md', 'TODO.md', 'README.md']) {
       expect(fs.readFileSync(f, 'utf8'), f).toMatch(/[Ss]quash/);

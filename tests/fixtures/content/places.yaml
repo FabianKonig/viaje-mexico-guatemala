@@ -1,0 +1,13 @@
+# Testorte (nur für Tests, nicht veröffentlicht)
+- id: ciudad-de-mexico
+  name: Ciudad de México
+  lat: 19.4326
+  lon: -99.1332
+  country: MX
+  arrived: 2026-11-23
+- id: oaxaca
+  name: Oaxaca de Juárez
+  lat: 17.0732
+  lon: -96.7266
+  country: MX
+  arrived: 2026-11-30

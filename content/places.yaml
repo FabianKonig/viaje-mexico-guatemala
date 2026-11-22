@@ -1,0 +1,10 @@
+# Ortsliste für die Routenkarte (siehe AGENTS.md › Kartenregeln).
+# Reihenfolge = Reiseverlauf. Nummer = Position in dieser Liste (1, 2, 3 …).
+# Der LETZTE Eintrag ist der aktuelle Ort („Aquí estoy“).
+# Neue Orte nur eintragen, wenn der Autor dort war. Im Zweifel fragen, nie raten.
+- id: ciudad-de-mexico
+  name: Ciudad de México
+  lat: 19.4326
+  lon: -99.1332
+  country: MX
+  arrived: 2026-11-23

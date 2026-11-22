@@ -1,0 +1,132 @@
+---
+import type { Post } from '../lib/content';
+import { formatDateDe } from '../lib/dates';
+import { tripDayNumber } from '../lib/travelDay';
+import { excerpt } from '../lib/translation';
+import { href } from '../lib/site';
+
+interface Props {
+  post: Post;
+}
+const { post } = Astro.props;
+const day = tripDayNumber(post.date);
+const url = href(`entradas/${post.slug}/`);
+const photoCount = post.photos.length;
+const langs = post.translation.hasSpanish ? 'ES · DE' : 'DE';
+const langLabel = post.translation.hasSpanish ? 'Spanisch mit deutscher Übersetzung' : 'Deutsch';
+---
+
+<article class="post-card card">
+  <slot name="media" />
+  <div class="post-card__body">
+    <p class="post-card__meta">
+      {post.place && <span class="post-card__place">{post.place.name}</span>}
+      {post.place && <span aria-hidden="true"> · </span>}
+      <time datetime={post.date}>{day >= 1 ? `Tag ${day}` : formatDateDe(post.date)}</time>
+    </p>
+    <h3 class="post-card__title">
+      <a href={url}>{post.title}</a>
+    </h3>
+    <p class="post-card__excerpt" lang={post.translation.languages[0]}>
+      {excerpt(post.original)}
+    </p>
+    <p class="post-card__foot">
+      {photoCount > 0 && (
+        <span class="post-card__photos">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false">
+            <path
+              d="M4 7h3l2-3h6l2 3h3v13H4z"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linejoin="round"
+            />
+            <circle cx="12" cy="13" r="3.5" fill="none" stroke="currentColor" stroke-width="2" />
+          </svg>
+          {photoCount === 1 ? '1 Foto' : `${photoCount} Fotos`}
+        </span>
+      )}
+      <span class="tag" title={langLabel}>
+        <span aria-hidden="true">{langs}</span>
+        <span class="visually-hidden">{langLabel}</span>
+      </span>
+    </p>
+  </div>
+</article>
+
+<style>
+  .post-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+    transition:
+      transform 0.12s ease,
+      box-shadow 0.12s ease;
+  }
+  .post-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 8px 8px 0 var(--ink);
+  }
+  .post-card:focus-within {
+    outline: 3px solid var(--turquoise-dark);
+    outline-offset: 4px;
+  }
+  .post-card__body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 18px 20px 16px;
+    min-width: 0;
+  }
+  .post-card__meta {
+    margin: 0 0 6px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--terracotta-text);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .post-card__title {
+    font-size: 1.5rem;
+    margin: 0 0 8px;
+  }
+  .post-card__title a {
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .post-card__title a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+  .post-card__title a:focus-visible {
+    outline: none;
+  }
+  .post-card__excerpt {
+    margin: 0 0 14px;
+    overflow-wrap: anywhere;
+  }
+  .post-card__foot {
+    margin: auto 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+  .post-card__photos {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .post-card:hover {
+      transform: none;
+    }
+  }
+</style>

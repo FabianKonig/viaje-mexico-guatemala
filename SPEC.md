@@ -49,6 +49,7 @@ Diese Tabelle wird von einem Test mit `package.json` und `.nvmrc` abgeglichen:
 | astro | 7.4.13 |
 | vitest | 5.1.1 |
 | @playwright/test | 1.65.1 |
+| @axe-core/playwright | 4.14.0 |
 | prettier | 3.10.1 |
 | prettier-plugin-astro | 1.1.2 |
 | yaml | 2.9.1 |
@@ -96,7 +97,8 @@ Seite funktioniert unverändert unter `/` und unter `/pr-preview/pr-NN/`.
 | Bereich | Pull-Request | Stand |
 | --- | --- | --- |
 | Grundgerüst, Dokumente, Test- und CI-Gerüst | 1 | umgesetzt |
-| Design und Startseite | 2 | geplant |
+| Design und Startseite | 2 | umgesetzt (Karte und Reisetag folgen) |
+| Datenmodell, Beitrags-Parser | 2 | umgesetzt |
 | Beitragsseite, Zweisprachigkeit | 3 | geplant |
 | Fotos, Lightbox, Bildskript, Videos | 4 | geplant |
 | Routenkarte, Ortsliste | 5 | geplant |
@@ -109,7 +111,107 @@ Seite funktioniert unverändert unter `/` und unter `/pr-preview/pr-NN/`.
 Die folgenden Abschnitte beschreiben das Zielverhalten. Was noch „geplant“ ist, wird im jeweiligen
 Pull-Request umgesetzt und dann hier als „umgesetzt“ markiert.
 
-## 6. Tests
+## 6. Datenmodell
+
+### 6.1 Beiträge
+
+Ein Beitrag ist ein Ordner `content/posts/JJJJ-MM-TT-slug/` mit `index.md` (nur Frontmatter),
+`original.md` (Originaltext) und optional `photos/`. Format und Beispiel: [AGENTS.md › Beitragsformat](AGENTS.md#beitragsformat).
+
+| Feld | Pflicht | Bedeutung |
+| --- | --- | --- |
+| `title` | ja | Titel wie vom Autor geschrieben |
+| `titleDe` | nein | deutsche Übersetzung des Titels |
+| `date` | ja | `JJJJ-MM-TT` |
+| `place` | nein | `id` aus `places.yaml`; fehlt der Ort, zeigt der Beitrag nur den Tag |
+| `photos[]` | nein | `file` (in `photos/`), `alt` (Pflicht), `caption` (optional); höchstens 20 |
+| `videos[]` | nein | `youtube` (11-stellige ID), `title` |
+| `translation.source_sha256` | ja | SHA-256 von `original.md` |
+| `translation.segments[]` | ja | `lang` (`es`/`de`), `text` (wörtlicher Ausschnitt), `de` (nur bei `es`) |
+
+Regeln (geprüft in `src/lib/content.ts` und `src/lib/translation.ts`, Build bricht bei Fehlern ab):
+
+- Ordnername `JJJJ-MM-TT-slug` (Kleinbuchstaben, Ziffern, Bindestriche).
+- `original.md` wird byte-genau übernommen. Der Hash muss stimmen.
+- Die Segmente decken das Original lückenlos und in Reihenfolge ab, dazwischen nur Leerraum.
+- Leerzeile im Original = neuer Absatz in der Übersetzung. Zeilenumbrüche und Leerraum zwischen
+  Segmenten innerhalb eines Absatzes bleiben erhalten.
+- Gibt es kein `es`-Segment, entfällt die Übersetzungskachel und der Schalter.
+- Sortierung: neueste zuerst (Datum, dann Ordnername absteigend).
+
+### 6.2 Ortsliste `content/places.yaml`
+
+Liste in Reihenfolge der Reise. Felder: `id`, `name` (spanisch), `lat`, `lon`, `country` (`MX`/`GT`),
+`arrived` (`JJJJ-MM-TT`, nicht vor dem vorherigen Ort), optional `region`. Nummer = Position in der
+Liste, der letzte Eintrag ist der aktuelle Ort. Zu Beginn nur „Ciudad de México“.
+
+## 7. Design
+
+### 7.1 Farben (Kontrast mindestens 4,5:1 für normalen Text)
+
+<!-- colors:start -->
+| Name | Wert | Verwendung |
+| --- | --- | --- |
+| sand | #F6EBD9 | Seitenhintergrund |
+| card | #FFF9EF | Karten, Fußbereich |
+| ink | #2B1D16 | Text, Rahmen, Schatten |
+| terracotta | #C4552D | Flächen, Route |
+| terracotta-text | #A8421F | Text in Terrakotta (5,1:1 auf Sand) |
+| turquoise | #0E7C86 | Flächen |
+| turquoise-dark | #0B5D66 | Links, Knöpfe, Meer (7,2:1 mit Kartenfarbe) |
+| marigold | #F2A900 | gelber Kasten, Palabrita-Kachel (Text in ink, 8,1:1) |
+| pink | #D4457A | Akzent, Halo, Flächen ohne Text |
+| pink-text | #B33563 | Pink mit Text darauf/darin (5,6:1 mit Kartenfarbe) |
+| land-other | #E6D6BD | Nachbarländer in der Karte |
+<!-- colors:end -->
+
+Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftungen den dunkleren Ton `pink-text`.
+
+### 7.2 Formen und Schrift
+
+- Karten und Fotorahmen: 2px Rahmen in `ink`, harter Schatten `6px 6px 0 #2B1D16`, keine weichen
+  Schatten, keine Farbverläufe, Radius 14px.
+- Schriften selbst gehostet in `public/fonts/` (WOFF2, variable Achse `wght`, Teilmengen latin und
+  latin-ext, `font-display: swap`): **Fraunces** für Überschriften, **DM Sans** für Text. Lizenz SIL OFL 1.1.
+- Grundschrift 17px, Zeilenhöhe 1,6.
+- Fokus: 3px Umriss in `turquoise-dark`. Touch-Ziele mindestens 44px. `prefers-reduced-motion` schaltet
+  Bewegungen ab.
+
+### 7.3 Alle Seiten
+
+1. **Papel-Picado-Wimpelrand** ganz oben: eigenes SVG-Muster, Fähnchen in Pink, Marigold, Türkis und
+   Terrakotta mit kleinen Löchern, an einer Schnur, über die volle Breite (dekorativ, `aria-hidden`).
+2. **Kopfzeile:** links der Titel „Un viaje a México y Guatemala“ (Fraunces, `clamp(32px, 5.5vw, 52px)`,
+   Link zur Startseite; auf der Startseite `h1`, sonst `p`). Ganz rechts oben das runde Profilbild
+   (Startseite 76px, sonst 44px, Rahmen und harter Schatten). Das Bild bleibt in jeder Breite rechts
+   oben (Flexbox ohne Umbruch, der Titel bricht stattdessen um). Auf sehr breiten Bildschirmen
+   (über 1200px Inhaltsbreite) sitzt es rechts oben im Inhaltsbereich, bündig mit den Inhalten darunter. Platzhalter bis zum echten Foto:
+   `public/profile-placeholder.svg` (Türkis mit Silhouette).
+   Darunter die Navigation „Ruta“ (→ `#ruta`) und „Beiträge“ (→ `#entradas`).
+3. **Fußbereich:** WhatsApp-Hinweis („Gefällt dir ein Beitrag? Reagiere in der WhatsApp-Gruppe. Dort
+   verlinke ich jeden neuen Eintrag.“), Copyright-Zeile `© 2026–2027 [VOLLER NAME]. Alle Rechte
+   vorbehalten.`, Links zu Impressum, Datenschutz, Lizenzhinweise (PR 8). Kein Link „Über das Projekt“.
+4. Sprunglink „Zum Inhalt springen“ für Tastaturnutzer.
+
+### 7.4 Startseite
+
+- **Titelbereich** ohne Überschrift und ohne Titelfoto. Ab 900px zwei Spalten (5:7), oben bündig
+  (`align-items: start`): links der gelbe Kasten „México & Guatemala“ (Marigold, Rahmen, Schatten),
+  darunter „Mein Reisetagebuch, auf Spanisch geschrieben, mit allen Fehlern. Daneben immer die deutsche
+  Übersetzung.“ in `clamp(17px, 1.2vw + 12px, 24px)`, darunter der Knopf „Neuesten Beitrag lesen“
+  und die Reisetag-Anzeige. Rechts die Routenkarte (`#ruta`). Unter 900px alles untereinander.
+- **Entradas** (`#entradas`): Raster `repeat(auto-fill, minmax(min(100%, 300px), 1fr))`, neueste
+  zuerst. Karte: Foto (ab PR 4), Ort und Reisetag (z. B. „Ciudad de México · Tag 1“; ohne Ort nur der
+  Tag), Titel (die ganze Karte ist klickbar), Textanfang des **Originals** (ca. 160 Zeichen),
+  Fotoanzahl (nur wenn Fotos vorhanden), Sprachhinweis „ES · DE“ bzw. „DE“. Keine Kommentare.
+  Lange Wörter brechen um (`overflow-wrap`), nichts läuft über den Kartenrand.
+- **Palabrita-Kachel** ganz unten vor dem Fußbereich: volle Marigold-Kachel mit Rahmen und hartem
+  Schatten, links Karteikarten-Illustration (eigenes SVG), „Kennst du schon meine Vokabellern-App?“,
+  „Hier geht's zu Palabrita.“, rechts dunkler Knopf „Palabrita öffnen →“. Die ganze Kachel ist ein
+  Link auf `https://palabrita.fabiankonig.de` (`target="_blank" rel="noopener"`). Unter 600px bricht
+  der Knopf unter den Text.
+
+## 8. Tests
 
 Siehe [AGENTS.md › Tests](AGENTS.md#tests) für Befehle. In jedem Pull-Request laufen in GitHub
 Actions: `npm audit`, Lint/Format, Unit-Tests, Build beider Varianten, Browser-Tests (Chromium).

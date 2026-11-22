@@ -110,7 +110,8 @@ Hash berechnen: `node scripts/hash-original.mjs content/posts/<ordner>/original.
 
 ## Ablauf: neuen Beitrag anlegen
 
-1. **Branch** `post/<JJJJ-MM-TT-slug>` von aktuellem `main` anlegen.
+1. **Branch** `post/<JJJJ-MM-TT-slug>` von aktuellem `main` anlegen. Gibt es noch den Beispielbeitrag
+   `content/posts/2026-11-23-entrada-de-ejemplo/`, diesen beim ersten echten Beitrag löschen.
 2. **Ordner** `content/posts/<JJJJ-MM-TT-slug>/` anlegen (Datum des Beitrags, kurzer Slug ohne
    Sonderzeichen).
 3. **Originaltext übernehmen:** Text des Autors unverändert in `original.md` schreiben, Zeichen für
@@ -185,7 +186,8 @@ Hash berechnen: `node scripts/hash-original.mjs content/posts/<ordner>/original.
 npm test                 # alles: lint, unit, build, e2e
 npm run lint             # Prettier + .gitignore-Prüfung
 npm run test:unit        # Vitest
-npm run build:e2e        # baut dist/ und dist-preview/ (Unterpfad /pr-preview/pr-1/)
+npm run build:e2e        # baut dist/ (echte Inhalte) und dist-preview/ (Testinhalte aus
+                         # tests/fixtures/content unter /pr-preview/pr-1/)
 npm run test:e2e         # Playwright (Projekte siehe playwright.config.ts)
 ```
 
