@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro';
 import PostCard from '../components/PostCard.astro';
 import PalabritaTile from '../components/PalabritaTile.astro';
 import RouteMap from '../components/RouteMap.astro';
+import TravelDay from '../components/TravelDay.astro';
 import { getContent } from '../lib/data';
 import { href } from '../lib/site';
 
@@ -24,9 +25,7 @@ const latest = posts[0];
             Neuesten Beitrag lesen
           </a>
         )}
-        <p class="travel-day" data-travel-day>
-          Reise vom 23. November 2026 bis 2. Februar 2027
-        </p>
+        <TravelDay />
       </div>
     </div>
     <section id="ruta" class="hero__map card" aria-labelledby="ruta-titel">
@@ -97,11 +96,6 @@ const latest = posts[0];
     flex-wrap: wrap;
     align-items: center;
     gap: 14px 20px;
-  }
-  .travel-day {
-    margin: 0;
-    font-weight: 700;
-    color: var(--terracotta-text);
   }
   .hero__map {
     min-width: 0;

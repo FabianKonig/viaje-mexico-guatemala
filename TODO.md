@@ -35,7 +35,7 @@
 - [x] PR 3: Beitragsseite mit Zweisprachigkeit
 - [x] PR 4: Fotos und Lightbox inkl. Bildskript, Zwei-Klick-Videos
 - [x] PR 5: Karte inkl. Ortsliste
-- [ ] PR 6: Reisetag
+- [x] PR 6: Reisetag
 - [ ] PR 7: PWA
 - [ ] PR 8: Impressum, Datenschutz, noindex, Lizenzhinweise
 - [ ] PR 9: Deployment und Vorschauen

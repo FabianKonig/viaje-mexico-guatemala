@@ -104,7 +104,7 @@ Seite funktioniert unverändert unter `/` und unter `/pr-preview/pr-NN/`.
 | Beitragsseite, Zweisprachigkeit | 3 | umgesetzt (Fotogalerie folgt in PR 4) |
 | Fotos, Lightbox, Bildskript, Videos | 4 | umgesetzt |
 | Routenkarte, Ortsliste | 5 | umgesetzt |
-| Reisetag-Anzeige | 6 | geplant |
+| Reisetag-Anzeige | 6 | umgesetzt |
 | PWA | 7 | geplant |
 | Impressum, Datenschutz, noindex, Lizenzhinweise | 8 | geplant |
 | Deployment und Vorschauen | 9 | geplant |
@@ -288,6 +288,19 @@ Hinweis auf die Datenübertragung und dem Knopf „Video laden“. Erst danach w
   rosa Nummer, Orte in Ausschnitten mit gelber Nummer. Am Computer mehrspaltig, am Handy einspaltig.
   Darunter: „Schematische Skizze, die Umrisse sind nur ungefähr.“
 - Barrierefreiheit: Jede Karte ist ein `role="img"` mit Beschreibung; die Legende enthält alle Informationen.
+
+### 7.9 Reisetag-Anzeige (`src/lib/travelDay.ts`, `TravelDay.astro`)
+
+- Startseite, unter dem Knopf „Neuesten Beitrag lesen“. Wird bei **jedem Seitenaufruf im Browser**
+  berechnet (kleines Modul-Skript), mit dem heutigen Datum in der Zeitzone `America/Mexico_City`
+  (`Intl.DateTimeFormat`), damit alle Besucher denselben Tag sehen. Gerechnet wird nur mit Datumswerten
+  (UTC-Mitternacht), Sommer-/Winterzeit spielt keine Rolle.
+- Texte: vor dem 23.11.2026 „Los geht's am 23. November 2026“; vom 23.11.2026 (Tag 1) bis 2.2.2027
+  (Tag 72) „Tag X unterwegs“; ab 3.2.2027 „Reise beendet · wieder zurück in Alemania“.
+- Testbar über `travelStatus(datum)` / `travelTextFor(jetzt, vorschau)`. Vorschau eines Datums im
+  Browser: `?datum=JJJJ-MM-TT` (ungültige Werte werden ignoriert).
+- Ohne JavaScript: „Reise vom 23. November 2026 bis 2. Februar 2027“.
+- Beitragskarten und Beitragsseiten zeigen den Reisetag des Beitragsdatums (gleiche Funktion).
 
 ## 8. Tests
 
