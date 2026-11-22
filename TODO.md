@@ -2,14 +2,10 @@
 
 ## Von Hand zu erledigen (Autor)
 
-- [ ] **Branch-Schutz vervollständigen:** Das Ruleset `protect-main-branch` (aktiv, Default Branch:
-      Restrict deletions, Require linear history, Require a pull request, Block force pushes) ist
-      angelegt ✔. **Es fehlt noch „Require status checks to pass“:** Ruleset öffnen → Häkchen setzen →
-      „Add checks“ → `Tests` auswählen (erscheint, sobald der Check einmal gelaufen ist) → Speichern.
-      Optional „Require branches to be up to date before merging“. Erinnerung bleibt, bis erledigt.
-- [ ] **Nur Squash-Merges erlauben:** Settings → General → Pull Requests: nur „Allow squash merging“
-      anhaken, „Allow merge commits“ und „Allow rebase merging“ abwählen. Zusätzlich
-      „Automatically delete head branches“ anhaken.
+- [x] Branch-Schutz: Ruleset `protect-main-branch` (aktiv, Default Branch): Restrict deletions,
+      Require linear history, Require a pull request, Block force pushes, **Require status checks to
+      pass (`Tests`)**.
+- [x] Nur Squash-Merges erlaubt, „Automatically delete head branches“ aktiv.
 - [x] DNS-Eintrag `viaje` → `fabiankonig.github.io` (geprüft: zeigt auf GitHub Pages).
 - [x] GitHub Pages: Source „GitHub Actions“, Custom domain `viaje.fabiankonig.de`, „Enforce HTTPS“.
 - [ ] **Nach dem Merge von PR 9:** prüfen, dass unter Actions der Lauf „Deploy“ grün ist und
