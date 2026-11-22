@@ -103,7 +103,7 @@ Seite funktioniert unverändert unter `/` und unter `/pr-preview/pr-NN/`.
 | Datenmodell, Beitrags-Parser | 2 | umgesetzt |
 | Beitragsseite, Zweisprachigkeit | 3 | umgesetzt (Fotogalerie folgt in PR 4) |
 | Fotos, Lightbox, Bildskript, Videos | 4 | umgesetzt |
-| Routenkarte, Ortsliste | 5 | geplant |
+| Routenkarte, Ortsliste | 5 | umgesetzt |
 | Reisetag-Anzeige | 6 | geplant |
 | PWA | 7 | geplant |
 | Impressum, Datenschutz, noindex, Lizenzhinweise | 8 | geplant |
@@ -259,6 +259,35 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
 Videos liegen nie im Repository. `videos: [{ youtube: ID, title }]` zeigt einen Platzhalter mit
 Hinweis auf die Datenübertragung und dem Knopf „Video laden“. Erst danach wird
 `https://www.youtube-nocookie.com/embed/ID` eingebunden. Ohne JavaScript nur ein Link „Auf YouTube ansehen“.
+
+### 7.8 Routenkarte (`src/lib/map.ts`, `src/lib/geo.ts`, `RouteMap.astro`)
+
+- Wird bei jedem Build **aus `content/places.yaml` erzeugt**, keine externen Kartendienste.
+  Umrisse von México, Guatemala und den Nachbarländern sind selbst erstellte, grobe Polygone
+  (Projektion: rechtwinklig mit Kosinus-Korrektur). Meer `turquoise-dark`, México `sand`,
+  Guatemala `marigold`, Nachbarländer `land-other`.
+- Beschriftungen der Gesamtkarte: nur „México“, „Golfo de México“, „Océano Pacífico“ und „Aquí estoy“
+  am aktuellen Ort. **Keine Ortsnamen in der Karte**, nur in der Legende.
+- Marker: nummerierte Kreise (`sand`, Rahmen `ink`); aktueller Ort `pink-text` mit hellem Text und
+  pinkem Halo (pulsiert nur ohne `prefers-reduced-motion`). Route: gestrichelte Linie in Terrakotta in
+  Reihenfolge der Liste. Das Schild „Aquí estoy“ wird so platziert, dass es keine Marker verdeckt.
+- **Nahe Orte:** Liegen Orte in einer Gesamtkarte näher als ihr Markerdurchmesser (Computer 30
+  Einheiten bei 800 Breite ≈ 28px; Handy 44 Einheiten bei 400 Breite), werden sie (auch über
+  Ketten) zusammengefasst. Gruppen beider Varianten werden vereinigt, damit beide dieselben Gruppen
+  zeigen. Jede Gruppe erscheint als rosa Pille mit Nummernbereich („8–12“, Lücken als „1, 3“), ein
+  gestrichelter Rahmen markiert die Region, und es gibt eine **Ausschnittskarte** („Ausschnitt:
+  Guatemala“) mit allen Orten einzeln (überlappende Marker werden auseinandergeschoben), gestrichelter
+  Route und beschrifteten Nachbarländern (z. B. México, Belice, Honduras; das eigene Land wird nicht
+  beschriftet). Titel: gemeinsame `region` der Orte, sonst Landesname, sonst „México y Guatemala“.
+- **Layout:** Ein Ausschnitt steht rechts neben der Gesamtkarte, mehrere in einer Reihe darunter;
+  am Handy alles untereinander.
+- **Handy (< 600px):** eigene Gesamtkarte nur mit dem Süden (Reiseregion, erweitert sich automatisch,
+  falls ein Ort weiter nördlich liegt), Marker mind. 28px auf dem Bildschirm (getestet bei 320px),
+  größere Schrift. Umschaltung per CSS zwischen zwei SVGs (kein JavaScript).
+- **Legende** (`<ol>`): Nummer und spanischer Name, aktueller Ort mit Etikett „Aquí estoy“ und
+  rosa Nummer, Orte in Ausschnitten mit gelber Nummer. Am Computer mehrspaltig, am Handy einspaltig.
+  Darunter: „Schematische Skizze, die Umrisse sind nur ungefähr.“
+- Barrierefreiheit: Jede Karte ist ein `role="img"` mit Beschreibung; die Legende enthält alle Informationen.
 
 ## 8. Tests
 

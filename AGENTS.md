@@ -164,7 +164,10 @@ Hash berechnen: `node scripts/hash-original.mjs content/posts/<ordner>/original.
   aus Beitrag/Fotos hervorgeht). **Im Zweifel fragen, nie raten.**
 - Eintrag: `id` (klein, mit Bindestrichen), `name` (spanischer Name), `lat`, `lon` (Dezimalgrad,
   Stadtzentrum genügt), `country` (`MX` oder `GT`), `arrived` (JJJJ-MM-TT), optional `region`
-  (z. B. `Yucatán`, benennt den Kartenausschnitt).
+  (z. B. `Yucatán`, `Chiapas`; benennt den Kartenausschnitt). Liegen mehrere Orte nahe beieinander,
+  bei allen dieselbe `region` setzen, sonst heißt der Ausschnitt nach dem Land.
+- Nach dem Eintragen Startseite am Handy (390px) und Computer per Screenshot prüfen: Marker,
+  Pillen, Ausschnitte und das Schild „Aquí estoy“ dürfen sich nicht unschön überdecken.
 - Ein Ort kann mehrere Beiträge haben und auf der Karte stehen, ohne dass es einen Beitrag gibt.
   Ein zweiter Besuch desselben Orts ist ein neuer Eintrag mit eigener `id` (z. B. `ciudad-de-mexico-2`).
 

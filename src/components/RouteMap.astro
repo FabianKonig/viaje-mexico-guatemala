@@ -1,0 +1,172 @@
+---
+import { buildRouteMap } from '../lib/map';
+import type { Place } from '../lib/content';
+import MapSvg from './MapSvg.astro';
+
+interface Props {
+  places: Place[];
+}
+const { places } = Astro.props;
+const map = buildRouteMap(places);
+const cur = map.current;
+const summary = `Routenkarte: schematische Skizze von México und Guatemala mit ${map.places.length} ${map.places.length === 1 ? 'besuchtem Ort' : 'besuchten Orten'}${cur ? `. Aquí estoy: ${cur.place.name}` : ''}. Die Orte stehen in der Liste darunter.`;
+---
+
+<div class="route-map">
+  <div
+    class:list={[
+      'route-map__maps',
+      { 'has-one-inset': map.insets.length === 1, 'has-insets': map.insets.length > 1 },
+    ]}
+  >
+    <figure class="route-map__overview">
+      <MapSvg view={map.desktop} id="karte-gesamt" label={summary} class="map--desktop" />
+      <MapSvg view={map.mobile} id="karte-gesamt-handy" label={summary} class="map--mobile" />
+    </figure>
+    {map.insets.length > 0 && (
+      <div class="route-map__insets">
+        {map.insets.map((inset, i) => (
+          <figure class="route-map__inset" data-inset={inset.title}>
+            <figcaption>
+              Ausschnitt: <span lang="es">{inset.title}</span>
+            </figcaption>
+            <MapSvg
+              view={inset}
+              id={`karte-ausschnitt-${i + 1}`}
+              label={`Ausschnittskarte ${inset.title} mit den Orten ${inset.numbers.join(', ')}`}
+            />
+          </figure>
+        ))}
+      </div>
+    )}
+  </div>
+  <ol class="legend" role="list" aria-label="Besuchte Orte in Reihenfolge">
+    {map.places.map((n) => (
+      <li
+        class:list={['legend__item', { 'is-current': n.current, 'is-inset': n.inInset }]}
+        data-place={n.place.id}
+      >
+        <span class="legend__num" aria-hidden="true">
+          {n.number}
+        </span>
+        <span class="visually-hidden">{n.number}. </span>
+        <span class="legend__name" lang="es">
+          {n.place.name}
+        </span>
+        {n.current && (
+          <span class="legend__here" lang="es">
+            Aquí estoy
+          </span>
+        )}
+      </li>
+    ))}
+  </ol>
+  <p class="route-map__note">Schematische Skizze, die Umrisse sind nur ungefähr.</p>
+</div>
+
+<style>
+  .route-map__maps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .route-map__overview {
+    flex: 2 1 320px;
+    min-width: 0;
+    margin: 0;
+  }
+  .route-map__insets {
+    flex: 1 1 190px;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+    gap: 14px;
+  }
+  /* mehrere Ausschnitte: unter der Gesamtkarte in einer Reihe */
+  .has-insets .route-map__overview,
+  .has-insets .route-map__insets {
+    flex-basis: 100%;
+  }
+  .route-map__inset {
+    margin: 0;
+    min-width: 0;
+  }
+  .route-map__inset figcaption {
+    font-weight: 700;
+    font-size: 0.9375rem;
+    margin-bottom: 6px;
+  }
+  .route-map__overview :global(.map--mobile) {
+    display: none;
+  }
+  @media (max-width: 599px) {
+    .route-map__overview :global(.map--desktop) {
+      display: none;
+    }
+    .route-map__overview :global(.map--mobile) {
+      display: block;
+    }
+    .route-map__overview,
+    .route-map__insets {
+      flex-basis: 100%;
+    }
+  }
+  .legend {
+    list-style: none;
+    margin: 16px 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+    gap: 8px 16px;
+  }
+  @media (max-width: 599px) {
+    .legend {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  .legend__item {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    min-width: 0;
+  }
+  .legend__num {
+    flex: 0 0 auto;
+    display: inline-grid;
+    place-items: center;
+    min-width: 30px;
+    height: 30px;
+    padding: 0 6px;
+    border: var(--border);
+    border-radius: 999px;
+    background: var(--sand);
+    font-weight: 800;
+    font-size: 0.9375rem;
+  }
+  .is-inset .legend__num {
+    background: var(--marigold);
+  }
+  .is-current .legend__num {
+    background: var(--pink-text);
+    color: var(--card);
+  }
+  .legend__name {
+    min-width: 0;
+    font-weight: 700;
+  }
+  .legend__here {
+    font-size: 0.8125rem;
+    font-weight: 800;
+    padding: 1px 10px;
+    border-radius: 999px;
+    background: var(--ink);
+    color: var(--card);
+  }
+  .route-map__note {
+    margin: 12px 0 0;
+    font-size: 0.875rem;
+    font-style: italic;
+  }
+</style>
