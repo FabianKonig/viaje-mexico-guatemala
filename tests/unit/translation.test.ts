@@ -124,3 +124,12 @@ describe('Übersetzung: Beitrags-Parser', () => {
     expect(e.endsWith(' …')).toBe(true);
   });
 });
+
+import { escapeHtml } from '../../src/lib/html';
+describe('HTML-Escaping', () => {
+  it('maskiert Sonderzeichen', () => {
+    expect(escapeHtml(`<b>"a" & 'b'</b>`)).toBe(
+      '&lt;b&gt;&quot;a&quot; &amp; &#39;b&#39;&lt;/b&gt;',
+    );
+  });
+});

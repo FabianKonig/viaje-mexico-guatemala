@@ -108,3 +108,16 @@ test.describe('ohne JavaScript', () => {
     await expect(page.getByRole('button', { name: /Übersetzung/ })).toBeHidden();
   });
 });
+
+test('Sonderzeichen werden als Text angezeigt, nicht als HTML', async ({ page }) => {
+  const dialogs: string[] = [];
+  page.on('dialog', (d) => {
+    dialogs.push(d.message());
+    void d.dismiss();
+  });
+  await page.goto(PREVIEW_URL + 'entradas/2026-11-27-caracteres/');
+  await expect(page.locator('[data-original] b')).toHaveCount(0);
+  await expect(page.locator('[data-original] script')).toHaveCount(0);
+  await expect(page.locator('[data-original]')).toContainText('<b>no negrita</b>');
+  expect(dialogs).toEqual([]);
+});

@@ -4,6 +4,7 @@
  * Ohne JavaScript sind beide sichtbar; der Schalter erscheint erst mit JavaScript.
  */
 import type { Post } from '../lib/content';
+import { escapeHtml } from '../lib/html';
 
 interface Props {
   post: Post;
@@ -20,6 +21,14 @@ for (const seg of translationData.segments) {
   cursor = idx + seg.text.length;
 }
 const tail = original.slice(cursor);
+// Als fertiges HTML erzeugen (set:html), damit Formatierer keinen Leerraum einfügen können.
+const span = (lang: string, text: string, attrLang = true) =>
+  `<span${attrLang ? ` lang="${lang}"` : ''} data-lang="${lang}">${escapeHtml(text)}</span>`;
+const originalHtml =
+  originalParts.map((p) => escapeHtml(p.gap) + span(p.lang, p.text)).join('') + escapeHtml(tail);
+const translationHtml = translation.paragraphs.map((para) =>
+  para.map((piece) => escapeHtml(piece.sep) + span(piece.lang, piece.text, false)).join(''),
+);
 const showTranslation = translation.hasSpanish;
 const id = `uebersetzung-${post.slug}`;
 ---
@@ -47,17 +56,12 @@ const id = `uebersetzung-${post.slug}`;
           Mi español, sin corregir
         </span>
       </header>
-      <div class="original" data-original data-source-sha256={translationData.source_sha256}>
-        {originalParts.map((p) => (
-          <Fragment>
-            {p.gap}
-            <span lang={p.lang} data-lang={p.lang}>
-              {p.text}
-            </span>
-          </Fragment>
-        ))}
-        {tail}
-      </div>
+      <div
+        class="original"
+        data-original
+        data-source-sha256={translationData.source_sha256}
+        set:html={originalHtml}
+      />
     </section>
     {showTranslation && (
       <section id={id} class="tile card" aria-labelledby={`${id}-de`} lang="de" data-translation>
@@ -66,15 +70,8 @@ const id = `uebersetzung-${post.slug}`;
             Übersetzung
           </h2>
         </header>
-        {translation.paragraphs.map((para) => (
-          <p class="translation-p">
-            {para.map((piece) => (
-              <Fragment>
-                {piece.sep}
-                <span data-lang={piece.lang}>{piece.text}</span>
-              </Fragment>
-            ))}
-          </p>
+        {translationHtml.map((html) => (
+          <p class="translation-p" set:html={html} />
         ))}
       </section>
     )}
