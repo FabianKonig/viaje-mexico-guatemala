@@ -87,13 +87,14 @@ tests/
 | Variable | Bedeutung | Standard |
 | --- | --- | --- |
 | `SITE_URL` | öffentliche Adresse, für absolute Open-Graph-URLs | `https://viaje.fabiankonig.de` |
-| `BASE_PATH` | Basispfad, z. B. `/pr-preview/pr-12/` | `/` |
+| `BASE_PATH` | Basispfad, z. B. `/pr-preview/pr-1/` (Test-Variante) | `/` |
 | `OUT_DIR` | Ausgabeordner | `dist` |
 | `CONTENT_DIR` | Inhaltsordner | `content` |
 | `PREVIEW` | `true` = Vorschau (kein Service Worker) | aus |
 
 Alle internen Links und Ressourcen werden über den Basispfad gebildet (`src/lib/paths.ts`). Die
-Seite funktioniert unverändert unter `/` und unter `/pr-preview/pr-NN/`.
+Seite funktioniert unverändert unter `/` und unter Unterpfaden (getestet mit `/pr-preview/pr-1/`).
+Veröffentlicht wird nur unter `/` (siehe Abschnitt 9).
 
 ## 5. Umsetzungsstand
 
@@ -108,7 +109,7 @@ Seite funktioniert unverändert unter `/` und unter `/pr-preview/pr-NN/`.
 | Reisetag-Anzeige | 6 | umgesetzt |
 | PWA | 7 | umgesetzt |
 | Impressum, Datenschutz, noindex, Lizenzhinweise | 8 | umgesetzt |
-| Deployment und Vorschauen | 9 | geplant |
+| Deployment (GitHub Actions), PR-Artefakte | 9 | umgesetzt |
 | Cross-Browser-Tests, manuelle Checkliste | 10 | geplant |
 
 Die folgenden Abschnitte beschreiben das Zielverhalten. Was noch „geplant“ ist, wird im jeweiligen
@@ -354,7 +355,29 @@ Hinweis auf die Datenübertragung und dem Knopf „Video laden“. Erst danach w
   HTML-Validierung (html-validate, `.htmlvalidate.json`), Seitengewicht der Startseite ohne Fotos
   höchstens 260 KB.
 
-## 8. Tests
+## 9. Deployment
+
+- **Quelle von GitHub Pages: „GitHub Actions“** (vom Autor so eingestellt). Eigene Domain
+  `viaje.fabiankonig.de` und „Enforce HTTPS“ sind in den Pages-Einstellungen gesetzt; DNS:
+  `CNAME viaje → fabiankonig.github.io.` (`public/CNAME` liegt zur Dokumentation bei, wird bei dieser
+  Quelle aber nicht ausgewertet).
+- **`.github/workflows/deploy.yml`** bei jedem Push auf `main` (also nach jedem Merge) und manuell:
+  1. `tests`: ruft `ci.yml` auf (alle Prüfungen und Tests),
+  2. `build`: `npm run build` mit `SITE_URL=https://viaje.fabiankonig.de` (Bildskript, Astro,
+     Metadaten- und Build-Prüfung), Größenwarnung ab 700 MB, Abbruch ab 900 MB (Pages-Limit 1 GB),
+  3. `deploy`: `actions/upload-pages-artifact` + `actions/deploy-pages` (Umgebung `github-pages`).
+  Schlägt ein Schritt fehl, wird nicht veröffentlicht.
+- **`.github/workflows/ci.yml`** bei jedem Pull-Request: Tests wie oben. Zusätzlich als Artefakte
+  (14 Tage): **Screenshots** (Startseite bei 320–2560px) und die **gebaute Seite** des PRs
+  (`website-vorschau`, Vorschau-Modus ohne Service Worker). Ansehen: ZIP herunterladen, entpacken,
+  `node scripts/serve.mjs <ordner> 4321` und `http://127.0.0.1:4321/` öffnen.
+- **Keine Vorschau-Seiten** unter `/pr-preview/` (Entscheidung des Autors: Die bewährte Action
+  rossjrw/pr-preview-action unterstützt die Pages-Quelle „GitHub Actions“ nicht). Der Code bleibt
+  unterpfadfähig, falls das später gewünscht ist.
+- **Merges nur per Squash**, nur grün (Branch-Schutz, TODO.md). Abhängigkeiten aktuell (Dependabot).
+- Grenzen: Dateien höchstens 100 MiB, Repository möglichst unter 1 GB, veröffentlichte Seite unter 1 GB.
+
+## 10. Tests
 
 Siehe [AGENTS.md › Tests](AGENTS.md#tests) für Befehle. In jedem Pull-Request laufen in GitHub
 Actions: `npm audit`, Lint/Format, Unit-Tests, Build beider Varianten, Browser-Tests (Chromium).

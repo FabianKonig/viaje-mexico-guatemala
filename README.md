@@ -31,6 +31,12 @@ npm test               # alles zusammen
 Für Browser-Tests einmalig die Browser installieren: `npx playwright install --with-deps`.
 Weitere Befehle (Cross-Browser, Layout, Barrierefreiheit) stehen in [AGENTS.md](AGENTS.md#tests).
 
+## Veröffentlichung
+
+Jeder Merge in `main` wird automatisch getestet, gebaut und über GitHub Actions auf GitHub Pages
+veröffentlicht (`.github/workflows/deploy.yml`). Pull-Requests bekommen Screenshots und die gebaute
+Seite als Artefakte. Details: [SPEC.md › Deployment](SPEC.md#9-deployment).
+
 ## Mitarbeit
 
 Änderungen nur per Pull-Request auf `main`, Tests müssen grün sein, gemergt wird **immer per
