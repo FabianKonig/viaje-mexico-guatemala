@@ -1,0 +1,32 @@
+---
+/**
+ * Reisetag-Anzeige „Tag X unterwegs“. Wird bei jedem Seitenaufruf im Browser berechnet.
+ * Ohne JavaScript steht der Reisezeitraum da. Vorschau eines Datums: ?datum=JJJJ-MM-TT
+ */
+import { SITE } from '../config';
+import { formatDateDe } from '../lib/dates';
+import { lastTripDayLabel } from '../lib/travelDay';
+
+const fallback = `Reise vom ${formatDateDe(SITE.tripStart)} bis ${lastTripDayLabel()}`;
+---
+
+<p class="travel-day" data-travel-day>
+  {fallback}
+</p>
+
+<script>
+  import { travelTextFor } from '../lib/travelDay';
+  const el = document.querySelector<HTMLElement>('[data-travel-day]');
+  if (el) {
+    const preview = new URLSearchParams(location.search).get('datum');
+    el.textContent = travelTextFor(new Date(), preview);
+  }
+</script>
+
+<style>
+  .travel-day {
+    margin: 0;
+    font-weight: 700;
+    color: var(--terracotta-text);
+  }
+</style>
