@@ -6,6 +6,7 @@ import { loadManifest } from '../lib/media';
 import PapelPicado from '../components/PapelPicado.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
+import PwaHead from '../components/PwaHead.astro';
 
 interface Props {
   title?: string;
@@ -64,6 +65,7 @@ const fontFaces = [
       crossorigin
     />
     <style set:html={fontFaces}></style>
+    <PwaHead />
     <slot name="head" />
   </head>
   <body class:list={{ 'is-home': home }}>

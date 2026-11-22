@@ -105,7 +105,7 @@ Seite funktioniert unverändert unter `/` und unter `/pr-preview/pr-NN/`.
 | Fotos, Lightbox, Bildskript, Videos | 4 | umgesetzt |
 | Routenkarte, Ortsliste | 5 | umgesetzt |
 | Reisetag-Anzeige | 6 | umgesetzt |
-| PWA | 7 | geplant |
+| PWA | 7 | umgesetzt |
 | Impressum, Datenschutz, noindex, Lizenzhinweise | 8 | geplant |
 | Deployment und Vorschauen | 9 | geplant |
 | Cross-Browser-Tests, manuelle Checkliste | 10 | geplant |
@@ -301,6 +301,29 @@ Hinweis auf die Datenübertragung und dem Knopf „Video laden“. Erst danach w
   Browser: `?datum=JJJJ-MM-TT` (ungültige Werte werden ignoriert).
 - Ohne JavaScript: „Reise vom 23. November 2026 bis 2. Februar 2027“.
 - Beitragskarten und Beitragsseiten zeigen den Reisetag des Beitragsdatums (gleiche Funktion).
+
+### 7.10 Progressive Web App (Zusatz, darf die Seite nie kaputtmachen)
+
+- **Manifest** `manifest.webmanifest` (aus `src/lib/pwa.ts`): Name, Kurzname „Viaje MX·GT“, alle Pfade
+  relativ (`start_url`/`scope`/`id` = `./`), `display: standalone`, `theme_color`/`background_color`
+  `#F6EBD9`, Icons 192/512 und maskable 512.
+- **Icons** (`public/icons/`, eigenes Motiv: pinkes Papel-Picado-Fähnchen an einer Schnur auf
+  Marigold), erzeugt mit `node scripts/make-icons.mjs` und eingecheckt: `icon-192.png`, `icon-512.png`,
+  `icon-maskable-512.png` (Motiv in der sicheren Zone), `apple-touch-icon.png` (180, ohne Transparenz),
+  `favicon-32.png`, `favicon.svg`.
+- **iOS/Safari:** `apple-touch-icon`, `apple-mobile-web-app-capable`, `apple-mobile-web-app-title`,
+  `apple-mobile-web-app-status-bar-style`. Caches werden begrenzt (40 Seiten, 120 Dateien), weil
+  Safari wenig Speicher erlaubt.
+- **Service Worker** `sw.js` (erzeugt aus `src/pages/sw.js.ts`), Scope = Basispfad:
+  HTML network-first (offline: zuletzt gesehene Fassung, sonst ein kurzer Offline-Hinweis);
+  Bilder, Schriften, `_astro`, `media`, `icons` cache-first (Dateinamen mit Hash bzw. selten geändert).
+  Cache-Namen `viaje:<basispfad>:<art>-<version>` (Version = Commit-SHA des Builds). Beim Aktivieren
+  werden nur alte Caches **desselben Basispfads** gelöscht. Kein `skipWaiting`: Eine neue Version wird
+  beim nächsten Besuch aktiv; weil HTML network-first ist, sieht trotzdem niemand eine veraltete Seite.
+  Der Service Worker unter `/` ignoriert Anfragen unter `/pr-preview/`.
+- **Vorschau-Builds** (`PREVIEW=true` oder Basispfad `/pr-preview/…`): keine Registrierung; `sw.js`
+  meldet sich dort selbst ab.
+- Registrierung über ein kleines Inline-Skript nach `load`; Fehler werden ignoriert.
 
 ## 8. Tests
 
