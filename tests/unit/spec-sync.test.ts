@@ -67,6 +67,31 @@ describe('SPEC.md ↔ Code', () => {
     }
   });
 
+  it('Abschnitte in SPEC.md sind fortlaufend nummeriert und alles ist umgesetzt', () => {
+    const nums = [...spec.matchAll(/^## (\d+)\./gm)].map((m) => Number(m[1]));
+    expect(nums).toEqual(nums.map((_, i) => i + 1));
+    expect(spec).not.toMatch(/\| geplant \|/);
+  });
+
+  it('Browser-Projekte aus SPEC.md stehen in playwright.config.ts', () => {
+    const cfg = fs.readFileSync('playwright.config.ts', 'utf8');
+    for (const p of [
+      'chromium',
+      'firefox',
+      'webkit',
+      'mobile-chrome',
+      'mobile-safari',
+      'msedge',
+      'chrome',
+      'ipad',
+      'galaxy',
+    ]) {
+      expect(spec, p).toContain('`' + p + '`');
+      expect(cfg, p).toContain(`name: '${p}'`);
+    }
+    expect(fs.readFileSync('TODO.md', 'utf8')).toContain('MANUAL-TESTS.md');
+  });
+
   it('Squash-Merge ist dokumentiert', () => {
     for (const f of ['SPEC.md', 'AGENTS.md', 'TODO.md', 'README.md']) {
       expect(fs.readFileSync(f, 'utf8'), f).toMatch(/[Ss]quash/);

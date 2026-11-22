@@ -20,7 +20,10 @@
     "lint": "prettier --check . && node scripts/check-gitignore.mjs && node scripts/third-party-notices.mjs --check",
     "format": "prettier --write .",
     "images": "node scripts/images.mjs",
-    "notices": "node scripts/third-party-notices.mjs"
+    "notices": "node scripts/third-party-notices.mjs",
+    "test:e2e:local": "PW_PROJECTS=local playwright test",
+    "test:e2e:nightly": "PW_PROJECTS=nightly playwright test",
+    "check:external": "node scripts/check-external.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.14.0",

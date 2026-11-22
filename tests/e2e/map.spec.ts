@@ -1,6 +1,7 @@
 import { test, expect, PREVIEW_URL } from './fixtures';
 
-test('Startseite: Karte mit Ciudad de México als „Aquí estoy“', async ({ page }) => {
+test('Startseite: Karte mit Ciudad de México als „Aquí estoy“ (Computer)', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto('./');
   const map = page.locator('#ruta');
   await expect(map.locator('svg.map--desktop')).toBeVisible();

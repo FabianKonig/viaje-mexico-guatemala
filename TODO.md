@@ -2,14 +2,10 @@
 
 ## Von Hand zu erledigen (Autor)
 
-- [ ] **Branch-Schutz vervollständigen:** Das Ruleset `protect-main-branch` (aktiv, Default Branch:
-      Restrict deletions, Require linear history, Require a pull request, Block force pushes) ist
-      angelegt ✔. **Es fehlt noch „Require status checks to pass“:** Ruleset öffnen → Häkchen setzen →
-      „Add checks“ → `Tests` auswählen (erscheint, sobald der Check einmal gelaufen ist) → Speichern.
-      Optional „Require branches to be up to date before merging“. Erinnerung bleibt, bis erledigt.
-- [ ] **Nur Squash-Merges erlauben:** Settings → General → Pull Requests: nur „Allow squash merging“
-      anhaken, „Allow merge commits“ und „Allow rebase merging“ abwählen. Zusätzlich
-      „Automatically delete head branches“ anhaken.
+- [x] Branch-Schutz: Ruleset `protect-main-branch` (aktiv, Default Branch): Restrict deletions,
+      Require linear history, Require a pull request, Block force pushes, **Require status checks to
+      pass (`Tests`)**.
+- [x] Nur Squash-Merges erlaubt, „Automatically delete head branches“ aktiv.
 - [x] DNS-Eintrag `viaje` → `fabiankonig.github.io` (geprüft: zeigt auf GitHub Pages).
 - [x] GitHub Pages: Source „GitHub Actions“, Custom domain `viaje.fabiankonig.de`, „Enforce HTTPS“.
 - [ ] **Nach dem Merge von PR 9:** prüfen, dass unter Actions der Lauf „Deploy“ grün ist und
@@ -25,7 +21,8 @@
       schicken. Erscheint kein Bild/Titel, melden (robots.txt sperrt alles, bewusst).
 - [ ] **LICENSE-Wortlaut** bei Bedarf rechtlich prüfen lassen.
 - [ ] **Profilfoto** ablegen (`content/profile.jpg`, quadratisch, mind. 300 × 300 px, ohne Standort).
-- [ ] **Manuelle Tests** auf echten Geräten (Checkliste folgt in PR 10: MANUAL-TESTS.md).
+- [ ] **Manuelle Tests** auf echten Geräten nach [MANUAL-TESTS.md](MANUAL-TESTS.md) (iPhone Safari,
+      Android Chrome, **Samsung Internet**, Firefox Android, iPad, Mac Safari, Windows Edge).
 - [ ] Beispielbeitrag `content/posts/2026-11-23-entrada-de-ejemplo/` vor dem ersten echten Beitrag löschen
       (ein Agent macht das beim ersten echten Beitrag mit).
 
@@ -45,4 +42,4 @@
 - [x] PR 7: PWA
 - [x] PR 8: Impressum, Datenschutz, noindex, Lizenzhinweise
 - [x] PR 9: Deployment über GitHub Actions, PR-Artefakte (keine Vorschau-Seiten, Entscheidung des Autors)
-- [ ] PR 10: Cross-Browser-Tests und manuelle Checkliste
+- [x] PR 10: Cross-Browser-Tests (PR: Chromium, Firefox, WebKit, Pixel 7, iPhone 15; nächtlich: Edge, Chrome, iPad, Galaxy) und manuelle Checkliste

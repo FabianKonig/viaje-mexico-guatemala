@@ -28,14 +28,15 @@ npm run test:e2e       # Browser-Tests (Playwright)
 npm test               # alles zusammen
 ```
 
-Für Browser-Tests einmalig die Browser installieren: `npx playwright install --with-deps`.
+Für Browser-Tests einmalig die Browser installieren: `npx playwright install --with-deps chromium firefox webkit`.
+Manuelle Gerätetests: [MANUAL-TESTS.md](MANUAL-TESTS.md).
 Weitere Befehle (Cross-Browser, Layout, Barrierefreiheit) stehen in [AGENTS.md](AGENTS.md#tests).
 
 ## Veröffentlichung
 
 Jeder Merge in `main` wird automatisch getestet, gebaut und über GitHub Actions auf GitHub Pages
 veröffentlicht (`.github/workflows/deploy.yml`). Pull-Requests bekommen Screenshots und die gebaute
-Seite als Artefakte. Details: [SPEC.md › Deployment](SPEC.md#9-deployment).
+Seite als Artefakte. Details: [SPEC.md › Deployment](SPEC.md#8-deployment).
 
 ## Mitarbeit
 

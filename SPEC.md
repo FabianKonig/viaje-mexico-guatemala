@@ -94,7 +94,7 @@ tests/
 
 Alle internen Links und Ressourcen werden über den Basispfad gebildet (`src/lib/paths.ts`). Die
 Seite funktioniert unverändert unter `/` und unter Unterpfaden (getestet mit `/pr-preview/pr-1/`).
-Veröffentlicht wird nur unter `/` (siehe Abschnitt 9).
+Veröffentlicht wird nur unter `/` (siehe Abschnitt 8).
 
 ## 5. Umsetzungsstand
 
@@ -110,10 +110,10 @@ Veröffentlicht wird nur unter `/` (siehe Abschnitt 9).
 | PWA | 7 | umgesetzt |
 | Impressum, Datenschutz, noindex, Lizenzhinweise | 8 | umgesetzt |
 | Deployment (GitHub Actions), PR-Artefakte | 9 | umgesetzt |
-| Cross-Browser-Tests, manuelle Checkliste | 10 | geplant |
+| Cross-Browser-Tests, manuelle Checkliste | 10 | umgesetzt |
 
-Die folgenden Abschnitte beschreiben das Zielverhalten. Was noch „geplant“ ist, wird im jeweiligen
-Pull-Request umgesetzt und dann hier als „umgesetzt“ markiert.
+Alle Bereiche sind umgesetzt. Neue Funktionen werden hier ergänzt und im selben Pull-Request
+beschrieben, getestet und dokumentiert.
 
 ## 6. Datenmodell
 
@@ -355,7 +355,7 @@ Hinweis auf die Datenübertragung und dem Knopf „Video laden“. Erst danach w
   HTML-Validierung (html-validate, `.htmlvalidate.json`), Seitengewicht der Startseite ohne Fotos
   höchstens 260 KB.
 
-## 9. Deployment
+## 8. Deployment
 
 - **Quelle von GitHub Pages: „GitHub Actions“** (vom Autor so eingestellt). Eigene Domain
   `viaje.fabiankonig.de` und „Enforce HTTPS“ sind in den Pages-Einstellungen gesetzt; DNS:
@@ -377,8 +377,47 @@ Hinweis auf die Datenübertragung und dem Knopf „Video laden“. Erst danach w
 - **Merges nur per Squash**, nur grün (Branch-Schutz, TODO.md). Abhängigkeiten aktuell (Dependabot).
 - Grenzen: Dateien höchstens 100 MiB, Repository möglichst unter 1 GB, veröffentlichte Seite unter 1 GB.
 
+## 9. Browser- und Geräteunterstützung
+
+Ziel: aktuelle und vorherige Hauptversion aller gängigen Browser, Breiten 320–2560px, Hoch- und
+Querformat, Zoom bis 200 %, vergrößerte Systemschrift. Nur breit unterstützte Web-Funktionen
+(`<dialog>`, CSS Grid, `aspect-ratio`, `clamp()`, `env(safe-area-inset-*)`, Pointer Events,
+`Intl.DateTimeFormat` mit Zeitzone, Service Worker optional). Progressive Enhancement: Ohne
+JavaScript sind Beiträge, Übersetzung (als Text), Fotos (als Links), Karte und Reisezeitraum lesbar;
+JavaScript braucht es nur für Schalter, Lightbox, Reisetag, Video-Zwei-Klick und PWA.
+
+| Plattform | Browser | Automatisiert | Wo |
+| --- | --- | --- | --- |
+| Desktop | Chromium (Chrome, Brave, Opera, Vivaldi) | ja, Projekt `chromium` | jeder PR |
+| Desktop | Firefox | ja, `firefox` | jeder PR |
+| Desktop | Safari (WebKit) | ja, `webkit` | jeder PR |
+| Desktop | Google Chrome (echter Kanal) | ja, `chrome` | nächtlich/manuell |
+| Desktop | Microsoft Edge (echter Kanal) | ja, `msedge` | nächtlich/manuell |
+| Android | Chrome | Profil Pixel 7 (`mobile-chrome`) | jeder PR |
+| Android | Chromium-Browser auf Samsung-Gerät | Profil Galaxy S9+ (`galaxy`) | nächtlich/manuell |
+| Android | Samsung Internet, Firefox, Edge, Opera | nein | manuell (MANUAL-TESTS.md) |
+| iPhone | Safari, Chrome, Firefox, Edge (alle WebKit) | Profil iPhone 15 (`mobile-safari`) | jeder PR |
+| iPad | Safari | Profil iPad gen 7 (`ipad`) | nächtlich/manuell |
+| echte Geräte | alle | nein | manuell (MANUAL-TESTS.md) |
+
+Breiten 320, 390, 768, 1280, 1920, 2560px, Zoom 200 % und vergrößerte Schrift werden in Chromium
+geprüft (Layout-Tests), die Handy-Profile decken Touch und Geräte-Viewport ab.
+
 ## 10. Tests
 
-Siehe [AGENTS.md › Tests](AGENTS.md#tests) für Befehle. In jedem Pull-Request laufen in GitHub
-Actions: `npm audit`, Lint/Format, Unit-Tests, Build beider Varianten, Browser-Tests (Chromium).
-Weitere Browser-Projekte und nächtliche Läufe folgen in PR 10.
+Befehle: [AGENTS.md › Tests](AGENTS.md#tests). Jede neue Funktion bekommt einen Test.
+
+| Bereich | Wo | Was |
+| --- | --- | --- |
+| Lint | `npm run lint` | Prettier, eingecheckte-aber-ignorierte Dateien, THIRD-PARTY-NOTICES aktuell, kein starkes Copyleft |
+| Sicherheit | CI | `npm audit --audit-level=moderate` |
+| Unit | `tests/unit` (Vitest) | Pfade, Datumshilfen, Reisetag (vor Start, Tag 1, Tag 72, 3.2., danach, Monats-/Jahreswechsel, Zeitzonengrenzen), Ortsliste/Nummerierung, Zusammenfassung naher Orte, Kartenerzeugung, Beitrags-Parser (gemischt, nur Spanisch, nur Deutsch), Frontmatter-Prüfung (Pflichtfelder, Ort existiert, Fotos existieren, max. 20), Bild-Pipeline (GPS rein → ohne Metadaten raus, Größe, Drehung, HEIC, Abbruch), PWA-Logik, Lizenzen, SPEC↔Code (Versionen, Farben, Texte, Workflows) |
+| Build | `npm run build` | Bildskript mit GPS-Prüfung, HTML-Validierung, interne Links, erlaubte externe Links, noindex/Copyright/og:image je Seite, Seitengewicht |
+| Browser | `tests/e2e` (Playwright) | Smoke (keine Konsolenfehler, keine fehlgeschlagenen oder Drittanbieter-Anfragen), Startseite, Beitragsseite, Originaltreue (byte-gleich), Schalter, Lightbox (Maus, Tastatur, Wischen), Videos (keine Anfrage vor Klick), Karte (Pillen, Ausschnitte, Markergröße am Handy), Reisetag mit festgestellter Uhrzeit, PWA (Manifest, Service Worker, Cache-Bereinigung, offline, keine Vorschau-Registrierung), Rechtliches (Crawl aller Seiten: noindex, Copyright, Links, OG, keine Cookies), Layout (320–2560px, kein Überlauf, Profilbild rechts oben, Zoom, große Schrift), Barrierefreiheit (axe WCAG 2.2 AA inkl. Kontrast, Tastatur, Touch-Ziele), Unterpfad, 404, ohne JavaScript |
+| Grenzfälle | `tests/fixtures/content` | Beitrag ohne Fotos, mit 20 Fotos, sehr langer Titel, sehr langer Text, ohne Ort, nur Deutsch, nur Spanisch, Sonderzeichen, GPS-/HEIC-Foto, Video, Route mit 12 Orten |
+| Nächtlich | `nightly.yml` | alle Browser-Projekte inkl. Edge/Chrome/iPad/Galaxy, Erreichbarkeit von Palabrita, `npm audit` |
+| Manuell | `MANUAL-TESTS.md` | echte Geräte, Samsung Internet, Firefox Android, Home-Bildschirm, WhatsApp-Vorschau |
+
+Nicht umgesetzt (bewusst): visuelle Regressionstests per Pixelvergleich (zwischen Betriebssystemen
+unzuverlässig; stattdessen Screenshots als PR-Artefakt und Layout-Prüfungen) und Lighthouse-CI
+(zusätzliche große Abhängigkeit; Seitengewicht und Barrierefreiheit werden direkt geprüft).

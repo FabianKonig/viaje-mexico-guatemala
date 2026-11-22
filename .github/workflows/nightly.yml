@@ -1,0 +1,53 @@
+# Nächtliche Prüfung: alle Browser-Projekte inkl. echter Edge- und Chrome-Kanäle, iPad, Galaxy,
+# dazu Erreichbarkeit externer Links (Palabrita) und Sicherheitsprüfung. Auch manuell startbar.
+name: Nightly
+
+on:
+  schedule:
+    - cron: '23 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly
+  cancel-in-progress: true
+
+jobs:
+  nightly:
+    name: Alle Browser und externe Links
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          check-latest: true
+          cache: npm
+      - name: npm aktualisieren
+        run: npm install -g npm@12
+      - name: Abhängigkeiten installieren
+        run: npm ci
+      - name: Sicherheitsprüfung der Abhängigkeiten
+        run: npm audit --audit-level=moderate
+      - name: Externe Links erreichbar
+        run: node scripts/check-external.mjs
+      - name: Build
+        run: npm run build:e2e
+      - name: Browser installieren (inkl. Google Chrome und Microsoft Edge)
+        run: npx playwright install --with-deps chromium firefox webkit chrome msedge
+      - name: Browser-Tests (alle Projekte)
+        run: npm run test:e2e
+        env:
+          PW_PROJECTS: nightly
+      - name: Testbericht hochladen
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: playwright-report-nightly
+          path: playwright-report/
+          retention-days: 7

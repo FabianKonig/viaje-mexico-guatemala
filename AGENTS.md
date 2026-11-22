@@ -196,11 +196,22 @@ npm run images           # nur Bildskript (Fotos verarbeiten und prüfen)
 npm run test:unit        # Vitest
 npm run build:e2e        # baut dist/ (echte Inhalte) und dist-preview/ (Testinhalte aus
                          # tests/fixtures/content unter /pr-preview/pr-1/)
-npm run test:e2e         # Playwright (Projekte siehe playwright.config.ts)
+npm run test:e2e         # Playwright: Chromium, Firefox, WebKit, Pixel 7, iPhone 15 (wie im PR)
+npm run test:e2e:local   # nur Chromium (schnell)
+npm run test:e2e:nightly # zusätzlich Edge, Chrome, iPad, Galaxy
+npm run check:external   # externe Links erreichbar (Palabrita)
+npm run notices          # THIRD-PARTY-NOTICES.md neu erzeugen
 ```
 
-Lokal mit vorinstalliertem Chromium (andere Playwright-Version):
-`PW_CHROMIUM_PATH=/opt/pw-browsers/chromium npm run test:e2e`.
+Browser einmalig installieren: `npx playwright install --with-deps chromium firefox webkit`.
+Manuelle Gerätetests: [MANUAL-TESTS.md](MANUAL-TESTS.md).
+
+**Cloud-Sitzungen (Claude Code):** Die Umgebung „Reisetagebuch Claude Environment“ hat ein Startskript,
+das Node 26 (LTS) nach `/opt/node26` installiert und über `/root/.local/bin` vor das vorinstallierte
+Node 22 stellt, npm 12 installiert, `npm ci` ausführt und die Playwright-Browser Chromium, Firefox und
+WebKit (mit Systembibliotheken) nach `/opt/pw-browsers` lädt. Danach laufen alle Befehle ohne
+Sonderpfade. Prüfen mit `node -v` (v26.x). Ändert sich die Node-Hauptversion, das Startskript in den
+Umgebungseinstellungen anpassen (`NODE_MAJOR`).
 
 ## PWA
 
