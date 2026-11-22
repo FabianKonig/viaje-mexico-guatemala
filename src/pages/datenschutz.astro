@@ -19,7 +19,7 @@ import { SITE } from '../config';
       <br />
       {SITE.ownerCity}
       <br />
-      E-Mail: {SITE.ownerEmail}
+      E-Mail: <a href={`mailto:${SITE.ownerEmail}`}>{SITE.ownerEmail}</a>
     </address>
 
     <h2>2. Das Wichtigste in Kürze</h2>

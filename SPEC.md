@@ -193,7 +193,7 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
    `public/profile-placeholder.svg` (Türkis mit Silhouette).
    Darunter die Navigation „Ruta“ (→ `#ruta`) und „Beiträge“ (→ `#entradas`).
 3. **Fußbereich:** WhatsApp-Hinweis („Gefällt dir ein Beitrag? Reagiere in der WhatsApp-Gruppe. Dort
-   verlinke ich jeden neuen Eintrag.“), Copyright-Zeile `© 2026–2027 [VOLLER NAME]. Alle Rechte
+   verlinke ich jeden neuen Eintrag.“), Copyright-Zeile `© 2026–2027 Fabian König. Alle Rechte
    vorbehalten.`, Links zu Impressum, Datenschutz, Lizenzhinweise (PR 8). Kein Link „Über das Projekt“.
 4. Sprunglink „Zum Inhalt springen“ für Tastaturnutzer.
 
@@ -340,8 +340,8 @@ Hinweis auf die Datenübertragung und dem Knopf „Video laden“. Erst danach w
   `scripts/make-og.mjs` aus eigenem Design und den eigenen Schriften).
   Hinweis: `robots.txt` sperrt alles. WhatsApp erzeugt Link-Vorschauen auf dem Gerät des Absenders;
   sollte die Vorschau trotzdem fehlen, bewusst entscheiden, ob eine Ausnahme nötig ist (TODO.md).
-- **Impressum** (`/impressum/`): Angaben nach § 5 DDG und § 18 Abs. 2 MStV mit Platzhaltern aus
-  `src/config.ts`. **Datenschutz** (`/datenschutz/`): passend zur Technik (GitHub Pages inkl.
+- **Impressum** (`/impressum/`): Angaben nach § 5 DDG und § 18 Abs. 2 MStV aus `src/config.ts`
+  (Name, Anschrift, E-Mail wie bei Palabrita), Haftung für Inhalte (§§ 7–10 DDG) und Links. **Datenschutz** (`/datenschutz/`): passend zur Technik (GitHub Pages inkl.
   IP-Adressen und USA/DPF, keine Cookies/Analyse, Service-Worker-Speicher auf dem Gerät, selbst
   gehostete Schriften, YouTube per Zwei-Klick, Link zu Palabrita, WhatsApp, Betroffenenrechte).
   Bei neuer Technik anpassen. Keine Rechtsberatung: vor Veröffentlichung prüfen lassen.

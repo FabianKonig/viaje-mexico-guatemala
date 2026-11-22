@@ -18,7 +18,9 @@ import { SITE } from '../config';
     </address>
 
     <h2>Kontakt</h2>
-    <p>E-Mail: {SITE.ownerEmail}</p>
+    <p>
+      E-Mail: <a href={`mailto:${SITE.ownerEmail}`}>{SITE.ownerEmail}</a>
+    </p>
 
     <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
     <address>
@@ -42,6 +44,16 @@ import { SITE } from '../config';
       dürfen ohne vorherige schriftliche Erlaubnis weder kopiert, verbreitet, bearbeitet noch
       anderweitig verwendet werden. Ausgenommen sind Bestandteile Dritter, siehe{' '}
       <a href="../lizenzhinweise/">Lizenzhinweise</a>.
+    </p>
+
+    <h2>Haftung für Inhalte</h2>
+    <p>
+      Die Inhalte dieser Seite wurden mit Sorgfalt erstellt. Für Richtigkeit, Vollständigkeit und
+      Aktualität kann keine Gewähr übernommen werden; die spanischen Originaltexte sind bewusst
+      unkorrigiert. Als Diensteanbieter bin ich nach § 7 Abs. 1 DDG für eigene Inhalte nach den
+      allgemeinen Gesetzen verantwortlich. Nach den §§ 8 bis 10 DDG bin ich nicht verpflichtet,
+      übermittelte oder gespeicherte fremde Informationen zu überwachen. Bei Bekanntwerden von
+      Rechtsverletzungen entferne ich entsprechende Inhalte umgehend.
     </p>
 
     <h2>Haftung für Links</h2>
