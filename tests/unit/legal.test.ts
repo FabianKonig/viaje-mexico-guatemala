@@ -50,6 +50,13 @@ describe('Lizenzen', () => {
     expect(COPYRIGHT_LINE).toContain(SITE.ownerName);
   });
 
+  it('keine Platzhalter mehr in Impressumsdaten und LICENSE', () => {
+    for (const v of [SITE.ownerName, SITE.ownerStreet, SITE.ownerCity, SITE.ownerEmail])
+      expect(v).not.toMatch(/[[\]]/);
+    expect(SITE.ownerEmail).toMatch(/^[^@\s]+@[^@\s]+\.[a-z]+$/);
+    expect(fs.readFileSync('LICENSE', 'utf8')).not.toMatch(/\[[A-ZÄÖÜ ]+\]/);
+  });
+
   it('robots.txt sperrt alles', () => {
     expect(fs.readFileSync('public/robots.txt', 'utf8')).toBe('User-agent: *\nDisallow: /\n');
   });

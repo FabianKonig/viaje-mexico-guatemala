@@ -184,7 +184,8 @@ Hash berechnen: `node scripts/hash-original.mjs content/posts/<ordner>/original.
   Starkes Copyleft (GPL, AGPL) dem Autor melden (die Prüfung bricht dann ab).
 - Neue externe Links nur nach Rücksprache; sie müssen in `ALLOWED_EXTERNAL` in `scripts/check-dist.mjs`
   stehen, sonst bricht der Build ab. Datenschutzerklärung dann anpassen.
-- Platzhalter `[VOLLER NAME]` usw. nur in `src/config.ts` und `LICENSE` ersetzen (Test prüft Gleichheit).
+- Name, Anschrift und E-Mail stehen nur in `src/config.ts`; die Copyright-Zeile in `LICENSE` muss dazu
+  passen (Test prüft Gleichheit). Bei Änderungen beide anpassen.
 
 ## Tests
 
