@@ -1,0 +1,31 @@
+{
+  "name": "viaje-mexico-guatemala",
+  "version": "0.1.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "type": "module",
+  "engines": {
+    "node": ">=26.13.1",
+    "npm": ">=12"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "node scripts/build.mjs",
+    "build:preview": "BASE_PATH=/pr-preview/pr-1/ OUT_DIR=dist-preview PREVIEW=true node scripts/build.mjs",
+    "build:e2e": "npm run build && npm run build:preview",
+    "serve": "node scripts/serve.mjs dist 4321",
+    "test": "npm run lint && npm run test:unit && npm run build:e2e && npm run test:e2e",
+    "test:unit": "vitest run",
+    "test:e2e": "playwright test",
+    "lint": "prettier --check . && node scripts/check-gitignore.mjs",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1",
+    "astro": "7.4.13",
+    "prettier": "3.10.1",
+    "prettier-plugin-astro": "1.1.2",
+    "vitest": "5.1.1",
+    "yaml": "2.9.1"
+  }
+}

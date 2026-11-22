@@ -1,0 +1,11 @@
+dist/
+dist-*/
+.astro/
+.cache/
+public/
+content/
+package-lock.json
+playwright-report/
+test-results/
+THIRD-PARTY-NOTICES.md
+*.md

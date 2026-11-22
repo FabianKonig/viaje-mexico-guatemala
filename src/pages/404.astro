@@ -1,0 +1,11 @@
+---
+import Base from '../layouts/Base.astro';
+import { href } from '../lib/site';
+---
+
+<Base title="Seite nicht gefunden">
+  <h1>¡Ups! Diese Seite gibt es nicht.</h1>
+  <p>
+    <a href={href()}>Zur Startseite</a>
+  </p>
+</Base>

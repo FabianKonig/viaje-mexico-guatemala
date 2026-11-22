@@ -1,0 +1,19 @@
+# Hält Abhängigkeiten und GitHub Actions aktuell (Sicherheitsupdates).
+# Dependabot öffnet Pull-Requests; sie werden wie alle anderen nur grün und per Squash gemergt.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      npm-minor-patch:
+        update-types: [minor, patch]
+    open-pull-requests-limit: 5
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']

@@ -1,0 +1,53 @@
+# --- Abhängigkeiten ---
+node_modules/
+.venv/
+venv/
+__pycache__/
+
+# --- Build-Ausgabe und Caches ---
+dist/
+dist-*/
+.astro/
+.cache/
+# vom Bildskript erzeugte Fotos (werden bei jedem Build neu erzeugt)
+public/media/
+
+# --- Testberichte und -artefakte ---
+playwright-report/
+test-results/
+blob-report/
+coverage/
+/tests/**/__screenshots__/*-actual.png
+/tests/**/__screenshots__/*-diff.png
+
+# --- Geheimnisse und lokale Einstellungen ---
+.env
+.env.*
+!.env.example
+*.local
+*.local.*
+.npmrc.local
+
+# --- Logdateien ---
+*.log
+npm-debug.log*
+logs/
+
+# --- Betriebssystem- und Editor-Dateien ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+*~
+
+# --- Temporäre Ordner ---
+tmp/
+temp/
+
+# --- Unbearbeitete Original-Fotos (können GPS-Daten enthalten!) ---
+_originals/
+**/_originals/
