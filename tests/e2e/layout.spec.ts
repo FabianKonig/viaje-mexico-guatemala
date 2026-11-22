@@ -48,6 +48,18 @@ for (const width of WIDTHS) {
     }
   });
 
+  test(`Beitragsseiten bei ${width}px: kein Überlauf, Profilbild rechts oben`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    for (const url of [
+      './entradas/2026-11-23-entrada-de-ejemplo/',
+      PREVIEW_URL + 'entradas/2026-11-24-titulo-muy-largo/',
+      PREVIEW_URL + 'entradas/2026-11-25-texto-largo/',
+    ]) {
+      await page.goto(url);
+      await checkLayout(page, width);
+    }
+  });
+
   test(`Grenzfälle (lange Titel/Texte) bei ${width}px: kein Überlauf`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto(PREVIEW_URL);

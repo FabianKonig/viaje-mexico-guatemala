@@ -5,6 +5,9 @@ const PAGES = [
   { name: 'Startseite', url: './' },
   { name: 'Startseite (Grenzfälle)', url: PREVIEW_URL },
   { name: '404', url: './gibt-es-nicht/' },
+  { name: 'Beitragsseite', url: './entradas/2026-11-23-entrada-de-ejemplo/' },
+  { name: 'Beitrag nur Deutsch', url: PREVIEW_URL + 'entradas/2026-11-30-solo-aleman/' },
+  { name: 'Beitrag langer Titel', url: PREVIEW_URL + 'entradas/2026-11-24-titulo-muy-largo/' },
 ];
 
 for (const p of PAGES) {

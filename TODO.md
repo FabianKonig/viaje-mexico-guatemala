@@ -2,17 +2,18 @@
 
 ## Von Hand zu erledigen (Autor)
 
-- [ ] **Branch `main` schützen** (GitHub → Settings → Rules → Rulesets → „New branch ruleset“,
-      Ziel „Default branch“): „Require a pull request before merging“, „Require status checks to
-      pass“ (Check „Tests“ auswählen), „Block force pushes“, „Restrict deletions“. Erinnerung bleibt,
-      bis erledigt.
+- [ ] **Branch-Schutz vervollständigen:** Das Ruleset `protect-main-branch` (aktiv, Default Branch:
+      Restrict deletions, Require linear history, Require a pull request, Block force pushes) ist
+      angelegt ✔. **Es fehlt noch „Require status checks to pass“:** Ruleset öffnen → Häkchen setzen →
+      „Add checks“ → `Tests` auswählen (erscheint, sobald der Check einmal gelaufen ist) → Speichern.
+      Optional „Require branches to be up to date before merging“. Erinnerung bleibt, bis erledigt.
 - [ ] **Nur Squash-Merges erlauben:** Settings → General → Pull Requests: nur „Allow squash merging“
       anhaken, „Allow merge commits“ und „Allow rebase merging“ abwählen. Zusätzlich
       „Automatically delete head branches“ anhaken.
-- [ ] **DNS-Eintrag** beim Domain-Anbieter: `CNAME`-Eintrag für `viaje` → `fabiankonig.github.io.`
-- [ ] **GitHub Pages einrichten** (nach PR 9): Settings → Pages → Source „Deploy from a branch“,
-      Branch `gh-pages` / `(root)`, Custom domain `viaje.fabiankonig.de`, „Enforce HTTPS“ anhaken.
-- [ ] **Domain verifizieren** (empfohlen): Profil-Settings → Pages → „Add a domain“ → TXT-Eintrag setzen.
+- [x] DNS-Eintrag `viaje` → `fabiankonig.github.io` (geprüft: zeigt auf GitHub Pages).
+- [x] GitHub Pages: Source „GitHub Actions“, Custom domain `viaje.fabiankonig.de`, „Enforce HTTPS“.
+- [ ] **Domain verifizieren** (empfohlen, schützt vor Übernahme der Subdomain): Profil → Settings →
+      Pages → „Add a domain“ → `fabiankonig.de` → angezeigten TXT-Eintrag beim Domain-Anbieter setzen.
 - [ ] **Name für Copyright-Zeile und Impressum** angeben (ersetzt `[VOLLER NAME]` in `src/config.ts` und `LICENSE`).
 - [ ] **Impressumsdaten** angeben: Straße und Hausnummer, PLZ Ort, E-Mail.
 - [ ] **Impressum und Datenschutz prüfen lassen** (Generator oder Fachperson), bevor der Link geteilt wird.
@@ -31,7 +32,7 @@
 
 - [x] PR 1: Grundgerüst, .gitignore, LICENSE, Dokumente, Test- und CI-Gerüst, Dependabot
 - [x] PR 2: Design und Startseite, Datenmodell, Beispielbeitrag, Layout- und axe-Tests
-- [ ] PR 3: Beitragsseite mit Zweisprachigkeit
+- [x] PR 3: Beitragsseite mit Zweisprachigkeit
 - [ ] PR 4: Fotos und Lightbox inkl. Bildskript, Zwei-Klick-Videos
 - [ ] PR 5: Karte inkl. Ortsliste
 - [ ] PR 6: Reisetag

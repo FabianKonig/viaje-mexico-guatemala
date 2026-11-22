@@ -1,0 +1,88 @@
+---
+import Base from '../../../layouts/Base.astro';
+import Bilingual from '../../../components/Bilingual.astro';
+import { getContent } from '../../../lib/data';
+import type { Post } from '../../../lib/content';
+import { formatDateDe } from '../../../lib/dates';
+import { tripDayNumber } from '../../../lib/travelDay';
+import { excerpt } from '../../../lib/translation';
+import { href } from '../../../lib/site';
+
+export function getStaticPaths() {
+  return getContent().posts.map((post) => ({ params: { slug: post.slug }, props: { post } }));
+}
+
+interface Props {
+  post: Post;
+}
+const { post } = Astro.props;
+const day = tripDayNumber(post.date);
+const description = post.titleDe
+  ? `${post.titleDe}: ${excerpt(post.original, 140)}`
+  : excerpt(post.original, 160);
+---
+
+<Base title={post.title} description={description}>
+  <article class="post wrap" lang="de">
+    <header class="post__head">
+      <h1 class="post__title" lang={post.translation.languages[0]}>
+        {post.title}
+      </h1>
+      {post.titleDe && <p class="post__title-de">{post.titleDe}</p>}
+      <p class="post__meta">
+        {post.place && <span lang="es">{post.place.name}</span>}
+        {post.place && <span aria-hidden="true"> · </span>}
+        {day >= 1 && <span>Tag {day}</span>}
+        {day >= 1 && <span aria-hidden="true"> · </span>}
+        <time datetime={post.date}>{formatDateDe(post.date)}</time>
+      </p>
+    </header>
+
+    <Bilingual post={post} />
+
+    <p class="post__back">
+      <a href={href() + '#entradas'}>
+        <span aria-hidden="true">←</span> Alle Beiträge
+      </a>
+    </p>
+  </article>
+</Base>
+
+<style>
+  .post {
+    margin-top: 28px;
+  }
+  .post__head {
+    margin-bottom: 24px;
+    max-width: 900px;
+  }
+  .post__title {
+    font-size: clamp(2.25rem, 1.5rem + 3.5vw, 4rem);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.2em;
+  }
+  .post__title-de {
+    font-family: var(--font-head);
+    font-size: clamp(1.25rem, 1rem + 1vw, 1.6rem);
+    margin: 0 0 8px;
+  }
+  .post__meta {
+    font-weight: 700;
+    color: var(--terracotta-text);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 0.9375rem;
+    margin: 0;
+  }
+  .post__back {
+    margin-top: 40px;
+  }
+  .post__back a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    min-height: 44px;
+    font-weight: 700;
+  }
+</style>

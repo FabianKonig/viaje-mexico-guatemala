@@ -1,0 +1,151 @@
+---
+/**
+ * Original (byte-genau) und Übersetzung nebeneinander, am Handy untereinander.
+ * Ohne JavaScript sind beide sichtbar; der Schalter erscheint erst mit JavaScript.
+ */
+import type { Post } from '../lib/content';
+import { escapeHtml } from '../lib/html';
+
+interface Props {
+  post: Post;
+}
+const { post } = Astro.props;
+const { original, translation, translationData } = post;
+
+// Original in Stücke zerlegen: Leerraum + Segment (mit lang), damit textContent === original.md
+const originalParts: { gap: string; text: string; lang: string }[] = [];
+let cursor = 0;
+for (const seg of translationData.segments) {
+  const idx = original.indexOf(seg.text, cursor);
+  originalParts.push({ gap: original.slice(cursor, idx), text: seg.text, lang: seg.lang });
+  cursor = idx + seg.text.length;
+}
+const tail = original.slice(cursor);
+// Als fertiges HTML erzeugen (set:html), damit Formatierer keinen Leerraum einfügen können.
+const span = (lang: string, text: string, attrLang = true) =>
+  `<span${attrLang ? ` lang="${lang}"` : ''} data-lang="${lang}">${escapeHtml(text)}</span>`;
+const originalHtml =
+  originalParts.map((p) => escapeHtml(p.gap) + span(p.lang, p.text)).join('') + escapeHtml(tail);
+const translationHtml = translation.paragraphs.map((para) =>
+  para.map((piece) => escapeHtml(piece.sep) + span(piece.lang, piece.text, false)).join(''),
+);
+const showTranslation = translation.hasSpanish;
+const id = `uebersetzung-${post.slug}`;
+---
+
+<div class="bilingual" data-bilingual>
+  {showTranslation && (
+    <button
+      class="btn btn--light toggle"
+      type="button"
+      aria-expanded="true"
+      aria-controls={id}
+      hidden
+      data-toggle
+    >
+      <span data-label>Übersetzung ausblenden</span>
+    </button>
+  )}
+  <div class:list={['tiles', { 'tiles--single': !showTranslation }]}>
+    <section class="tile card" aria-labelledby={`${id}-orig`}>
+      <header class="tile__head">
+        <h2 id={`${id}-orig`} class="tile__title">
+          Original
+        </h2>
+        <span class="tag tag--sincorregir" lang="es">
+          Mi español, sin corregir
+        </span>
+      </header>
+      <div
+        class="original"
+        data-original
+        data-source-sha256={translationData.source_sha256}
+        set:html={originalHtml}
+      />
+    </section>
+    {showTranslation && (
+      <section id={id} class="tile card" aria-labelledby={`${id}-de`} lang="de" data-translation>
+        <header class="tile__head">
+          <h2 id={`${id}-de`} class="tile__title">
+            Übersetzung
+          </h2>
+        </header>
+        {translationHtml.map((html) => (
+          <p class="translation-p" set:html={html} />
+        ))}
+      </section>
+    )}
+  </div>
+</div>
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>('[data-bilingual]')) {
+    const btn = root.querySelector<HTMLButtonElement>('[data-toggle]');
+    const panel = root.querySelector<HTMLElement>('[data-translation]');
+    const tiles = root.querySelector<HTMLElement>('.tiles');
+    const label = btn?.querySelector<HTMLElement>('[data-label]');
+    if (!btn || !panel || !tiles || !label) continue;
+    btn.hidden = false;
+    btn.addEventListener('click', () => {
+      const show = btn.getAttribute('aria-expanded') !== 'true';
+      btn.setAttribute('aria-expanded', String(show));
+      panel.hidden = !show;
+      tiles.classList.toggle('tiles--single', !show);
+      label.textContent = show ? 'Übersetzung ausblenden' : 'Übersetzung einblenden';
+    });
+  }
+</script>
+
+<style>
+  .toggle {
+    margin-bottom: 20px;
+  }
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+    gap: 28px;
+    align-items: start;
+  }
+  .tiles--single {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 760px;
+  }
+  .tile {
+    min-width: 0;
+    padding: 20px clamp(18px, 3vw, 28px) 24px;
+  }
+  .tile[hidden] {
+    display: none;
+  }
+  .tile__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 12px;
+    margin-bottom: 12px;
+  }
+  .tile__title {
+    font-size: 1.375rem;
+    margin: 0;
+  }
+  .tag--sincorregir {
+    background: var(--marigold);
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 0.875rem;
+  }
+  .original,
+  .translation-p {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-size: 1.125rem;
+    line-height: 1.65;
+  }
+  .original {
+    margin: 0;
+  }
+  .translation-p:last-child {
+    margin-bottom: 0;
+  }
+</style>
