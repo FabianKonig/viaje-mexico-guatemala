@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import { SITE, COPYRIGHT_LINE } from '../config';
 import { href } from '../lib/site';
+import { loadManifest } from '../lib/media';
 import PapelPicado from '../components/PapelPicado.astro';
 import SiteHeader from '../components/SiteHeader.astro';
 import SiteFooter from '../components/SiteFooter.astro';
@@ -13,7 +14,10 @@ interface Props {
 }
 const { title, description = SITE.description, home = false } = Astro.props;
 const fullTitle = title ? `${title} · ${SITE.title}` : SITE.title;
-const avatarSrc = href('profile-placeholder.svg');
+const profile = loadManifest().profile;
+const avatarSrc = profile
+  ? href(home ? profile[152] : profile[88])
+  : href('profile-placeholder.svg');
 const font = (f: string) => href(`fonts/${f}`);
 const LATIN =
   'U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD';

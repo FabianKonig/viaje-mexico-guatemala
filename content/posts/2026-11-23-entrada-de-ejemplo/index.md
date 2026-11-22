@@ -4,6 +4,15 @@ title: 'Entrada de ejemplo'
 titleDe: 'Beispielbeitrag'
 date: 2026-11-23
 place: ciudad-de-mexico
+photos:
+  - file: 01.jpg
+    alt: 'Platzhalter-Illustration: Sonne über einer Pyramide'
+    caption: 'Foto de ejemplo'
+  - file: 02.jpg
+    alt: 'Platzhalter-Illustration: Kaktus vor gelbem Hintergrund'
+  - file: 03.jpg
+    alt: 'Platzhalter-Illustration: bunte Häuser'
+    caption: 'Casas de colores'
 translation:
   source_sha256: '11a57c9416fdf7085fc85c53c2766c6860abef5ba8c8bd2ec2d4fb9ba70ee803'
   segments:

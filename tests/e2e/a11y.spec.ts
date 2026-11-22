@@ -7,6 +7,8 @@ const PAGES = [
   { name: '404', url: './gibt-es-nicht/' },
   { name: 'Beitragsseite', url: './entradas/2026-11-23-entrada-de-ejemplo/' },
   { name: 'Beitrag nur Deutsch', url: PREVIEW_URL + 'entradas/2026-11-30-solo-aleman/' },
+  { name: 'Beitrag mit 20 Fotos und Video', url: PREVIEW_URL + 'entradas/2026-12-03-gps-y-heic/' },
+  { name: 'Beitrag 20 Fotos', url: PREVIEW_URL + 'entradas/2026-12-02-veinte-fotos/' },
   { name: 'Beitrag langer Titel', url: PREVIEW_URL + 'entradas/2026-11-24-titulo-muy-largo/' },
 ];
 
@@ -42,4 +44,15 @@ test('Touch-Ziele sind mindestens 44px hoch', async ({ page }) => {
       .filter(([, h]) => h < 44),
   );
   expect(small).toEqual([]);
+});
+
+test('Barrierefreiheit (axe): geöffnete Lightbox', async ({ page }) => {
+  await page.goto('./entradas/2026-11-23-entrada-de-ejemplo/');
+  await page.locator('.gallery__link').first().click();
+  await expect(page.locator('dialog[data-lightbox]')).toBeVisible();
+  const results = await new AxeBuilder({ page })
+    .include('dialog[data-lightbox]')
+    .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+    .analyze();
+  expect(results.violations.map((v) => v.id)).toEqual([]);
 });

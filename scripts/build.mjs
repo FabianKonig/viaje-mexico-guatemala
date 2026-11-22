@@ -1,10 +1,16 @@
 #!/usr/bin/env node
 /**
- * Build-Ablauf: (später: Bilder verarbeiten) → astro build → Prüfungen des Ergebnisses.
- * Umgebungsvariablen: SITE_URL, BASE_PATH, OUT_DIR, CONTENT_DIR, PREVIEW (siehe AGENTS.md).
+ * Build-Ablauf:
+ *   1. Bilder verarbeiten (scripts/images.mjs) → public/media, .cache/media-manifest.json
+ *   2. astro build → OUT_DIR (Standard dist)
+ *   3. Prüfungen des Ergebnisses: keine Metadaten/GPS in veröffentlichten Bildern
+ * Umgebungsvariablen: SITE_URL, BASE_PATH, OUT_DIR, CONTENT_DIR, PREVIEW (siehe SPEC.md).
  * Bricht bei jedem Fehler mit Exit-Code ≠ 0 ab.
  */
 import { spawnSync } from 'node:child_process';
+import { processAll, verifyDir } from './images.mjs';
+
+const outDir = process.env.OUT_DIR || 'dist';
 
 function run(cmd, args) {
   const r = spawnSync(cmd, args, {
@@ -17,5 +23,13 @@ function run(cmd, args) {
   }
 }
 
-run('npx', ['astro', 'build']);
+try {
+  await processAll({ contentDir: process.env.CONTENT_DIR || 'content' });
+  run('npx', ['astro', 'build']);
+  const n = await verifyDir(outDir);
+  console.log(`Metadaten-Prüfung ${outDir}: ${n} Bilder ohne EXIF/GPS/XMP/IPTC.`);
+} catch (e) {
+  console.error('\n✗ ' + (e instanceof Error ? e.message : String(e)));
+  process.exit(1);
+}
 console.log('\n✓ Build fertig.');

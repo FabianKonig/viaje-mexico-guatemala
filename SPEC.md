@@ -53,6 +53,8 @@ Diese Tabelle wird von einem Test mit `package.json` und `.nvmrc` abgeglichen:
 | prettier | 3.10.1 |
 | prettier-plugin-astro | 1.1.2 |
 | yaml | 2.9.1 |
+| sharp | 0.35.5 |
+| heic-convert | 2.1.0 |
 <!-- versions:end -->
 
 ## 3. Ordnerstruktur
@@ -100,7 +102,7 @@ Seite funktioniert unverändert unter `/` und unter `/pr-preview/pr-NN/`.
 | Design und Startseite | 2 | umgesetzt (Karte und Reisetag folgen) |
 | Datenmodell, Beitrags-Parser | 2 | umgesetzt |
 | Beitragsseite, Zweisprachigkeit | 3 | umgesetzt (Fotogalerie folgt in PR 4) |
-| Fotos, Lightbox, Bildskript, Videos | 4 | geplant |
+| Fotos, Lightbox, Bildskript, Videos | 4 | umgesetzt |
 | Routenkarte, Ortsliste | 5 | geplant |
 | Reisetag-Anzeige | 6 | geplant |
 | PWA | 7 | geplant |
@@ -225,7 +227,38 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   übersetzt, deutsche 1:1 (`data-lang="de"`). Keine farbliche Hervorhebung.
 - Anordnung: Raster `repeat(auto-fit, minmax(min(100%, 340px), 1fr))`, also nebeneinander (Original
   links) bei genug Platz, sonst untereinander. Nur Deutsch: nur die Original-Kachel, kein Schalter.
-- Darunter die Fotogalerie (PR 4) und der Link „← Alle Beiträge“ (zur Startseite `#entradas`).
+- Darunter die Fotogalerie, Videos und der Link „← Alle Beiträge“ (zur Startseite `#entradas`).
+
+### 7.6 Fotos und Lightbox
+
+- **Bildskript** `scripts/images.mjs` (läuft bei `npm run build` und `npm run dev` vor Astro):
+  verarbeitet nur Fotos, die im Frontmatter stehen (nicht verlinkte Dateien werden nie veröffentlicht),
+  dekodiert HEIC/HEIF mit heic-convert, dreht nach EXIF-Ausrichtung, entfernt **alle** Metadaten,
+  erzeugt WebP (Qualität 80) in 400 und 800 px Breite (Vorschau) und max. 1600 px lange Seite (groß),
+  nie vergrößert; für das erste Foto eines Beitrags zusätzlich ein Open-Graph-Bild 1200×630 (JPEG).
+  Dateinamen enthalten einen Inhalts-Hash (`<name>-<hash>-<größe>.webp`), daher dauerhaft
+  zwischenspeicherbar. Zwischenspeicher `.cache/media/`, Ausgabe `public/media/`, Manifest
+  `.cache/media-manifest.json` (Maße für `width`/`height`).
+- **Prüfung:** Nach der Verarbeitung und nach `astro build` werden alle Bilder im Ausgabeordner auf
+  EXIF, GPS, XMP und IPTC geprüft (sharp-Metadaten und Byte-Marker); HEIC/TIFF/RAW dürfen nicht
+  veröffentlicht werden. Jeder Fund bricht den Build ab.
+- **Profilfoto:** `content/profile.(jpg|png|webp|heic)` → quadratisch 152 und 88 px (2× für 76/44 px),
+  sonst Platzhalter.
+- **Galerie:** Raster (Handy mind. 2 Spalten à 150px, ab 700px `minmax(220px, 1fr)`), Vorschaubilder
+  mit `srcset` 400w/800w, `width`/`height`, `aspect-ratio: 4/3`, `object-fit: cover`, Lazy Loading ab
+  dem 5. Bild, optionale Bildunterschrift. Ohne JavaScript verlinkt jedes Foto auf die große Version.
+- **Lightbox:** `<dialog>` mit `showModal()` (Seite dahinter inaktiv), füllt den Bildschirm
+  (`position: fixed; inset: 0`, kein `100vh`), Safe-Area-Abstände für iPhone. Zähler „3 / 12“,
+  Knöpfe Schließen/Vor/Zurück (48px), Tastatur Esc/←/→, Wischen (Pointer-Events, mind. 50px
+  waagerecht), Klick auf den Hintergrund schließt. Große Version wird erst beim Öffnen geladen,
+  Nachbarbilder vorgeladen. Fokus startet auf „Schließen“ und kehrt zum Foto zurück.
+- **Beitragskarte:** erstes Foto (3:2, Vorschaubild) und Fotoanzahl.
+
+### 7.7 Videos (Zwei-Klick-Lösung)
+
+Videos liegen nie im Repository. `videos: [{ youtube: ID, title }]` zeigt einen Platzhalter mit
+Hinweis auf die Datenübertragung und dem Knopf „Video laden“. Erst danach wird
+`https://www.youtube-nocookie.com/embed/ID` eingebunden. Ohne JavaScript nur ein Link „Auf YouTube ansehen“.
 
 ## 8. Tests
 

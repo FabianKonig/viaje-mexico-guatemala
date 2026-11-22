@@ -9,7 +9,7 @@
     "npm": ">=12"
   },
   "scripts": {
-    "dev": "astro dev",
+    "dev": "node scripts/images.mjs && astro dev",
     "build": "node scripts/build.mjs",
     "build:preview": "CONTENT_DIR=tests/fixtures/content BASE_PATH=/pr-preview/pr-1/ OUT_DIR=dist-preview PREVIEW=true node scripts/build.mjs",
     "build:e2e": "npm run build && npm run build:preview",
@@ -18,14 +18,17 @@
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
     "lint": "prettier --check . && node scripts/check-gitignore.mjs",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "images": "node scripts/images.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.14.0",
     "@playwright/test": "1.65.1",
     "astro": "7.4.13",
+    "heic-convert": "2.1.0",
     "prettier": "3.10.1",
     "prettier-plugin-astro": "1.1.2",
+    "sharp": "0.35.5",
     "vitest": "5.1.1",
     "yaml": "2.9.1"
   }

@@ -4,6 +4,7 @@ import { formatDateDe } from '../lib/dates';
 import { tripDayNumber } from '../lib/travelDay';
 import { excerpt } from '../lib/translation';
 import { href } from '../lib/site';
+import { photoMedia } from '../lib/media';
 
 interface Props {
   post: Post;
@@ -13,11 +14,24 @@ const day = tripDayNumber(post.date);
 const url = href(`entradas/${post.slug}/`);
 const photoCount = post.photos.length;
 const langs = post.translation.hasSpanish ? 'ES · DE' : 'DE';
+const cover = post.photos[0] ? photoMedia(post.slug, post.photos[0].file) : undefined;
 const langLabel = post.translation.hasSpanish ? 'Spanisch mit deutscher Übersetzung' : 'Deutsch';
 ---
 
 <article class="post-card card">
-  <slot name="media" />
+  {cover && (
+    <img
+      class="post-card__img"
+      src={href(cover.thumb400)}
+      srcset={`${href(cover.thumb400)} 400w, ${href(cover.thumb800)} 800w`}
+      sizes="(min-width: 1240px) 380px, (min-width: 700px) 45vw, 100vw"
+      width={cover.thumbWidth}
+      height={cover.thumbHeight}
+      alt=""
+      loading="lazy"
+      decoding="async"
+    />
+  )}
   <div class="post-card__body">
     <p class="post-card__meta">
       {post.place && <span class="post-card__place">{post.place.name}</span>}
@@ -72,6 +86,14 @@ const langLabel = post.translation.hasSpanish ? 'Spanisch mit deutscher Überset
   .post-card:focus-within {
     outline: 3px solid var(--turquoise-dark);
     outline-offset: 4px;
+  }
+  .post-card__img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    border-bottom: var(--border);
   }
   .post-card__body {
     display: flex;
