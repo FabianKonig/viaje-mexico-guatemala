@@ -1,7 +1,8 @@
 ---
 import '../styles/global.css';
 import { SITE, COPYRIGHT_LINE } from '../config';
-import { href } from '../lib/site';
+import { BASE, href } from '../lib/site';
+import { absoluteUrl } from '../lib/paths';
 import { loadManifest } from '../lib/media';
 import PapelPicado from '../components/PapelPicado.astro';
 import SiteHeader from '../components/SiteHeader.astro';
@@ -12,8 +13,20 @@ interface Props {
   title?: string;
   description?: string;
   home?: boolean;
+  /** Open-Graph-Bild relativ zum Basispfad (Standard: og-default.jpg) */
+  ogImage?: { path: string; width: number; height: number; alt: string };
+  ogType?: 'website' | 'article';
 }
-const { title, description = SITE.description, home = false } = Astro.props;
+const {
+  title,
+  description = SITE.description,
+  home = false,
+  ogImage = { path: 'og-default.jpg', width: 1200, height: 630, alt: SITE.title },
+  ogType = 'website',
+} = Astro.props;
+const site = String(Astro.site ?? 'https://viaje.fabiankonig.de');
+const pageUrl = new URL(Astro.url.pathname, site).toString();
+const ogImageUrl = absoluteUrl(site, BASE, ogImage.path);
 const fullTitle = title ? `${title} · ${SITE.title}` : SITE.title;
 const profile = loadManifest().profile;
 const avatarSrc = profile
@@ -45,9 +58,20 @@ const fontFaces = [
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
+    <meta name="robots" content="noindex, nofollow, noimageindex" />
     <meta name="copyright" content={COPYRIGHT_LINE} />
     <meta name="author" content={SITE.ownerName} />
     <meta name="theme-color" content="#F6EBD9" />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content={SITE.title} />
+    <meta property="og:locale" content="de_DE" />
+    <meta property="og:title" content={title ?? SITE.title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={pageUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content={String(ogImage.width)} />
+    <meta property="og:image:height" content={String(ogImage.height)} />
+    <meta property="og:image:alt" content={ogImage.alt} />
     <meta name="format-detection" content="telephone=no" />
     <link rel="icon" href={href('favicon.svg')} type="image/svg+xml" />
     <link

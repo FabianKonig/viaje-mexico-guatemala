@@ -6,6 +6,7 @@
 import type { PhotoRef } from '../lib/content';
 import { photoMedia } from '../lib/media';
 import { href } from '../lib/site';
+import { EMPTY_IMAGE } from '../scripts/lightbox';
 
 interface Props {
   slug: string;
@@ -60,7 +61,7 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
     </button>
   </div>
   <figure class="lightbox__stage" data-stage>
-    <img class="lightbox__img" alt="" data-img />
+    <img class="lightbox__img" src={EMPTY_IMAGE} alt="" data-img />
     <figcaption class="lightbox__caption" lang="es" data-caption hidden></figcaption>
   </figure>
   <button class="lightbox__btn lightbox__nav lightbox__prev" type="button" data-prev>

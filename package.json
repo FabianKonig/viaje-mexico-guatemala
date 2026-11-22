@@ -17,15 +17,17 @@
     "test": "npm run lint && npm run test:unit && npm run build:e2e && npm run test:e2e",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
-    "lint": "prettier --check . && node scripts/check-gitignore.mjs",
+    "lint": "prettier --check . && node scripts/check-gitignore.mjs && node scripts/third-party-notices.mjs --check",
     "format": "prettier --write .",
-    "images": "node scripts/images.mjs"
+    "images": "node scripts/images.mjs",
+    "notices": "node scripts/third-party-notices.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.14.0",
     "@playwright/test": "1.65.1",
     "astro": "7.4.13",
     "heic-convert": "2.1.0",
+    "html-validate": "11.21.1",
     "prettier": "3.10.1",
     "prettier-plugin-astro": "1.1.2",
     "sharp": "0.35.5",

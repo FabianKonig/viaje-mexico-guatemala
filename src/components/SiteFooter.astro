@@ -1,5 +1,6 @@
 ---
 import { COPYRIGHT_LINE } from '../config';
+import { href } from '../lib/site';
 ---
 
 <footer class="site-footer">
@@ -9,7 +10,19 @@ import { COPYRIGHT_LINE } from '../config';
       jeden neuen Eintrag.
     </p>
     <p class="copyright">{COPYRIGHT_LINE}</p>
-    <slot />
+    <nav aria-label="Rechtliches">
+      <ul class="legal">
+        <li>
+          <a href={href('impressum/')}>Impressum</a>
+        </li>
+        <li>
+          <a href={href('datenschutz/')}>Datenschutz</a>
+        </li>
+        <li>
+          <a href={href('lizenzhinweise/')}>Lizenzhinweise</a>
+        </li>
+      </ul>
+    </nav>
   </div>
 </footer>
 
@@ -23,6 +36,21 @@ import { COPYRIGHT_LINE } from '../config';
   }
   .whatsapp {
     max-width: 60ch;
+  }
+  .legal {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 18px;
+    list-style: none;
+    margin: 4px 0 0 -10px;
+    padding: 0;
+  }
+  .legal a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 10px;
+    font-weight: 700;
   }
   .copyright {
     margin-bottom: 0.5em;

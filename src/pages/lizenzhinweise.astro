@@ -1,0 +1,76 @@
+---
+import Base from '../layouts/Base.astro';
+import Prose from '../components/Prose.astro';
+import { COPYRIGHT_LINE } from '../config';
+import { href } from '../lib/site';
+import { collect, classify } from '../../scripts/third-party-notices.mjs';
+
+const pkgs = collect();
+const pkgJson = (await import('../../package.json')).default;
+const direct = Object.keys(pkgJson.devDependencies ?? {});
+const directPkgs = pkgs.filter((p) => direct.includes(p.name));
+const byClass = { permissive: 0, weak: 0, strong: 0, unknown: 0 } as Record<string, number>;
+for (const p of pkgs) byClass[classify(p.license)]++;
+---
+
+<Base title="Lizenzhinweise" description="Lizenzhinweise und Rechtevorbehalt.">
+  <Prose title="Lizenzhinweise">
+    <h2>Rechtevorbehalt</h2>
+    <p>
+      {COPYRIGHT_LINE} Texte, Fotos, Gestaltung und Quelltext dieser Seite stehen unter keiner
+      Open-Source- oder Creative-Commons-Lizenz. Ohne vorherige schriftliche Erlaubnis dürfen sie
+      weder kopiert, verbreitet, bearbeitet noch anderweitig verwendet werden.
+    </p>
+
+    <h2>Schriften</h2>
+    <p>
+      Die selbst gehosteten Schriften stehen unter der SIL Open Font License 1.1 und bleiben es:
+    </p>
+    <ul>
+      <li>
+        <strong>Fraunces</strong>, Copyright 2020 The Fraunces Project Authors:
+        <a href={href('fonts/OFL-Fraunces.txt')}>Lizenztext (OFL-Fraunces.txt)</a>
+      </li>
+      <li>
+        <strong>DM Sans</strong>, Copyright 2014 The DM Sans Project Authors:
+        <a href={href('fonts/OFL-DM-Sans.txt')}>Lizenztext (OFL-DM-Sans.txt)</a>
+      </li>
+    </ul>
+
+    <h2>Eigene Werke</h2>
+    <p>
+      Wimpelrand, Karteikarten-Illustration, Icons, Routenkarte (schematische, selbst erstellte
+      Umrisse) und Platzhalterbilder sind eigene Werke; es werden keine fremden Bildersammlungen,
+      Kartendienste oder Icon-Bibliotheken verwendet.
+    </p>
+
+    <h2>Werkzeuge für Build und Tests</h2>
+    <p>
+      Zum Erstellen und Prüfen der Seite werden Open-Source-Werkzeuge genutzt. Sie werden nicht mit
+      der Seite ausgeliefert. Insgesamt {pkgs.length} Pakete: {byClass.permissive} unter freizügigen
+      Lizenzen (z. B. MIT, Apache-2.0, ISC, BSD), {byClass.weak} unter schwachem Copyleft (LGPL,
+      MPL; nur Werkzeuge),
+      {byClass.strong} unter starkem Copyleft. Die vollständige Liste steht in der Datei
+      <code>THIRD-PARTY-NOTICES.md</code> im Repository.
+    </p>
+    <table>
+      <caption class="visually-hidden">Direkt verwendete Werkzeuge</caption>
+      <thead>
+        <tr>
+          <th scope="col">Werkzeug</th>
+          <th scope="col">Version</th>
+          <th scope="col">Lizenz</th>
+        </tr>
+      </thead>
+      <tbody>
+        {directPkgs.map((p) => (
+          <tr>
+            <td>{p.name}</td>
+            <td>{p.version}</td>
+            <td>{p.license}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </Prose>
+</Base>
