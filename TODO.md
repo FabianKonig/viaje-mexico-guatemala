@@ -34,7 +34,7 @@
 - [x] PR 2: Design und Startseite, Datenmodell, Beispielbeitrag, Layout- und axe-Tests
 - [x] PR 3: Beitragsseite mit Zweisprachigkeit
 - [x] PR 4: Fotos und Lightbox inkl. Bildskript, Zwei-Klick-Videos
-- [ ] PR 5: Karte inkl. Ortsliste
+- [x] PR 5: Karte inkl. Ortsliste
 - [ ] PR 6: Reisetag
 - [ ] PR 7: PWA
 - [ ] PR 8: Impressum, Datenschutz, noindex, Lizenzhinweise

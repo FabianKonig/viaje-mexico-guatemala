@@ -1,0 +1,244 @@
+---
+/** Zeichnet eine Kartenansicht (Gesamtkarte oder Ausschnitt) als SVG. Rein dekorativ-informativ, Daten stehen in der Legende. */
+import { HERE_TEXT, type MapView } from '../lib/map';
+
+interface Props {
+  view: MapView;
+  id: string;
+  label: string;
+  class?: string;
+}
+const { view, id, label, class: cls } = Astro.props;
+const { markerR: r, fontSize: fs } = view;
+---
+
+<svg
+  class:list={['map-svg', cls]}
+  viewBox={`0 0 ${view.width} ${view.height}`}
+  role="img"
+  aria-labelledby={`${id}-t`}
+  data-map={id}
+  preserveAspectRatio="xMidYMid meet"
+>
+  <title id={`${id}-t`}>{label}</title>
+  <rect class="sea" width={view.width} height={view.height}></rect>
+  {view.land.other.map((d) => (
+    <path class="land-other" d={d} />
+  ))}
+  <path class="land-mx" d={view.land.mexico}></path>
+  <path class="land-gt" d={view.land.guatemala}></path>
+  {view.labels.map((l) => (
+    <text
+      class:list={['lbl', l.sea ? 'lbl--sea' : 'lbl--land']}
+      x={l.x}
+      y={l.y}
+      font-size={fs * (l.sea ? 0.85 : 1.05)}
+      text-anchor="middle"
+      lang="es"
+    >
+      {l.text}
+    </text>
+  ))}
+  {view.pills.map((p) => (
+    <g class="frame">
+      <rect
+        class="frame__under"
+        x={p.frame.x}
+        y={p.frame.y}
+        width={p.frame.width}
+        height={p.frame.height}
+        rx="4"
+      />
+      <rect
+        class="frame__line"
+        x={p.frame.x}
+        y={p.frame.y}
+        width={p.frame.width}
+        height={p.frame.height}
+        rx="4"
+      />
+    </g>
+  ))}
+  {view.route && <path class="route" d={view.route} />}
+  {view.pills.map((p) => (
+    <g class:list={['pill', { 'is-current': p.current }]} data-pill={p.label}>
+      {p.current && (
+        <rect
+          class="halo"
+          x={p.x - p.width / 2 - r * 0.5}
+          y={p.y - r * 1.5}
+          width={p.width + r}
+          height={r * 3}
+          rx={r * 1.5}
+        />
+      )}
+      <rect
+        class="pill__bg"
+        x={p.x - p.width / 2}
+        y={p.y - r}
+        width={p.width}
+        height={r * 2}
+        rx={r}
+      />
+      <text
+        class="num num--light"
+        x={p.x}
+        y={p.y}
+        font-size={fs * 0.95}
+        text-anchor="middle"
+        dominant-baseline="central"
+      >
+        {p.label}
+      </text>
+    </g>
+  ))}
+  {view.markers.map((m) => (
+    <g class:list={['marker', { 'is-current': m.current }]} data-marker={m.number}>
+      {m.current && <circle class="halo" cx={m.x} cy={m.y} r={r * 1.75} />}
+      <circle class="marker__dot" cx={m.x} cy={m.y} r={r} />
+      <text
+        class:list={['num', { 'num--light': m.current }]}
+        x={m.x}
+        y={m.y}
+        font-size={fs}
+        text-anchor="middle"
+        dominant-baseline="central"
+      >
+        {m.number}
+      </text>
+    </g>
+  ))}
+  {view.here && (
+    <g class="here" data-here>
+      <rect
+        x={view.here.x}
+        y={view.here.y}
+        width={view.here.width}
+        height={view.here.height}
+        rx={view.here.height / 2}
+      />
+      <text
+        x={view.here.x + view.here.width / 2}
+        y={view.here.y + view.here.height / 2}
+        font-size={fs}
+        text-anchor="middle"
+        dominant-baseline="central"
+        lang="es"
+      >
+        {HERE_TEXT}
+      </text>
+    </g>
+  )}
+</svg>
+
+<style>
+  .map-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: var(--border);
+    border-radius: 10px;
+    background: var(--turquoise-dark);
+  }
+  .sea {
+    fill: var(--turquoise-dark);
+  }
+  .land-mx,
+  .land-gt,
+  .land-other {
+    stroke: var(--ink);
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
+  .land-mx {
+    fill: var(--sand);
+  }
+  .land-gt {
+    fill: var(--marigold);
+  }
+  .land-other {
+    fill: var(--land-other);
+  }
+  .lbl {
+    font-family: var(--font-head);
+    font-weight: 700;
+  }
+  .lbl--land {
+    fill: var(--ink);
+    letter-spacing: 0.06em;
+  }
+  .lbl--sea {
+    fill: var(--card);
+    font-style: italic;
+    font-weight: 600;
+  }
+  .route {
+    fill: none;
+    stroke: var(--terracotta);
+    stroke-width: 3;
+    stroke-dasharray: 7 6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
+  .frame__under {
+    fill: none;
+    stroke: var(--card);
+    stroke-width: 4;
+    vector-effect: non-scaling-stroke;
+  }
+  .frame__line {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 2;
+    stroke-dasharray: 6 5;
+    vector-effect: non-scaling-stroke;
+  }
+  .marker__dot {
+    fill: var(--sand);
+    stroke: var(--ink);
+    stroke-width: 2;
+    vector-effect: non-scaling-stroke;
+  }
+  .marker.is-current .marker__dot,
+  .pill__bg {
+    fill: var(--pink-text);
+    stroke: var(--ink);
+    stroke-width: 2;
+    vector-effect: non-scaling-stroke;
+  }
+  .halo {
+    fill: var(--pink);
+    opacity: 0.45;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .halo {
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+  }
+  @keyframes pulse {
+    50% {
+      transform: scale(1.18);
+      opacity: 0.2;
+    }
+  }
+  .num {
+    font-family: var(--font-body);
+    font-weight: 800;
+    fill: var(--ink);
+  }
+  .num--light {
+    fill: var(--card);
+  }
+  .here rect {
+    fill: var(--ink);
+  }
+  .here text {
+    fill: var(--card);
+    font-family: var(--font-body);
+    font-weight: 800;
+  }
+</style>

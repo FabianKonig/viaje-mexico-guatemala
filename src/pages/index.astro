@@ -2,10 +2,11 @@
 import Base from '../layouts/Base.astro';
 import PostCard from '../components/PostCard.astro';
 import PalabritaTile from '../components/PalabritaTile.astro';
+import RouteMap from '../components/RouteMap.astro';
 import { getContent } from '../lib/data';
 import { href } from '../lib/site';
 
-const { posts } = getContent();
+const { posts, places } = getContent();
 const latest = posts[0];
 ---
 
@@ -32,7 +33,7 @@ const latest = posts[0];
       <h2 id="ruta-titel" class="visually-hidden">
         Ruta
       </h2>
-      <p class="map-placeholder">Die Routenkarte folgt.</p>
+      <RouteMap places={places} />
     </section>
   </section>
 
@@ -104,13 +105,7 @@ const latest = posts[0];
   }
   .hero__map {
     min-width: 0;
-    padding: 16px;
-  }
-  .map-placeholder {
-    min-height: 240px;
-    display: grid;
-    place-items: center;
-    margin: 0;
+    padding: clamp(10px, 3vw, 16px);
   }
   .entradas {
     margin-top: 56px;
