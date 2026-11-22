@@ -206,9 +206,12 @@ npm run notices          # THIRD-PARTY-NOTICES.md neu erzeugen
 Browser einmalig installieren: `npx playwright install --with-deps chromium firefox webkit`.
 Manuelle Gerätetests: [MANUAL-TESTS.md](MANUAL-TESTS.md).
 
-In Cloud-Sitzungen mit vorinstalliertem Chromium (andere Playwright-Version):
-`PW_CHROMIUM_PATH=/opt/pw-browsers/chromium npm run test:e2e:local`. Firefox/WebKit dort in einen
-eigenen Ordner installieren (`PLAYWRIGHT_BROWSERS_PATH=<scratchpad>/pw npx playwright install firefox webkit`).
+**Cloud-Sitzungen (Claude Code):** Die Umgebung „Reisetagebuch Claude Environment“ hat ein Startskript,
+das Node 26 (LTS) nach `/opt/node26` installiert und über `/root/.local/bin` vor das vorinstallierte
+Node 22 stellt, npm 12 installiert, `npm ci` ausführt und die Playwright-Browser Chromium, Firefox und
+WebKit (mit Systembibliotheken) nach `/opt/pw-browsers` lädt. Danach laufen alle Befehle ohne
+Sonderpfade. Prüfen mit `node -v` (v26.x). Ändert sich die Node-Hauptversion, das Startskript in den
+Umgebungseinstellungen anpassen (`NODE_MAJOR`).
 
 ## PWA
 
