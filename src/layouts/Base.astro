@@ -1,0 +1,31 @@
+---
+import { SITE, COPYRIGHT_LINE } from '../config';
+import { href } from '../lib/site';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+const { title, description = SITE.description } = Astro.props;
+const fullTitle = title ? `${title} · ${SITE.title}` : SITE.title;
+---
+
+<!doctype html>
+<html lang={SITE.lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="copyright" content={COPYRIGHT_LINE} />
+    <link rel="icon" href={href('favicon.svg')} type="image/svg+xml" />
+  </head>
+  <body>
+    <main id="inhalt">
+      <slot />
+    </main>
+    <footer>
+      <p class="copyright">{COPYRIGHT_LINE}</p>
+    </footer>
+  </body>
+</html>
