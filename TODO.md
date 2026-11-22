@@ -8,7 +8,7 @@
 - [x] Nur Squash-Merges erlaubt, „Automatically delete head branches“ aktiv.
 - [x] DNS-Eintrag `viaje` → `fabiankonig.github.io` (geprüft: zeigt auf GitHub Pages).
 - [x] GitHub Pages: Source „GitHub Actions“, Custom domain `viaje.fabiankonig.de`, „Enforce HTTPS“.
-- [ ] **Nach dem Merge von PR 9:** prüfen, dass unter Actions der Lauf „Deploy“ grün ist und
+- [x] **Nach dem Merge von PR 9:** prüfen, dass unter Actions der Lauf „Deploy“ grün ist und
       https://viaje.fabiankonig.de die Seite zeigt. Falls „Deploy“ wegen der Umgebung `github-pages`
       abgelehnt wird: Settings → Environments → github-pages → Deployment branches → `main` erlauben.
 - [x] Domain `fabiankonig.de` bei GitHub verifiziert (TXT-Eintrag `_github-pages-challenge-FabianKonig`,
