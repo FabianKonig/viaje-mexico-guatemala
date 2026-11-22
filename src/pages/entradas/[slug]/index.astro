@@ -9,6 +9,7 @@ import { formatDateDe } from '../../../lib/dates';
 import { tripDayNumber } from '../../../lib/travelDay';
 import { excerpt } from '../../../lib/translation';
 import { href } from '../../../lib/site';
+import { photoMedia } from '../../../lib/media';
 
 export function getStaticPaths() {
   return getContent().posts.map((post) => ({ params: { slug: post.slug }, props: { post } }));
@@ -22,9 +23,13 @@ const day = tripDayNumber(post.date);
 const description = post.titleDe
   ? `${post.titleDe}: ${excerpt(post.original, 140)}`
   : excerpt(post.original, 160);
+const cover = post.photos[0] ? photoMedia(post.slug, post.photos[0].file) : undefined;
+const ogImage = cover?.og
+  ? { path: cover.og, width: 1200, height: 630, alt: post.photos[0].alt }
+  : undefined;
 ---
 
-<Base title={post.title} description={description}>
+<Base title={post.title} description={description} ogImage={ogImage} ogType="article">
   <article class="post wrap" lang="de">
     <header class="post__head">
       <h1 class="post__title" lang={post.translation.languages[0]}>

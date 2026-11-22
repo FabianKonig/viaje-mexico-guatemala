@@ -1,0 +1,54 @@
+---
+import Base from '../layouts/Base.astro';
+import Prose from '../components/Prose.astro';
+import { SITE } from '../config';
+---
+
+<Base title="Impressum" description="Impressum des Reiseblogs „Un viaje a México y Guatemala“.">
+  <Prose title="Impressum">
+    <h2>Angaben gemäß § 5 DDG</h2>
+    <address>
+      {SITE.ownerName}
+      <br />
+      {SITE.ownerStreet}
+      <br />
+      {SITE.ownerCity}
+      <br />
+      Deutschland
+    </address>
+
+    <h2>Kontakt</h2>
+    <p>E-Mail: {SITE.ownerEmail}</p>
+
+    <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
+    <address>
+      {SITE.ownerName}
+      <br />
+      {SITE.ownerStreet}
+      <br />
+      {SITE.ownerCity}
+    </address>
+
+    <h2>Art des Angebots</h2>
+    <p>
+      Private, nicht kommerzielle Seite: ein persönliches Reisetagebuch für Familie und Freunde. Es
+      gibt keine Werbung, keine bezahlten Inhalte und keine Kommentarfunktion.
+    </p>
+
+    <h2>Urheberrecht</h2>
+    <p>
+      © {SITE.copyrightYears}
+      {SITE.ownerName}. Alle Rechte vorbehalten. Texte, Fotos, Gestaltung und Quelltext dieser Seite
+      dürfen ohne vorherige schriftliche Erlaubnis weder kopiert, verbreitet, bearbeitet noch
+      anderweitig verwendet werden. Ausgenommen sind Bestandteile Dritter, siehe{' '}
+      <a href="../lizenzhinweise/">Lizenzhinweise</a>.
+    </p>
+
+    <h2>Haftung für Links</h2>
+    <p>
+      Diese Seite enthält Links zu externen Websites, auf deren Inhalte ich keinen Einfluss habe.
+      Für die Inhalte verlinkter Seiten ist der jeweilige Anbieter verantwortlich. Bei Bekanntwerden
+      von Rechtsverletzungen entferne ich solche Links umgehend.
+    </p>
+  </Prose>
+</Base>

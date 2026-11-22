@@ -3,6 +3,10 @@
  * <dialog> mit showModal, Zähler, Schließen, Vor/Zurück, Tastatur (Esc, ←, →), Wischen,
  * Fokus kehrt beim Schließen zum auslösenden Foto zurück. Große Bilder werden erst bei Bedarf geladen.
  */
+/** Transparentes 1×1-GIF als Platzhalter, solange die Lightbox geschlossen ist. */
+export const EMPTY_IMAGE =
+  'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+
 export function initLightbox(doc: Document = document) {
   const dialog = doc.querySelector<HTMLDialogElement>('[data-lightbox]');
   const links = [...doc.querySelectorAll<HTMLAnchorElement>('[data-lightbox-item]')];
@@ -65,7 +69,7 @@ export function initLightbox(doc: Document = document) {
   close.addEventListener('click', () => dialog.close());
   dialog.addEventListener('close', () => {
     doc.documentElement.classList.remove('has-lightbox');
-    img.removeAttribute('src');
+    img.src = EMPTY_IMAGE;
     opener?.focus();
   });
   dialog.addEventListener('keydown', (e) => {

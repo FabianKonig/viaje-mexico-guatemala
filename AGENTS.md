@@ -181,7 +181,10 @@ Hash berechnen: `node scripts/hash-original.mjs content/posts/<ordner>/original.
   `<meta name="copyright">`. Name in `src/config.ts`, muss zu LICENSE und Impressum passen.
 - Schriften bleiben unter SIL OFL, ihre Lizenztexte liegen in `public/fonts/` und werden ausgeliefert.
 - `THIRD-PARTY-NOTICES.md` nach jeder Abhängigkeitsänderung neu erzeugen (`npm run notices`).
-  Starkes Copyleft (GPL, AGPL) dem Autor melden.
+  Starkes Copyleft (GPL, AGPL) dem Autor melden (die Prüfung bricht dann ab).
+- Neue externe Links nur nach Rücksprache; sie müssen in `ALLOWED_EXTERNAL` in `scripts/check-dist.mjs`
+  stehen, sonst bricht der Build ab. Datenschutzerklärung dann anpassen.
+- Platzhalter `[VOLLER NAME]` usw. nur in `src/config.ts` und `LICENSE` ersetzen (Test prüft Gleichheit).
 
 ## Tests
 

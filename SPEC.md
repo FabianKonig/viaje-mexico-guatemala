@@ -55,6 +55,7 @@ Diese Tabelle wird von einem Test mit `package.json` und `.nvmrc` abgeglichen:
 | yaml | 2.9.1 |
 | sharp | 0.35.5 |
 | heic-convert | 2.1.0 |
+| html-validate | 11.21.1 |
 <!-- versions:end -->
 
 ## 3. Ordnerstruktur
@@ -106,7 +107,7 @@ Seite funktioniert unverändert unter `/` und unter `/pr-preview/pr-NN/`.
 | Routenkarte, Ortsliste | 5 | umgesetzt |
 | Reisetag-Anzeige | 6 | umgesetzt |
 | PWA | 7 | umgesetzt |
-| Impressum, Datenschutz, noindex, Lizenzhinweise | 8 | geplant |
+| Impressum, Datenschutz, noindex, Lizenzhinweise | 8 | umgesetzt |
 | Deployment und Vorschauen | 9 | geplant |
 | Cross-Browser-Tests, manuelle Checkliste | 10 | geplant |
 
@@ -324,6 +325,34 @@ Hinweis auf die Datenübertragung und dem Knopf „Video laden“. Erst danach w
 - **Vorschau-Builds** (`PREVIEW=true` oder Basispfad `/pr-preview/…`): keine Registrierung; `sw.js`
   meldet sich dort selbst ab.
 - Registrierung über ein kleines Inline-Skript nach `load`; Fehler werden ignoriert.
+
+### 7.11 Datenschutz, Suchmaschinen, rechtliche Seiten, Lizenzen
+
+- **Jede Seite** (auch 404 und Vorschauen): `<meta name="robots" content="noindex, nofollow, noimageindex">`,
+  `<meta name="copyright">` und die Copyright-Zeile im Fußbereich, Links zu Impressum, Datenschutz,
+  Lizenzhinweisen. `robots.txt`: `User-agent: *` / `Disallow: /`.
+- **Keine** Cookies, Tracker, Analytics, externen Schriften/Skripte/Karten. Erlaubte externe Links
+  (geprüft beim Build): Palabrita, YouTube (nur Link/Zwei-Klick), Datenschutzerklärungen von GitHub und Google.
+- **Open Graph** (Vorschau in WhatsApp): `og:type`, `og:site_name`, `og:locale`, `og:title`,
+  `og:description`, `og:url`, `og:image` (absolute URL aus `SITE_URL` + Basispfad), Breite/Höhe/Alt.
+  Beiträge mit Fotos: erstes Foto als 1200×630-JPEG; sonst `public/og-default.jpg` (erzeugt mit
+  `scripts/make-og.mjs` aus eigenem Design und den eigenen Schriften).
+  Hinweis: `robots.txt` sperrt alles. WhatsApp erzeugt Link-Vorschauen auf dem Gerät des Absenders;
+  sollte die Vorschau trotzdem fehlen, bewusst entscheiden, ob eine Ausnahme nötig ist (TODO.md).
+- **Impressum** (`/impressum/`): Angaben nach § 5 DDG und § 18 Abs. 2 MStV mit Platzhaltern aus
+  `src/config.ts`. **Datenschutz** (`/datenschutz/`): passend zur Technik (GitHub Pages inkl.
+  IP-Adressen und USA/DPF, keine Cookies/Analyse, Service-Worker-Speicher auf dem Gerät, selbst
+  gehostete Schriften, YouTube per Zwei-Klick, Link zu Palabrita, WhatsApp, Betroffenenrechte).
+  Bei neuer Technik anpassen. Keine Rechtsberatung: vor Veröffentlichung prüfen lassen.
+- **Lizenzhinweise** (`/lizenzhinweise/`): Rechtevorbehalt, Schriften (OFL, Lizenztexte unter
+  `/fonts/`), eigene Werke, Übersicht der Werkzeuge (aus `package-lock.json`).
+- **THIRD-PARTY-NOTICES.md** wird mit `npm run notices` aus `package-lock.json` erzeugt;
+  `npm run lint` prüft, dass sie aktuell ist und **kein starkes Copyleft** (GPL/AGPL …) vorkommt.
+  Schwaches Copyleft (LGPL, MPL) nur bei Werkzeugen, die nicht ausgeliefert werden.
+- **Build-Prüfung** (`scripts/check-dist.mjs`, Teil von `npm run build`): interne Links/Bilder
+  vorhanden, nur erlaubte externe Links, noindex/Copyright/og:image auf jeder Seite,
+  HTML-Validierung (html-validate, `.htmlvalidate.json`), Seitengewicht der Startseite ohne Fotos
+  höchstens 260 KB.
 
 ## 8. Tests
 

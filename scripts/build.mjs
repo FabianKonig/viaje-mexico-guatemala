@@ -9,6 +9,7 @@
  */
 import { spawnSync } from 'node:child_process';
 import { processAll, verifyDir } from './images.mjs';
+import { checkDist } from './check-dist.mjs';
 
 const outDir = process.env.OUT_DIR || 'dist';
 
@@ -28,6 +29,14 @@ try {
   run('npx', ['astro', 'build']);
   const n = await verifyDir(outDir);
   console.log(`Metadaten-Prüfung ${outDir}: ${n} Bilder ohne EXIF/GPS/XMP/IPTC.`);
+  let base = process.env.BASE_PATH || '/';
+  if (!base.endsWith('/')) base += '/';
+  const r = await checkDist(outDir, base);
+  if (r.problems.length)
+    throw new Error('Prüfung des Build-Ergebnisses:\n  ' + r.problems.join('\n  '));
+  console.log(
+    `Build-Prüfung ${outDir}: ${r.pages} Seiten ok (Links, HTML, noindex, Copyright), Startseite ohne Fotos ${Math.round(r.homeBytes / 1024)} KB.`,
+  );
 } catch (e) {
   console.error('\n✗ ' + (e instanceof Error ? e.message : String(e)));
   process.exit(1);

@@ -16,7 +16,10 @@
       Pages → „Add a domain“ → `fabiankonig.de` → angezeigten TXT-Eintrag beim Domain-Anbieter setzen.
 - [ ] **Name für Copyright-Zeile und Impressum** angeben (ersetzt `[VOLLER NAME]` in `src/config.ts` und `LICENSE`).
 - [ ] **Impressumsdaten** angeben: Straße und Hausnummer, PLZ Ort, E-Mail.
-- [ ] **Impressum und Datenschutz prüfen lassen** (Generator oder Fachperson), bevor der Link geteilt wird.
+- [ ] **Impressum und Datenschutz prüfen lassen** (z. B. mit einem Generator wie dem von eRecht24 oder
+      durch eine Fachperson), bevor der Link geteilt wird. Die Texte sind keine Rechtsberatung.
+- [ ] **WhatsApp-Vorschau testen**, sobald die Seite online ist: Link in einen Chat mit dir selbst
+      schicken. Erscheint kein Bild/Titel, melden (robots.txt sperrt alles, bewusst).
 - [ ] **LICENSE-Wortlaut** bei Bedarf rechtlich prüfen lassen.
 - [ ] **Profilfoto** ablegen (`content/profile.jpg`, quadratisch, mind. 300 × 300 px, ohne Standort).
 - [ ] **Manuelle Tests** auf echten Geräten (Checkliste folgt in PR 10: MANUAL-TESTS.md).
@@ -37,6 +40,6 @@
 - [x] PR 5: Karte inkl. Ortsliste
 - [x] PR 6: Reisetag
 - [x] PR 7: PWA
-- [ ] PR 8: Impressum, Datenschutz, noindex, Lizenzhinweise
+- [x] PR 8: Impressum, Datenschutz, noindex, Lizenzhinweise
 - [ ] PR 9: Deployment und Vorschauen
 - [ ] PR 10: Cross-Browser-Tests und manuelle Checkliste
