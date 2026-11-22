@@ -25,7 +25,8 @@
       schicken. Erscheint kein Bild/Titel, melden (robots.txt sperrt alles, bewusst).
 - [ ] **LICENSE-Wortlaut** bei Bedarf rechtlich prüfen lassen.
 - [ ] **Profilfoto** ablegen (`content/profile.jpg`, quadratisch, mind. 300 × 300 px, ohne Standort).
-- [ ] **Manuelle Tests** auf echten Geräten (Checkliste folgt in PR 10: MANUAL-TESTS.md).
+- [ ] **Manuelle Tests** auf echten Geräten nach [MANUAL-TESTS.md](MANUAL-TESTS.md) (iPhone Safari,
+      Android Chrome, **Samsung Internet**, Firefox Android, iPad, Mac Safari, Windows Edge).
 - [ ] Beispielbeitrag `content/posts/2026-11-23-entrada-de-ejemplo/` vor dem ersten echten Beitrag löschen
       (ein Agent macht das beim ersten echten Beitrag mit).
 
@@ -45,4 +46,4 @@
 - [x] PR 7: PWA
 - [x] PR 8: Impressum, Datenschutz, noindex, Lizenzhinweise
 - [x] PR 9: Deployment über GitHub Actions, PR-Artefakte (keine Vorschau-Seiten, Entscheidung des Autors)
-- [ ] PR 10: Cross-Browser-Tests und manuelle Checkliste
+- [x] PR 10: Cross-Browser-Tests (PR: Chromium, Firefox, WebKit, Pixel 7, iPhone 15; nächtlich: Edge, Chrome, iPad, Galaxy) und manuelle Checkliste

@@ -196,11 +196,19 @@ npm run images           # nur Bildskript (Fotos verarbeiten und prüfen)
 npm run test:unit        # Vitest
 npm run build:e2e        # baut dist/ (echte Inhalte) und dist-preview/ (Testinhalte aus
                          # tests/fixtures/content unter /pr-preview/pr-1/)
-npm run test:e2e         # Playwright (Projekte siehe playwright.config.ts)
+npm run test:e2e         # Playwright: Chromium, Firefox, WebKit, Pixel 7, iPhone 15 (wie im PR)
+npm run test:e2e:local   # nur Chromium (schnell)
+npm run test:e2e:nightly # zusätzlich Edge, Chrome, iPad, Galaxy
+npm run check:external   # externe Links erreichbar (Palabrita)
+npm run notices          # THIRD-PARTY-NOTICES.md neu erzeugen
 ```
 
-Lokal mit vorinstalliertem Chromium (andere Playwright-Version):
-`PW_CHROMIUM_PATH=/opt/pw-browsers/chromium npm run test:e2e`.
+Browser einmalig installieren: `npx playwright install --with-deps chromium firefox webkit`.
+Manuelle Gerätetests: [MANUAL-TESTS.md](MANUAL-TESTS.md).
+
+In Cloud-Sitzungen mit vorinstalliertem Chromium (andere Playwright-Version):
+`PW_CHROMIUM_PATH=/opt/pw-browsers/chromium npm run test:e2e:local`. Firefox/WebKit dort in einen
+eigenen Ordner installieren (`PLAYWRIGHT_BROWSERS_PATH=<scratchpad>/pw npx playwright install firefox webkit`).
 
 ## PWA
 

@@ -9,7 +9,16 @@ describe('Repository', () => {
   });
 
   it('hat die Pflichtdokumente', () => {
-    for (const f of ['AGENTS.md', 'SPEC.md', 'TODO.md', 'README.md', 'LICENSE', '.gitignore']) {
+    for (const f of [
+      'AGENTS.md',
+      'SPEC.md',
+      'TODO.md',
+      'README.md',
+      'LICENSE',
+      '.gitignore',
+      'MANUAL-TESTS.md',
+      'THIRD-PARTY-NOTICES.md',
+    ]) {
       expect(fs.existsSync(f), f).toBe(true);
     }
   });

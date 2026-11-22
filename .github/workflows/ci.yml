@@ -41,8 +41,8 @@ jobs:
       - name: Build (Hauptseite und Vorschau-Variante, inkl. Bild- und Build-Prüfungen)
         run: npm run build:e2e
       - name: Playwright-Browser installieren
-        run: npx playwright install --with-deps chromium
-      - name: Browser-Tests
+        run: npx playwright install --with-deps chromium firefox webkit
+      - name: Browser-Tests (Chromium, Firefox, WebKit, Pixel 7, iPhone 15)
         run: npm run test:e2e
       - name: Screenshots hochladen (Handy und Computer)
         if: always() && github.event_name == 'pull_request'
