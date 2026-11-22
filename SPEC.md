@@ -99,7 +99,7 @@ Seite funktioniert unverändert unter `/` und unter `/pr-preview/pr-NN/`.
 | Grundgerüst, Dokumente, Test- und CI-Gerüst | 1 | umgesetzt |
 | Design und Startseite | 2 | umgesetzt (Karte und Reisetag folgen) |
 | Datenmodell, Beitrags-Parser | 2 | umgesetzt |
-| Beitragsseite, Zweisprachigkeit | 3 | geplant |
+| Beitragsseite, Zweisprachigkeit | 3 | umgesetzt (Fotogalerie folgt in PR 4) |
 | Fotos, Lightbox, Bildskript, Videos | 4 | geplant |
 | Routenkarte, Ortsliste | 5 | geplant |
 | Reisetag-Anzeige | 6 | geplant |
@@ -210,6 +210,22 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   „Hier geht's zu Palabrita.“, rechts dunkler Knopf „Palabrita öffnen →“. Die ganze Kachel ist ein
   Link auf `https://palabrita.fabiankonig.de` (`target="_blank" rel="noopener"`). Unter 600px bricht
   der Knopf unter den Text.
+
+### 7.5 Beitragsseite (`/entradas/<ordner>/`)
+
+- Großer Titel (`h1`, Fraunces, `clamp(2.25rem, 1.5rem + 3.5vw, 4rem)`), optional `titleDe` darunter,
+  Zeile „Ort · Tag X · Datum“ (ohne Ort nur Tag und Datum; vor Reisebeginn nur das Datum).
+- Schalter „Übersetzung ausblenden“ / „Übersetzung einblenden“ (echter `<button>` mit
+  `aria-expanded` und `aria-controls`). Ohne JavaScript ist er verborgen, beide Kacheln sind sichtbar.
+  Standard: Übersetzung sichtbar. Die Einstellung wird nicht gespeichert (keine Cookies/Speicher).
+- Kachel **„Original“** mit Etikett „Mi español, sin corregir“ (Marigold): Text aus `original.md`
+  unverändert (`white-space: pre-wrap`, `textContent` ist byte-gleich zur Datei). Jedes Segment steckt
+  in einem `<span lang data-lang>`, ohne sichtbare Hervorhebung.
+- Kachel **„Übersetzung“** (`lang="de"`): ein Absatz pro Absatz des Originals, spanische Segmente
+  übersetzt, deutsche 1:1 (`data-lang="de"`). Keine farbliche Hervorhebung.
+- Anordnung: Raster `repeat(auto-fit, minmax(min(100%, 340px), 1fr))`, also nebeneinander (Original
+  links) bei genug Platz, sonst untereinander. Nur Deutsch: nur die Original-Kachel, kein Schalter.
+- Darunter die Fotogalerie (PR 4) und der Link „← Alle Beiträge“ (zur Startseite `#entradas`).
 
 ## 8. Tests
 
