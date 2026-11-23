@@ -19,7 +19,7 @@
 - [ ] **WhatsApp-Vorschau testen**, sobald die Seite online ist: Link in einen Chat mit dir selbst
       schicken. Erscheint kein Bild/Titel, melden (robots.txt sperrt alles, bewusst).
 - [ ] **LICENSE-Wortlaut** bei Bedarf rechtlich prüfen lassen.
-- [ ] **Profilfoto** ablegen (`content/profile.jpg`, quadratisch, mind. 300 × 300 px, ohne Standort).
+- [x] Profilfoto abgelegt (`content/profile.jpg`, PR #13).
 - [ ] **Manuelle Tests** auf echten Geräten nach [MANUAL-TESTS.md](MANUAL-TESTS.md) (iPhone Safari,
       Android Chrome, **Samsung Internet**, Firefox Android, iPad, Mac Safari, Windows Edge).
 - [ ] Beispielbeitrag `content/posts/2026-11-23-entrada-de-ejemplo/` vor dem ersten echten Beitrag löschen
