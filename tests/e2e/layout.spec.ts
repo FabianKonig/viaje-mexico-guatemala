@@ -37,15 +37,10 @@ async function checkLayout(page: Page, width: number) {
 }
 
 for (const width of WIDTHS) {
-  test(`Startseite bei ${width}px: kein Überlauf, Profilbild rechts oben`, async ({
-    page,
-  }, info) => {
+  test(`Startseite bei ${width}px: kein Überlauf, Profilbild rechts oben`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('./');
     await checkLayout(page, width);
-    if (info.project.name === 'chromium') {
-      await page.screenshot({ path: `test-results/screens/home-${width}.png`, fullPage: true });
-    }
   });
 
   test(`Beitragsseiten bei ${width}px: kein Überlauf, Profilbild rechts oben`, async ({ page }) => {

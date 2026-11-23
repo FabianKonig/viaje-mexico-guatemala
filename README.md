@@ -34,9 +34,8 @@ Weitere Befehle (Cross-Browser, Layout, Barrierefreiheit) stehen in [AGENTS.md](
 
 ## Veröffentlichung
 
-Jeder Merge in `main` wird automatisch getestet, gebaut und über GitHub Actions auf GitHub Pages
-veröffentlicht (`.github/workflows/deploy.yml`). Pull-Requests bekommen Screenshots und die gebaute
-Seite als Artefakte. Details: [SPEC.md › Deployment](SPEC.md#8-deployment).
+Jeder Pull-Request wird getestet, jeder Merge in `main` wird automatisch gebaut und über GitHub Actions auf GitHub Pages
+veröffentlicht (`.github/workflows/deploy.yml`). Details: [SPEC.md › Deployment](SPEC.md#8-deployment).
 
 ## Mitarbeit
 
