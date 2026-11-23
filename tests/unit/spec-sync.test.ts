@@ -110,11 +110,10 @@ describe('SPEC.md ↔ Code', () => {
     }
   });
 
-  it('Deployment: erst Tests, dann Build, dann Veröffentlichung; nur von main', () => {
+  it('Deployment: erst Build, dann Veröffentlichung; nur von main; Tests nur im Pull-Request', () => {
     const wf = fs.readFileSync('.github/workflows/deploy.yml', 'utf8');
     expect(wf).toMatch(/push:\s+branches: \[main\]/);
-    expect(wf).toContain('uses: ./.github/workflows/ci.yml');
-    expect(wf).toMatch(/build:[\s\S]*needs: tests/);
+    expect(wf).not.toContain('uses: ./.github/workflows/ci.yml');
     expect(wf).toMatch(/deploy:[\s\S]*needs: build/);
     expect(wf).toContain('SITE_URL: https://viaje.fabiankonig.de');
   });

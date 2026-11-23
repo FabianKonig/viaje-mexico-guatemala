@@ -362,11 +362,12 @@ Hinweis auf die Datenübertragung und dem Knopf „Video laden“. Erst danach w
   `CNAME viaje → fabiankonig.github.io.` (`public/CNAME` liegt zur Dokumentation bei, wird bei dieser
   Quelle aber nicht ausgewertet).
 - **`.github/workflows/deploy.yml`** bei jedem Push auf `main` (also nach jedem Merge) und manuell:
-  1. `tests`: ruft `ci.yml` auf (alle Prüfungen und Tests),
-  2. `build`: `npm run build` mit `SITE_URL=https://viaje.fabiankonig.de` (Bildskript, Astro,
+  1. `build`: `npm run build` mit `SITE_URL=https://viaje.fabiankonig.de` (Bildskript, Astro,
      Metadaten- und Build-Prüfung), Größenwarnung ab 700 MB, Abbruch ab 900 MB (Pages-Limit 1 GB),
-  3. `deploy`: `actions/upload-pages-artifact` + `actions/deploy-pages` (Umgebung `github-pages`).
+  2. `deploy`: `actions/upload-pages-artifact` + `actions/deploy-pages` (Umgebung `github-pages`).
   Schlägt ein Schritt fehl, wird nicht veröffentlicht.
+  Die Tests laufen dabei **nicht** erneut: Das Ruleset verlangt „Require branches to be up to date
+  before merging“, der Pull-Request testet also genau den Stand, der in `main` landet.
 - **`.github/workflows/ci.yml`** bei jedem Pull-Request: Tests wie oben. Keine Artefakte (Screenshots
   und gebaute Seite wurden entfernt, der Autor kann ZIP-Dateien am Handy nicht öffnen). Bei einem
   Fehlschlag wird der Playwright-Bericht (7 Tage) hochgeladen. Das Aussehen prüft der Agent vor dem

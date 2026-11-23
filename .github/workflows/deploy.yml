@@ -1,5 +1,7 @@
 # Veröffentlichung auf GitHub Pages (Quelle: „GitHub Actions“).
-# Bei jedem Merge in main: erst alle Tests, dann Build (inkl. Bildskript und Prüfungen), dann Deployment.
+# Bei jedem Merge in main: Build (inkl. Bildskript und Prüfungen), dann Deployment.
+# Die Tests laufen nur im Pull-Request (ci.yml). Das Ruleset verlangt, dass der Branch aktuell ist
+# („Require branches to be up to date“), der PR testet also genau den Stand, der in main landet.
 # Schlägt ein Schritt fehl, wird nicht veröffentlicht.
 name: Deploy
 
@@ -16,12 +18,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  tests:
-    uses: ./.github/workflows/ci.yml
-
   build:
     name: Build
-    needs: tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

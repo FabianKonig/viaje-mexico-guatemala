@@ -1,10 +1,9 @@
-# Tests bei jedem Pull-Request (und als Teil des Deployments, siehe deploy.yml).
+# Tests bei jedem Pull-Request. Beim Merge in main laufen sie nicht erneut (siehe deploy.yml).
 # Ein Pull-Request darf nur gemergt werden, wenn dieser Workflow grün ist (Branch-Schutz, siehe TODO.md).
 name: Tests
 
 on:
   pull_request:
-  workflow_call:
   workflow_dispatch:
 
 permissions:

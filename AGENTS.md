@@ -222,7 +222,8 @@ Service Worker wird beim Build erzeugt; neue Dateiarten im Zweifel network-first
 ## Deployment
 
 - Pages-Quelle ist **„GitHub Actions“**. Jeder Merge in `main` startet `.github/workflows/deploy.yml`:
-  Tests → Build → Veröffentlichung. Rot = nichts wird veröffentlicht.
+  Build → Veröffentlichung (die Tests laufen nur im Pull-Request; der Branch muss vor dem Merge
+  aktuell sein, Ruleset „Require branches to be up to date“). Rot = nichts wird veröffentlicht.
 - Pull-Requests: `ci.yml` testet (keine Artefakte, keine Vorschau-Seiten unter `/pr-preview/`). Das
   Aussehen prüft der Agent per Screenshot vor dem PR.
 - Nach dem Merge eines neuen Beitrags prüfen, dass der Deploy-Lauf grün ist.

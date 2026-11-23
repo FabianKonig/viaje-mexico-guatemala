@@ -5,6 +5,7 @@
 - [x] Branch-Schutz: Ruleset `protect-main-branch` (aktiv, Default Branch): Restrict deletions,
       Require linear history, Require a pull request, Block force pushes, **Require status checks to
       pass (`Tests`)**.
+- [x] Ruleset: „Require branches to be up to date before merging“ aktiv (Voraussetzung dafür, dass die Tests beim Merge in `main` nicht erneut laufen).
 - [x] Nur Squash-Merges erlaubt, „Automatically delete head branches“ aktiv.
 - [x] DNS-Eintrag `viaje` → `fabiankonig.github.io` (geprüft: zeigt auf GitHub Pages).
 - [x] GitHub Pages: Source „GitHub Actions“, Custom domain `viaje.fabiankonig.de`, „Enforce HTTPS“.
