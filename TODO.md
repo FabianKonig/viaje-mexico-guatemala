@@ -40,5 +40,5 @@
 - [x] PR 6: Reisetag
 - [x] PR 7: PWA
 - [x] PR 8: Impressum, Datenschutz, noindex, Lizenzhinweise
-- [x] PR 9: Deployment über GitHub Actions, PR-Artefakte (keine Vorschau-Seiten, Entscheidung des Autors)
+- [x] PR 9: Deployment über GitHub Actions (keine Vorschau-Seiten, Entscheidung des Autors; PR-Artefakte später wieder entfernt)
 - [x] PR 10: Cross-Browser-Tests (PR: Chromium, Firefox, WebKit, Pixel 7, iPhone 15; nächtlich: Edge, Chrome, iPad, Galaxy) und manuelle Checkliste

@@ -109,7 +109,7 @@ Veröffentlicht wird nur unter `/` (siehe Abschnitt 8).
 | Reisetag-Anzeige | 6 | umgesetzt |
 | PWA | 7 | umgesetzt |
 | Impressum, Datenschutz, noindex, Lizenzhinweise | 8 | umgesetzt |
-| Deployment (GitHub Actions), PR-Artefakte | 9 | umgesetzt |
+| Deployment (GitHub Actions) | 9 | umgesetzt |
 | Cross-Browser-Tests, manuelle Checkliste | 10 | umgesetzt |
 
 Alle Bereiche sind umgesetzt. Neue Funktionen werden hier ergänzt und im selben Pull-Request
@@ -367,10 +367,10 @@ Hinweis auf die Datenübertragung und dem Knopf „Video laden“. Erst danach w
      Metadaten- und Build-Prüfung), Größenwarnung ab 700 MB, Abbruch ab 900 MB (Pages-Limit 1 GB),
   3. `deploy`: `actions/upload-pages-artifact` + `actions/deploy-pages` (Umgebung `github-pages`).
   Schlägt ein Schritt fehl, wird nicht veröffentlicht.
-- **`.github/workflows/ci.yml`** bei jedem Pull-Request: Tests wie oben. Zusätzlich als Artefakte
-  (14 Tage): **Screenshots** (Startseite bei 320–2560px) und die **gebaute Seite** des PRs
-  (`website-vorschau`, Vorschau-Modus ohne Service Worker). Ansehen: ZIP herunterladen, entpacken,
-  `node scripts/serve.mjs <ordner> 4321` und `http://127.0.0.1:4321/` öffnen.
+- **`.github/workflows/ci.yml`** bei jedem Pull-Request: Tests wie oben. Keine Artefakte (Screenshots
+  und gebaute Seite wurden entfernt, der Autor kann ZIP-Dateien am Handy nicht öffnen). Bei einem
+  Fehlschlag wird der Playwright-Bericht (7 Tage) hochgeladen. Das Aussehen prüft der Agent vor dem
+  PR per Screenshot und beschreibt es im PR.
 - **Keine Vorschau-Seiten** unter `/pr-preview/` (Entscheidung des Autors: Die bewährte Action
   rossjrw/pr-preview-action unterstützt die Pages-Quelle „GitHub Actions“ nicht). Der Code bleibt
   unterpfadfähig, falls das später gewünscht ist.
@@ -419,5 +419,5 @@ Befehle: [AGENTS.md › Tests](AGENTS.md#tests). Jede neue Funktion bekommt eine
 | Manuell | `MANUAL-TESTS.md` | echte Geräte, Samsung Internet, Firefox Android, Home-Bildschirm, WhatsApp-Vorschau |
 
 Nicht umgesetzt (bewusst): visuelle Regressionstests per Pixelvergleich (zwischen Betriebssystemen
-unzuverlässig; stattdessen Screenshots als PR-Artefakt und Layout-Prüfungen) und Lighthouse-CI
+unzuverlässig; stattdessen Layout-Prüfungen) und Lighthouse-CI
 (zusätzliche große Abhängigkeit; Seitengewicht und Barrierefreiheit werden direkt geprüft).

@@ -223,8 +223,8 @@ Service Worker wird beim Build erzeugt; neue Dateiarten im Zweifel network-first
 
 - Pages-Quelle ist **„GitHub Actions“**. Jeder Merge in `main` startet `.github/workflows/deploy.yml`:
   Tests → Build → Veröffentlichung. Rot = nichts wird veröffentlicht.
-- Pull-Requests: `ci.yml` testet und hängt **Screenshots** und die **gebaute Seite** als Artefakte an
-  (Actions-Lauf → „Artifacts“). Es gibt keine Vorschau-Seiten unter `/pr-preview/`.
+- Pull-Requests: `ci.yml` testet (keine Artefakte, keine Vorschau-Seiten unter `/pr-preview/`). Das
+  Aussehen prüft der Agent per Screenshot vor dem PR.
 - Nach dem Merge eines neuen Beitrags prüfen, dass der Deploy-Lauf grün ist.
 
 ## NIE tun
