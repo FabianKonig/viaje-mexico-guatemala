@@ -26,6 +26,11 @@ und was er noch von Hand tun muss.
    den neuen `main` rebasen (`git rebase --onto origin/main <alter-basis-commit>`) und mit
    `--force-with-lease` pushen (nur eigene Feature-Branches).
 6. Bei jeder neuen Funktion gehört ein Test dazu.
+7. Läuft `main` weiter, während ein Pull-Request offen ist (z. B. weil der Autor einen anderen PR merged),
+   verlangt GitHub vor dem Merge einen aktuellen Branch („Require branches to be up to date“). Dann
+   `git fetch origin main && git rebase origin/main`, Tests prüfen und mit `--force-with-lease`
+   pushen (nur eigene Feature-Branches). Die CI läuft danach neu. Der Autor kann stattdessen auch
+   „Update branch“ in GitHub tippen.
 
 ## Versionen und Sicherheit
 
@@ -238,4 +243,8 @@ Service Worker wird beim Build erzeugt; neue Dateiarten im Zweifel network-first
 - Fotos mit erkennbaren fremden Personen oder Kindern ohne bestätigtes Einverständnis veröffentlichen.
 - Videos oder Dateien über 100 MiB ins Repository legen.
 - Direkt auf `main` pushen, Tests abschalten oder überspringen, um grün zu werden.
+- PR-Artefakte (Screenshots, gebaute Seite als ZIP) wieder einführen: Der Autor kann sie am Handy
+  nicht öffnen (bewusst entfernt). Ebenso die Tests in `deploy.yml` wieder aufnehmen: Sie laufen nur
+  im PR, die Regel „Branch muss aktuell sein“ im Ruleset macht das sicher. Wird diese Regel je
+  abgeschaltet, müssen die Tests im Deploy zurück.
 - Veraltete oder unsichere Versionen von Node, npm oder Paketen verwenden.
