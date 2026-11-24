@@ -196,14 +196,15 @@ test.describe('Videos (Clips)', () => {
 
 test.describe('Bewegtfoto in der Galerie', () => {
   const URL = PREVIEW_URL + 'entradas/2026-12-03-gps-y-heic/';
+  // Nur echte Antworten zählen (WebKit meldet Scheinanfragen ohne Status, siehe Clip-Test oben).
   const isMotion = (u: string) => /-motion\.mp4(\?|$)/.test(u);
 
   test('Schleife ist unsichtbar, stumm und startet erst im Bild; Standbild bleibt Link zur Lightbox', async ({
     page,
   }) => {
     const loaded: string[] = [];
-    page.on('request', (r) => {
-      if (isMotion(r.url())) loaded.push(r.url());
+    page.on('response', (r) => {
+      if (isMotion(r.url()) && r.status() >= 200) loaded.push(r.url());
     });
     await page.goto(URL);
     const video = page.locator('video[data-motion]');
@@ -232,8 +233,8 @@ test.describe('Bewegtfoto in der Galerie', () => {
     test.use({ reducedMotion: 'reduce' });
     test('lädt und zeigt keine Schleife, nur das Standbild', async ({ page }) => {
       const loaded: string[] = [];
-      page.on('request', (r) => {
-        if (isMotion(r.url())) loaded.push(r.url());
+      page.on('response', (r) => {
+        if (isMotion(r.url()) && r.status() >= 200) loaded.push(r.url());
       });
       await page.goto(URL);
       await page.locator('a[data-lightbox-item]:has(video[data-motion])').scrollIntoViewIfNeeded();
