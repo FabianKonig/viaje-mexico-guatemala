@@ -3,6 +3,7 @@ title: 'Lluvia, Salsa y mucha electricidad'
 titleDe: 'Regen, Salsa und viel Strom'
 date: 2026-11-24
 place: ciudad-de-mexico
+cover: 16.jpg
 photos:
   - file: 01.jpg
     alt: 'Foto 1 von 17'

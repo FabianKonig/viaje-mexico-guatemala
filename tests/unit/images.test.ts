@@ -127,6 +127,36 @@ describe('Bild-Pipeline', () => {
   });
 });
 
+describe('Titelbild (cover)', () => {
+  it('OG-Bild nur für das cover, sonst für das erste Foto', async () => {
+    const content = tmp('content-');
+    for (const [slug, cover] of [
+      ['2026-11-24-mit', 'cover: b.jpg\n'],
+      ['2026-11-25-ohne', ''],
+    ]) {
+      const post = path.join(content, 'posts', slug);
+      fs.mkdirSync(path.join(post, 'photos'), { recursive: true });
+      for (const f of ['a.jpg', 'b.jpg'])
+        fs.writeFileSync(path.join(post, 'photos', f), await gpsJpeg(900, 700));
+      fs.writeFileSync(
+        path.join(post, 'index.md'),
+        `---\ntitle: T\n${cover}photos:\n  - file: a.jpg\n    alt: A\n  - file: b.jpg\n    alt: B\n---\n`,
+      );
+    }
+    const cache = tmp('cache-');
+    const m = await processAll({
+      contentDir: content,
+      outDir: tmp('out-'),
+      cacheDir: cache,
+      manifestFile: path.join(cache, 'm.json'),
+      log: () => {},
+    });
+    const og = (k: string) => Boolean(m.photos[k].og);
+    expect([og('2026-11-24-mit/a.jpg'), og('2026-11-24-mit/b.jpg')]).toEqual([false, true]);
+    expect([og('2026-11-25-ohne/a.jpg'), og('2026-11-25-ohne/b.jpg')]).toEqual([true, false]);
+  });
+});
+
 describe('Videos im Bildskript', () => {
   const mp4 = (extra: Buffer = Buffer.alloc(0)) =>
     Buffer.concat([

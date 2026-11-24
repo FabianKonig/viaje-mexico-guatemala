@@ -160,6 +160,29 @@ describe('Inhalte: Frontmatter-Prüfung', () => {
     expect(r.errors.join()).toMatch(/videos \(YouTube\) gibt es nicht mehr.*clips/);
   });
 
+  it('cover: Titelbild ist ein Foto aus photos, sonst das erste', () => {
+    const dir = tmpPost(['01.jpg', '02.jpg']);
+    const photos = [
+      { file: '01.jpg', alt: 'Test' },
+      { file: '02.jpg', alt: 'Test 2' },
+    ];
+    const run = (cover?: unknown) =>
+      validatePost(
+        '2026-11-24-hola',
+        dir,
+        { ...base(), photos, ...(cover === undefined ? {} : { cover }) },
+        original,
+        places,
+      );
+    expect(run().post?.cover?.file).toBe('01.jpg');
+    const r = run('02.jpg');
+    expect(r.errors).toEqual([]);
+    expect(r.post?.cover?.file).toBe('02.jpg');
+    expect(r.post?.photos.map((p) => p.file)).toEqual(['01.jpg', '02.jpg']);
+    expect(run('03.jpg').errors.join()).toMatch(/cover "03.jpg" ist kein Foto/);
+    expect(run(5).errors.join()).toMatch(/cover muss ein Dateiname/);
+  });
+
   it('Bewegtfoto: motion muss eine vorhandene .mp4 in photos/ sein', () => {
     const dir = tmpPost(['01.jpg', '01.mp4']);
     const photo = { file: '01.jpg', alt: 'Test', motion: '01.mp4' };

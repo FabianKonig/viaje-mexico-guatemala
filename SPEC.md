@@ -129,6 +129,7 @@ Ein Beitrag ist ein Ordner `content/posts/JJJJ-MM-TT-slug/` mit `index.md` (nur 
 | `titleDe` | nein | deutsche Übersetzung des Titels |
 | `date` | ja | `JJJJ-MM-TT` |
 | `place` | nein | `id` aus `places.yaml`; fehlt der Ort, zeigt der Beitrag nur den Tag |
+| `cover` | nein | Titelbild: `file` eines Fotos aus `photos` (Beitragskarte, Vorschau, WhatsApp-Bild). Fehlt es, gilt das erste Foto. Die Reihenfolge der Fotos bleibt chronologisch, das Titelbild muss nicht das erste sein |
 | `photos[]` | nein | `file` (in `photos/`), `alt` (Pflicht; Standard `Foto N von M`, siehe 7.6), `caption` (optional), `motion` (optional: stumme Schleife eines Bewegtfotos, `.mp4` in `photos/`); höchstens 20 |
 | `clips[]` | nein | eigenes Video: `file` (`.mp4` in `clips/`, dazu `clips/<name>.jpg` als Standbild), `title` (Pflicht; Standard `Video N`), `width`, `height`, `duration` (trägt der Import ein); höchstens 20 |
 | `translation.source_sha256` | ja | SHA-256 von `original.md` |
@@ -297,7 +298,7 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   den Medien. Das ist eine bewusste Abwägung gegen die Barrierefreiheit (Alt-Texte beschreiben dann
   nicht den Inhalt); die Seite bleibt bedienbar, die Bildunterschrift (`caption`) kann der Autor
   jederzeit selbst setzen.
-- **Beitragskarte:** erstes Foto (3:2, Vorschaubild) und Fotoanzahl.
+- **Beitragskarte:** Titelbild (3:2, Vorschaubild) und Fotoanzahl.
 
 ### 7.7 Videos
 
@@ -323,8 +324,8 @@ Alle Videos sind eigene Clips (`clips:`, Komponente `Videos.astro`, Klasse `.cli
   (`scripts/lib/captured.mjs`): Foto EXIF `DateTimeOriginal` (+ `SubSecTimeOriginal`), dann
   `DateTimeDigitized`/`DateTime`; Video `creation_time` im Container (ffprobe); sonst ein Zeitstempel im
   Dateinamen (`PXL_20261124_153012345`, `IMG_20261124_153012`). Gleiche Zeit: nach Dateiname; Dateien ohne
-  Zeit stehen am Ende der Gruppe. Es gibt keine Ausnahme: Das Titelbild (Beitragskarte, Vorschau) ist
-  immer `photos[0]`, also das älteste Foto. `node scripts/import-media.mjs --times <ordner>` zeigt nur die Zeiten, ohne zu schreiben.
+  Zeit stehen am Ende der Gruppe. Das Titelbild ist davon getrennt: Es steht im Feld `cover` (siehe 6.1)
+  und ändert die Reihenfolge nicht; ohne `cover` gilt `photos[0]`. `node scripts/import-media.mjs --times <ordner>` zeigt nur die Zeiten, ohne zu schreiben.
   Fotos: JPEG Qualität 85, lange Seite höchstens 1600 px, ohne Metadaten, `photos/NN.jpg`.
   **Android-Bewegtfotos** (Motion Photo: JPEG mit angehängtem MP4, erkennbar an `*.MP.jpg`; `extractMotionVideo`
   liest XMP `Item:Semantic="MotionPhoto"` mit `Item:Length` bzw. das ältere `MicroVideoOffset`) werden zu
@@ -421,7 +422,7 @@ YouTube wird nicht verwendet. `videos:` im Frontmatter ist ein Fehler (Hinweis a
   (geprüft beim Build): Palabrita und die Datenschutzerklärung von GitHub.
 - **Open Graph** (Vorschau in WhatsApp): `og:type`, `og:site_name`, `og:locale`, `og:title`,
   `og:description`, `og:url`, `og:image` (absolute URL aus `SITE_URL` + Basispfad), Breite/Höhe/Alt.
-  Beiträge mit Fotos: erstes Foto als 1200×630-JPEG; sonst `public/og-default.jpg` (erzeugt mit
+  Beiträge mit Fotos: Titelbild als 1200×630-JPEG; sonst `public/og-default.jpg` (erzeugt mit
   `scripts/make-og.mjs` aus eigenem Design und den eigenen Schriften).
   Hinweis: `robots.txt` sperrt alles. WhatsApp erzeugt Link-Vorschauen auf dem Gerät des Absenders;
   sollte die Vorschau trotzdem fehlen, bewusst entscheiden, ob eine Ausnahme nötig ist (TODO.md).

@@ -104,7 +104,8 @@ title: '¡Hola, México!'            # Titel, wie der Autor ihn schreibt (nicht 
 titleDe: 'Hallo, Mexiko!'          # optional: Übersetzung des Titels
 date: 2026-11-23                   # Datum des Beitrags (JJJJ-MM-TT)
 place: ciudad-de-mexico            # id aus content/places.yaml (optional, siehe Kartenregeln)
-photos:                            # optional, höchstens 20
+cover: 01.jpg                      # optional: Titelbild (Datei aus photos/), sonst das erste Foto
+photos:                            # optional, höchstens 20, chronologisch (älteste zuerst)
   - file: 01.jpg                   # Datei in photos/
     alt: 'Foto 1 von 18'           # Pflicht: kurzer deutscher Alt-Text, Standard „Foto N von M“ (kein Bildinhalt)
     caption: 'El Zócalo'           # optional: Bildunterschrift
@@ -205,7 +206,7 @@ Doc im Unterordner ohne diese Präfixe. Alles andere Unbekannte: den Autor frage
 3. **Entfernte Dateien:** die Dateien in `photos/` bzw. `clips/` löschen (bei Bewegtfotos auch
    `NN.mp4`, bei Videos `NN.jpg`) und die Einträge in `index.md` entfernen.
 4. `photos:`/`clips:` in `index.md` ergänzen. Neutrale Texte neu durchzählen (`Foto N von M`,
-   `Video N`, M = neue Gesamtzahl). Die Reihenfolge bleibt chronologisch (neue Einträge nach Aufnahmezeit einsortieren, Titelbild siehe „Medien holen“).
+   `Video N`, M = neue Gesamtzahl). Die Reihenfolge bleibt chronologisch (neue Einträge nach Aufnahmezeit einsortieren); `cover` bleibt, außer der Autor nennt ein neues.
 5. Die Lern-Datei bleibt **unverändert** (Medien stehen nicht darin).
 
 **Text geändert:**
@@ -330,7 +331,7 @@ Beitrag), Verlauf der Beiträge (Datum, Link zur Lern-Datei).
   Bilddatei öffnen (kein `Read` auf Bilder, keine Bildbetrachter, keine Video-Einzelbilder ansehen).
   `alt` und `title` bekommen die neutralen Standardtexte (`Foto N von M`, `Video N`); eine echte
   Beschreibung nur, wenn der Autor sie selbst liefert (z. B. im Google Doc). Der Ort kommt aus dem
-  Text. Der Drive-Konnektor zeigt heruntergeladene
+  Text, das Titelbild nennt der Autor mit Dateinamen. Der Drive-Konnektor zeigt heruntergeladene
   Bilder von selbst im Chat an; das lässt sich nicht abstellen, davon wird nichts verwendet.
   Technische Prüfungen (Größe, Format, Metadaten, Laufzeit, Layout per Screenshot) bleiben erlaubt.
 - **Videos:** Eigene Videos kommen als `clips:` ins Repository, aber **nur nach dem Import** (720p,
@@ -345,7 +346,7 @@ Beitrag), Verlauf der Beiträge (Datum, Link zur Lern-Datei).
 
 Die Originale liegen im Google Drive des Autors: Ordner `reiseblog-viaje-mexico-guatemala`
 (ID `1Qu7wqLXW14XaZgrblZB4PZW2PaHg5b3M`), darin **ein Unterordner je Beitrag** `JJJJ-MM-TT-slug` mit
-einem Google Doc (Text), den Fotos, Videos und Bewegtfotos (`*.MP.jpg`).
+einem Google Doc (Text, Hinweis auf das Titelbild), den Fotos, Videos und Bewegtfotos (`*.MP.jpg`).
 Der Autor meldet nur: „Neuer Beitrag `JJJJ-MM-TT-slug`“. Zugriff über den Drive-Konnektor
 (`mcp__Google_Drive__*`, per ToolSearch laden). Ist ein Anhang im Chat, hat er Vorrang (liegt schon
 im Arbeitsordner).
@@ -357,7 +358,7 @@ im Arbeitsordner).
    die er selbst angelegt hatte).
 2. **Text:** `download_file_content` mit `exportMimeType: text/plain` (oder `read_file_content`).
    Text so übernehmen, wie das Doc ihn liefert (nur Export-Artefakte wie BOM entfernen), nie
-   korrigieren. Der Titel steht im Doc; ist etwas unklar, den Autor fragen.
+   korrigieren. Titel und Titelbild stehen im Doc; ist etwas unklar, den Autor fragen.
 3. **Dateien bis 10 MB:** `download_file_content`. Die Datei wird automatisch im Ordner
    `…/tool-results/` gespeichert (Pfad steht in der Antwort; Bilder werden zusätzlich angezeigt).
    Größe mit `fileSize` aus der Suche vergleichen. Dateien nie von Hand abtippen oder einfügen.
@@ -381,8 +382,9 @@ Thema `environment.network`).
 
 Der Import nummeriert nach **Aufnahmezeit** (Zeitpunkt des Auslösens; erst alle Fotos, dann alle Videos,
 je Gruppe älteste zuerst). Die Reihenfolge in `photos:` und `clips:` ist **streng chronologisch**, ohne
-Ausnahme. Das **Titelbild** (Vorschaubild, WhatsApp-Bild) ist deshalb immer das erste Foto im Beitrag
-(`photos[0]`), also das älteste; ein Titelbild wählt der Autor nicht. Bei späteren
+Ausnahme. Das **Titelbild** (Vorschaubild, WhatsApp-Bild) wählt der Autor (Dateiname im Google Doc oder
+im Chat) und wird mit `cover: <datei>` (Name der Datei in `photos/`) oben im Frontmatter eingetragen; es
+verschiebt nichts. Nennt er keines, gilt das erste (älteste) Foto. Bei späteren
 Ergänzungen die neuen Einträge nach Aufnahmezeit einsortieren: Zeiten der Originale zeigt
 `node scripts/import-media.mjs --times <ordner>`.
 

@@ -52,6 +52,8 @@ export interface Post {
   date: string;
   place?: Place;
   photos: PhotoRef[];
+  /** Titelbild (Vorschau, WhatsApp): `cover` im Frontmatter, sonst das erste Foto. */
+  cover?: PhotoRef;
   clips: ClipRef[];
   /** Originaltext, byte-genau aus original.md. */
   original: string;
@@ -178,6 +180,15 @@ export function validatePost(
       });
     }
   }
+  let cover: PhotoRef | undefined = photos[0];
+  if (data.cover !== undefined) {
+    if (typeof data.cover !== 'string' || !data.cover)
+      at('cover muss ein Dateiname aus photos sein');
+    else {
+      cover = photos.find((p) => p.file === data.cover);
+      if (!cover) at(`cover "${data.cover}" ist kein Foto aus photos`);
+    }
+  }
   if (data.videos !== undefined)
     at('videos (YouTube) gibt es nicht mehr: eigene Videos als clips eintragen (Import-Skript)');
   const clips: ClipRef[] = [];
@@ -233,6 +244,7 @@ export function validatePost(
       date: data.date as string,
       ...(place ? { place } : {}),
       photos,
+      ...(cover ? { cover } : {}),
       clips,
       original: original as string,
       translationData,
