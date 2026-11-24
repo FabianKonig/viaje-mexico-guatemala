@@ -213,9 +213,9 @@ Doc im Unterordner ohne diese Präfixe. Alles andere Unbekannte: den Autor frage
 1. Neuen Text aus dem Text-Doc byte-genau nach `original.md`, Segmente und Hash in `index.md`
    anpassen (Regeln „Beitragsformat“ und „Übersetzungsregeln“). Nur geänderte Stellen neu übersetzen.
 2. **Lern-Datei neu aufbauen:** `Lernhilfe-<slug>` komplett aus dem neuen Text erzeugen (nicht nur
-   anhängen, nicht die alte Fassung stehen lassen). Gibt es das Doc schon, den Inhalt ersetzen
-   (`update_file`, falls es geht, sonst neue Datei anlegen und die alte mit `trash_file` in den
-   Papierkorb legen; neuen Link nennen).
+   anhängen, nicht die alte Fassung stehen lassen). Gibt es das Doc schon: neue Datei mit gleichem
+   Titel anlegen, die alte mit `trash_file` in den Papierkorb legen, neuen Link nennen (Inhalt lässt sich
+   nicht ersetzen, siehe „Spanisch-Lernhilfe“).
 3. **Sammel-Doc `Lernhilfe-Übersicht` neu aufbauen:** Die Zählung dieses Beitrags **ersetzen**, nie
    zusätzlich addieren; Summen, Trend und Regelliste neu berechnen.
 4. Haben sich nur `lang: de`-Passagen geändert, bleiben Lern-Datei und Übersicht unverändert.
@@ -248,15 +248,25 @@ neu aufbauen.
 **Wo und wie:**
 
 - **Je Beitrag:** Google Doc `Lernhilfe-<JJJJ-MM-TT-slug>` im Drive-Unterordner des Beitrags (neben dem
-  Text-Doc). Nicht freigeben (gehört dem Autor). Anlegen mit `create_file` (`textContent` als HTML,
-  `contentMimeType: text/html`, wird in ein Google Doc umgewandelt; so gibt es Überschriften und
-  Tabellen). Vorher den Skill `anthropic-skills:google-workspace` lesen. Danach mit
-  `read_file_content` prüfen, dass Überschriften und Tabellen ankamen.
+  Text-Doc). Nicht freigeben (gehört dem Autor). Ablauf (am 24.11.2026 mit Beitrag 1 geprüft):
+  1. Den Inhalt als HTML-Datei im Scratchpad schreiben (`<h1>`, `<h2>`, `<h3>`, `<p>`, `<ul>`,
+     `<table border="1">`, `<b>`, `<i>`), nicht in den Chat tippen.
+  2. `sha256sum` der Datei bilden und `create_file` mit `contentMimeType: text/html`,
+     `parentId` = Unterordner und `base64Content: sha256:<hash>:<absoluter Pfad>` aufrufen. Drive
+     wandelt das in ein Google Doc um (Überschriften, Tabellen, Fett, Kursiv und Emoji kommen an).
+  3. Mit `read_file_content` (`includeComments: true`) prüfen, dass der Text vollständig ist.
+     (`fileSize: "1"` in der Antwort ist normal.)
+  Vorher den Skill `anthropic-skills:google-workspace` lesen.
+- **Ändern geht nur über eine neue Datei:** Es gibt keinen Docs-Editor-Konnektor, und `update_file` ändert
+  nur Metadaten (Titel, Ordner), nie den Inhalt (geprüft). Also: neues Doc mit **gleichem Titel**
+  anlegen, das alte mit `trash_file` in den Papierkorb legen (nur eigene `Lernhilfe-*`-Docs, nie
+  andere Dateien), den neuen Link nennen und die Links in der Übersicht aktualisieren. Dem Autor
+  sagen, dass im Papierkorb ein altes `Lernhilfe-*` liegt (er kann es dort lassen).
 - **Sammel-Doc:** Google Doc `Lernhilfe-Übersicht` im Hauptordner `reiseblog-viaje-mexico-guatemala`.
-  Beim ersten Mal anlegen, danach nach jedem neuen Beitrag **neu aufbauen** aus dem alten Stand plus
-  dem neuen Beitrag (Einzel-Docs per `search_files`: `title contains 'Lernhilfe-'`). Ob `update_file`
-  den Inhalt ersetzen kann, beim ersten Mal ausprobieren und hier festhalten; sonst neue Datei
-  anlegen, die alte in den Papierkorb legen (`trash_file`) und den neuen Link nennen.
+  Beim ersten Mal anlegen, danach nach jedem neuen Beitrag **neu aufbauen** (neue Datei, altes in den
+  Papierkorb) aus dem alten Stand plus dem neuen Beitrag (Einzel-Docs per `search_files`:
+  `title contains 'Lernhilfe-'`). Die Übersicht verlinkt die Einzel-Docs, also nach jedem
+  Neuaufbau eines Einzel-Docs auch sie neu aufbauen.
 - Die Lern-Datei liegt **im selben Ordner wie die Medien des Beitrags**. Sie ist nie ein Medium und nie
   der Beitragstext: Dateien mit `Lernhilfe-` am Anfang (und `tmp-*`) beim „Medien holen“ und bei jeder
   Änderung eines Beitrags ignorieren (siehe „Bestehenden Beitrag ändern“).
