@@ -31,7 +31,8 @@ for (const post of ALL) {
     await page.goto(post.url);
     // Kachel „Original“ ist byte-gleich zur Quelldatei
     const shown = await page.locator('[data-original]').evaluate((el) => el.textContent);
-    expect(shown).toBe(post.original);
+    // Der Browser normalisiert beim Einlesen des HTML Zeilenenden (CRLF → LF).
+    expect(shown).toBe(post.original.replace(/\r\n?/g, '\n'));
     // Etikett
     await expect(page.getByText('Mi español, sin corregir')).toBeVisible();
 

@@ -143,8 +143,9 @@ Hash berechnen: `node scripts/hash-original.mjs content/posts/<ordner>/original.
 
 ## Ablauf: neuen Beitrag anlegen
 
-1. **Branch** `post/<JJJJ-MM-TT-slug>` von aktuellem `main` anlegen. Gibt es noch den Beispielbeitrag
-   `content/posts/2026-11-23-entrada-de-ejemplo/`, diesen beim ersten echten Beitrag löschen.
+1. **Branch** `post/<JJJJ-MM-TT-slug>` von aktuellem `main` anlegen. (Der frühere Beispielbeitrag ist
+   weg; er liegt nur noch als Testinhalt in `tests/fixtures/content/`. Die E2E-Tests dürfen sich nicht auf
+   einen bestimmten echten Beitrag festlegen: sie nehmen `latestRealPost()` aus `tests/e2e/fixtures.ts`.)
 2. **Ordner** `content/posts/<JJJJ-MM-TT-slug>/` anlegen (Datum des Beitrags, kurzer Slug ohne
    Sonderzeichen).
 3. **Originaltext übernehmen:** Text des Autors unverändert in `original.md` schreiben, Zeichen für

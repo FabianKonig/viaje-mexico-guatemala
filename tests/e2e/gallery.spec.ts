@@ -1,6 +1,6 @@
 import { test, expect, expectNoProblems, PREVIEW_URL } from './fixtures';
 
-const EXAMPLE = './entradas/2026-11-23-entrada-de-ejemplo/';
+const EXAMPLE = PREVIEW_URL + 'entradas/2026-11-23-entrada-de-ejemplo/';
 const TWENTY = PREVIEW_URL + 'entradas/2026-12-02-veinte-fotos/';
 
 test('Galerie: Vorschaubilder mit Lazy Loading, festen Maßen und Alt-Text', async ({
@@ -106,8 +106,8 @@ test('Lightbox: Wischen am Handy', async ({ page }) => {
 });
 
 test('Beitragskarte zeigt Foto und Fotoanzahl', async ({ page }) => {
-  await page.goto('./');
-  const card = page.locator('.post-card').first();
+  await page.goto(PREVIEW_URL);
+  const card = page.locator('.post-card', { hasText: 'Entrada de ejemplo' });
   await expect(card.locator('.post-card__img')).toBeVisible();
   await expect(card).toContainText('3 Fotos');
 });

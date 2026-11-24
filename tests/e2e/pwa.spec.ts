@@ -1,4 +1,4 @@
-import { test, expect, PREVIEW_URL } from './fixtures';
+import { test, expect, latestRealPost, PREVIEW_URL } from './fixtures';
 
 test('Manifest ist verlinkt und gültig', async ({ page, request }) => {
   await page.goto('./');
@@ -53,12 +53,13 @@ test.describe('Service Worker', () => {
     // Beitrag besuchen (jetzt vom Service Worker kontrolliert)
     await page.reload();
     await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
-    await page.goto('./entradas/2026-11-23-entrada-de-ejemplo/');
+    const post = latestRealPost();
+    await page.goto(post.url);
     await expect(page.locator('h1')).toBeVisible();
 
     await context.setOffline(true);
-    await page.goto('./entradas/2026-11-23-entrada-de-ejemplo/');
-    await expect(page.locator('h1')).toHaveText('Entrada de ejemplo');
+    await page.goto(post.url);
+    await expect(page.locator('h1')).toHaveText(post.title);
     await page.goto('./');
     await expect(page.locator('h1')).toHaveText('Un viaje a México y Guatemala');
     await page.goto('./noch-nie-besucht/');
