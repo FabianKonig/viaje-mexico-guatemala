@@ -47,7 +47,7 @@
 - [x] PR 1: Grundgerüst, .gitignore, LICENSE, Dokumente, Test- und CI-Gerüst, Dependabot
 - [x] PR 2: Design und Startseite, Datenmodell, Beispielbeitrag, Layout- und axe-Tests
 - [x] PR 3: Beitragsseite mit Zweisprachigkeit
-- [x] PR 4: Fotos und Lightbox inkl. Bildskript, Zwei-Klick-Videos
+- [x] PR 4: Fotos und Lightbox inkl. Bildskript, Videos (später durch eigene Clips ersetzt, YouTube entfernt)
 - [x] PR 5: Karte inkl. Ortsliste
 - [x] PR 6: Reisetag
 - [x] PR 7: PWA

@@ -114,9 +114,6 @@ clips:                             # optional, höchstens 20: eigene Videos (Sta
     width: 1280                    # width, height, duration trägt der Import ein (Vorschlag
     height: 720                    # wird vom Skript gedruckt), nicht von Hand ändern
     duration: 12.4
-videos:                            # optional: YouTube-Video (nur auf ausdrücklichen Wunsch)
-  - youtube: 'VIDEO_ID'
-    title: 'Kurzer Titel'
 translation:
   source_sha256: '<sha256 von original.md>'
   segments:                        # Reihenfolge wie im Original, lückenlos
@@ -166,7 +163,7 @@ Hash berechnen: `node scripts/hash-original.mjs content/posts/<ordner>/original.
    beschreibender deutscher `alt`, für jedes Video ein kurzer deutscher `title` (Fotos und Videos
    ansehen: Standbild `clips/NN.jpg`). **Jedes** Foto und Video, das der Autor schickt, wird
    übernommen (Videos mit Ton, nicht stumm). Zu lange Videos (über 180 s) meldet das Skript; dann dem
-   Autor sagen, dass er es kürzen oder auf YouTube hochladen soll. Braucht ffmpeg
+   Autor sagen, dass er es kürzen soll. Braucht ffmpeg
    (`sudo apt-get install -y ffmpeg`, falls es fehlt).
 7. **Ort klären:** Ist der Ort aus Text oder Fotos **eindeutig** erkennbar? Wenn nicht: **den Autor
    fragen, wo er gerade ist. Nie raten.**
@@ -198,8 +195,8 @@ Hash berechnen: `node scripts/hash-original.mjs content/posts/<ordner>/original.
 - Keine Fotos, Texte oder Grafiken von Dritten ohne Erlaubnis des Autors.
 - **Videos:** Eigene Videos kommen als `clips:` ins Repository, aber **nur nach dem Import** (720p,
   H.264/AAC, mit Ton, ohne Standort, höchstens 180 s und 40 MiB je Clip). Die Seite liefert sie
-  selbst aus und lädt sie erst nach dem Antippen von „Play“. YouTube (`videos:`, Zwei-Klick) nur,
-  wenn der Autor es ausdrücklich will.
+  selbst aus und lädt sie erst nach dem Antippen von „Play“. YouTube wird nicht verwendet (der
+  Autor will seine Videos selbst über Google Drive liefern); `videos:` im Frontmatter ist ein Fehler.
 - **Platz:** GitHub Pages erlaubt 1 GB. Der Build warnt ab 700 MiB und bricht ab 900 MiB ab. Bei der
   Warnung dem Autor Bescheid geben (Optionen: weniger oder kürzere Clips, Videos in ein zweites
   Pages-Repository auslagern).

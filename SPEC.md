@@ -130,7 +130,6 @@ Ein Beitrag ist ein Ordner `content/posts/JJJJ-MM-TT-slug/` mit `index.md` (nur 
 | `date` | ja | `JJJJ-MM-TT` |
 | `place` | nein | `id` aus `places.yaml`; fehlt der Ort, zeigt der Beitrag nur den Tag |
 | `photos[]` | nein | `file` (in `photos/`), `alt` (Pflicht), `caption` (optional); höchstens 20 |
-| `videos[]` | nein | YouTube-Video: `youtube` (11-stellige ID), `title` |
 | `clips[]` | nein | eigenes Video: `file` (`.mp4` in `clips/`, dazu `clips/<name>.jpg` als Standbild), `title` (Pflicht, Beschreibung), `width`, `height`, `duration` (trägt der Import ein); höchstens 20 |
 | `translation.source_sha256` | ja | SHA-256 von `original.md` |
 | `translation.segments[]` | ja | `lang` (`es`/`de`), `text` (wörtlicher Ausschnitt), `de` (nur bei `es`) |
@@ -267,7 +266,7 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
 
 ### 7.7 Videos
 
-**Eigene Clips** (`clips:`, Komponente `Videos.astro`, Klasse `.clip`):
+Alle Videos sind eigene Clips (`clips:`, Komponente `Videos.astro`, Klasse `.clip`):
 
 - Das fertige MP4 liegt im Beitragsordner unter `clips/` und wird vom Bildskript (`images.mjs`) mit
   Inhalts-Hash nach `public/media/<slug>/` kopiert (`<name>-<hash>.mp4`, Standbild
@@ -299,9 +298,7 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   Faustwert: ein Foto etwa 0,3 bis 0,5 MB (mit Vorschauen), ein Clip etwa 10 bis 20 MB je Minute.
   Wird es eng, können Videos in ein zweites Pages-Repository ausgelagert werden.
 
-**YouTube** (`videos: [{ youtube: ID, title }]`, Zwei-Klick-Lösung): Platzhalter mit Hinweis auf die
-Datenübertragung und dem Knopf „Video laden“. Erst danach wird
-`https://www.youtube-nocookie.com/embed/ID` eingebunden. Ohne JavaScript nur ein Link „Auf YouTube ansehen“.
+YouTube wird nicht verwendet. `videos:` im Frontmatter ist ein Fehler (Hinweis auf `clips`).
 
 ### 7.8 Routenkarte (`src/lib/map.ts`, `src/lib/geo.ts`, `RouteMap.astro`)
 
@@ -375,7 +372,7 @@ Datenübertragung und dem Knopf „Video laden“. Erst danach wird
   `<meta name="copyright">` und die Copyright-Zeile im Fußbereich, Links zu Impressum, Datenschutz,
   Lizenzhinweisen. `robots.txt`: `User-agent: *` / `Disallow: /`.
 - **Keine** Cookies, Tracker, Analytics, externen Schriften/Skripte/Karten. Erlaubte externe Links
-  (geprüft beim Build): Palabrita, YouTube (nur Link/Zwei-Klick), Datenschutzerklärungen von GitHub und Google.
+  (geprüft beim Build): Palabrita und die Datenschutzerklärung von GitHub.
 - **Open Graph** (Vorschau in WhatsApp): `og:type`, `og:site_name`, `og:locale`, `og:title`,
   `og:description`, `og:url`, `og:image` (absolute URL aus `SITE_URL` + Basispfad), Breite/Höhe/Alt.
   Beiträge mit Fotos: erstes Foto als 1200×630-JPEG; sonst `public/og-default.jpg` (erzeugt mit
@@ -385,7 +382,7 @@ Datenübertragung und dem Knopf „Video laden“. Erst danach wird
 - **Impressum** (`/impressum/`): Angaben nach § 5 DDG und § 18 Abs. 2 MStV aus `src/config.ts`
   (Name, Anschrift, E-Mail wie bei Palabrita), Haftung für Inhalte (§§ 7–10 DDG) und Links. **Datenschutz** (`/datenschutz/`): passend zur Technik (GitHub Pages inkl.
   IP-Adressen und USA/DPF, keine Cookies/Analyse, Service-Worker-Speicher auf dem Gerät, selbst
-  gehostete Schriften, eigene Videos (selbst ausgeliefert) und YouTube per Zwei-Klick, Link zu Palabrita, WhatsApp, Betroffenenrechte).
+  gehostete Schriften, Videos (selbst ausgeliefert, keine Dritten), Link zu Palabrita, WhatsApp, Betroffenenrechte).
   Bei neuer Technik anpassen. Keine Rechtsberatung: vor Veröffentlichung prüfen lassen.
 - **Lizenzhinweise** (`/lizenzhinweise/`): Rechtevorbehalt, Schriften (OFL, Lizenztexte unter
   `/fonts/`), eigene Werke, Übersicht der Werkzeuge (aus `package-lock.json`).
@@ -434,7 +431,7 @@ Querformat, Zoom bis 200 %, vergrößerte Systemschrift. Nur breit unterstützte
 (`<dialog>`, CSS Grid, `aspect-ratio`, `clamp()`, `env(safe-area-inset-*)`, Pointer Events,
 `Intl.DateTimeFormat` mit Zeitzone, Service Worker optional). Progressive Enhancement: Ohne
 JavaScript sind Beiträge, Übersetzung (als Text), Fotos (als Links), Karte und Reisezeitraum lesbar;
-JavaScript braucht es nur für Schalter, Lightbox, Reisetag, Video-Zwei-Klick und PWA.
+JavaScript braucht es nur für Schalter, Lightbox, Reisetag und PWA (Videos laufen mit den Bedienelementen des Browsers).
 
 | Plattform | Browser | Automatisiert | Wo |
 | --- | --- | --- | --- |
@@ -464,7 +461,7 @@ Befehle: [AGENTS.md › Tests](AGENTS.md#tests). Jede neue Funktion bekommt eine
 | Unit | `tests/unit` (Vitest) | Pfade, Datumshilfen, Reisetag (vor Start, Tag 1, Tag 72, 3.2., danach, Monats-/Jahreswechsel, Zeitzonengrenzen), Ortsliste/Nummerierung, Zusammenfassung naher Orte, Kartenerzeugung, Beitrags-Parser (gemischt, nur Spanisch, nur Deutsch), Frontmatter-Prüfung (Pflichtfelder, Ort existiert, Fotos existieren, max. 20), Bild-Pipeline (GPS rein → ohne Metadaten raus, Größe, Drehung, HEIC, Abbruch), Medien-Import (Foto und Video verkleinern, Standort entfernen, Ton behalten, Hochformat, Nummerierung; nur mit ffmpeg), Videos im Bildskript (Manifest, Standort-Abbruch), Größenprüfung der Seite, PWA-Logik (Videos nie über den Service Worker), Lizenzen, SPEC↔Code (Versionen, Farben, Texte, Workflows) |
 | Build | `npm run build` | Bildskript mit GPS-Prüfung (Fotos und Videos), Größe der Seite (Warnung/Fehler), HTML-Validierung, interne Links, erlaubte externe Links, noindex/Copyright/og:image je Seite, Seitengewicht |
 | Browser | `tests/e2e` (Playwright) | Smoke (keine Konsolenfehler, keine fehlgeschlagenen oder Drittanbieter-Anfragen), Startseite, Beitragsseite, Originaltreue (byte-gleich), Schalter, Lightbox (Maus, Tastatur, Wischen), Videos (keine Anfrage vor Klick; Clips: Standbild vorab, Video erst nach „Play“, Ton nicht stumm, Teilabrufe, ohne JavaScript), Karte (Pillen, Ausschnitte, Markergröße am Handy), Reisetag mit festgestellter Uhrzeit, PWA (Manifest, Service Worker, Cache-Bereinigung, offline, keine Vorschau-Registrierung), Rechtliches (Crawl aller Seiten: noindex, Copyright, Links, OG, keine Cookies), Layout (320–2560px, kein Überlauf, Profilbild rechts oben, Zoom, große Schrift), Barrierefreiheit (axe WCAG 2.2 AA inkl. Kontrast, Tastatur, Touch-Ziele), Unterpfad, 404, ohne JavaScript |
-| Grenzfälle | `tests/fixtures/content` | Beitrag ohne Fotos, mit 20 Fotos, sehr langer Titel, sehr langer Text, ohne Ort, nur Deutsch, nur Spanisch, Sonderzeichen, GPS-/HEIC-Foto, YouTube-Video, eigener Clip, Route mit 12 Orten |
+| Grenzfälle | `tests/fixtures/content` | Beitrag ohne Fotos, mit 20 Fotos, sehr langer Titel, sehr langer Text, ohne Ort, nur Deutsch, nur Spanisch, Sonderzeichen, GPS-/HEIC-Foto, eigener Clip, Route mit 12 Orten |
 | Nächtlich | `nightly.yml` | alle Browser-Projekte inkl. Edge/Chrome/iPad/Galaxy, Erreichbarkeit von Palabrita, `npm audit` |
 | Manuell | `MANUAL-TESTS.md` | echte Geräte, Samsung Internet, Firefox Android, Home-Bildschirm, WhatsApp-Vorschau |
 

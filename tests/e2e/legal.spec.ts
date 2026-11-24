@@ -109,14 +109,7 @@ test('Impressum, Datenschutz und Lizenzhinweise sind erreichbar und vollständig
   await expect(page.locator('main')).toContainText('§ 5 DDG');
   await page.locator('footer').getByRole('link', { name: 'Datenschutz' }).click();
   await expect(page.getByRole('heading', { level: 1, name: 'Datenschutzerklärung' })).toBeVisible();
-  for (const t of [
-    'GitHub',
-    'IP-Adresse',
-    'keine Cookies',
-    'youtube-nocookie.com',
-    'Palabrita',
-    'Fraunces',
-  ]) {
+  for (const t of ['GitHub', 'IP-Adresse', 'keine Cookies', 'Videos', 'Palabrita', 'Fraunces']) {
     await expect(page.locator('main')).toContainText(t);
   }
   await page.locator('footer').getByRole('link', { name: 'Lizenzhinweise' }).click();

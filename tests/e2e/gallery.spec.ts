@@ -142,33 +142,7 @@ test.describe('ohne JavaScript', () => {
   });
 });
 
-test.describe('Videos (Zwei-Klick-Lösung)', () => {
-  const URL = PREVIEW_URL + 'entradas/2026-12-03-gps-y-heic/';
-  test('keine Anfrage an YouTube vor dem Klick, youtube-nocookie nach dem Klick', async ({
-    page,
-  }) => {
-    const external: string[] = [];
-    page.on('request', (r) => {
-      if (!r.url().startsWith('http://127.0.0.1')) external.push(r.url());
-    });
-    await page.route(/youtube/, (route) =>
-      route.fulfill({ status: 200, contentType: 'text/html', body: '<p>Testvideo</p>' }),
-    );
-    await page.goto(URL);
-    await page.waitForLoadState('networkidle');
-    expect(external).toEqual([]);
-    await expect(page.locator('.video iframe')).toHaveCount(0);
-    await page.getByRole('button', { name: 'Video laden' }).click();
-    const iframe = page.locator('.video iframe');
-    await expect(iframe).toHaveAttribute(
-      'src',
-      /^https:\/\/www\.youtube-nocookie\.com\/embed\/aaaaaaaaaaa/,
-    );
-    await expect(iframe).toHaveAttribute('title', 'Testvideo');
-  });
-});
-
-test.describe('Eigene Videos (Clips)', () => {
+test.describe('Videos (Clips)', () => {
   const URL = PREVIEW_URL + 'entradas/2026-12-03-gps-y-heic/';
 
   test('Standbild vorab, Video erst nach dem Abspielen, Ton nicht stumm', async ({ page }) => {

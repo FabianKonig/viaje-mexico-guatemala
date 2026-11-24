@@ -33,11 +33,6 @@ export interface PhotoRef {
   caption?: string;
 }
 
-export interface VideoRef {
-  youtube: string;
-  title: string;
-}
-
 /** Eigenes Video (liegt als MP4 in clips/, mit Standbild gleichen Namens als JPEG). */
 export interface ClipRef {
   file: string;
@@ -55,7 +50,6 @@ export interface Post {
   date: string;
   place?: Place;
   photos: PhotoRef[];
-  videos: VideoRef[];
   clips: ClipRef[];
   /** Originaltext, byte-genau aus original.md. */
   original: string;
@@ -175,17 +169,8 @@ export function validatePost(
       });
     }
   }
-  const videos: VideoRef[] = [];
-  if (data.videos !== undefined) {
-    if (!Array.isArray(data.videos)) at('videos muss eine Liste sein');
-    else
-      data.videos.forEach((v: Record<string, unknown>, i: number) => {
-        if (typeof v?.youtube !== 'string' || !/^[A-Za-z0-9_-]{11}$/.test(v.youtube))
-          at(`videos[${i}].youtube: YouTube-ID (11 Zeichen) erwartet`);
-        if (typeof v?.title !== 'string' || !v.title.trim()) at(`videos[${i}].title fehlt`);
-        videos.push({ youtube: String(v?.youtube), title: String(v?.title) });
-      });
-  }
+  if (data.videos !== undefined)
+    at('videos (YouTube) gibt es nicht mehr: eigene Videos als clips eintragen (Import-Skript)');
   const clips: ClipRef[] = [];
   if (data.clips !== undefined) {
     if (!Array.isArray(data.clips)) at('clips muss eine Liste sein');
@@ -239,7 +224,6 @@ export function validatePost(
       date: data.date as string,
       ...(place ? { place } : {}),
       photos,
-      videos,
       clips,
       original: original as string,
       translationData,

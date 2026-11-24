@@ -2,7 +2,7 @@
 /**
  * Prüft das Build-Ergebnis:
  *  - interne Links und Ressourcen (href, src, srcset) zeigen auf vorhandene Dateien
- *  - externe Links nur auf erlaubte Ziele (Palabrita, YouTube, Datenschutzerklärungen)
+ *  - externe Links nur auf erlaubte Ziele (Palabrita, Datenschutzerklärung von GitHub)
  *  - jede Seite: noindex-Meta, Copyright-Zeile, Open-Graph-Bild mit absoluter URL
  *  - HTML-Validierung (html-validate)
  *  - Seitengewicht der Startseite ohne Fotos (Budget fürs Handy-Netz)
@@ -15,9 +15,7 @@ import { HtmlValidate, FileSystemConfigLoader } from 'html-validate';
 
 export const ALLOWED_EXTERNAL = [
   /^https:\/\/palabrita\.fabiankonig\.de\/?$/,
-  /^https:\/\/www\.youtube\.com\/watch\?v=[\w-]{11}$/,
   /^https:\/\/docs\.github\.com\/de\/site-policy\//,
-  /^https:\/\/policies\.google\.com\/privacy/,
   /^https:\/\/viaje\.fabiankonig\.de\//,
 ];
 /** GitHub Pages erlaubt höchstens 1 GB veröffentlichte Seite. Warnung ab 700 MiB, Fehler ab 900 MiB. */

@@ -149,23 +149,15 @@ describe('Inhalte: Frontmatter-Prüfung', () => {
     );
   });
 
-  it('Videos brauchen eine gültige YouTube-ID und einen Titel', () => {
-    const ok = validatePost(
+  it('videos (YouTube) wird nicht mehr akzeptiert und verweist auf clips', () => {
+    const r = validatePost(
       '2026-11-24-hola',
       tmpPost(),
       { ...base(), videos: [{ youtube: 'abcdefghijk', title: 'Video' }] },
       original,
       places,
     );
-    expect(ok.errors).toEqual([]);
-    const bad = validatePost(
-      '2026-11-24-hola',
-      tmpPost(),
-      { ...base(), videos: [{ youtube: 'https://youtu.be/x' }] },
-      original,
-      places,
-    );
-    expect(bad.errors.length).toBe(2);
+    expect(r.errors.join()).toMatch(/videos \(YouTube\) gibt es nicht mehr.*clips/);
   });
 
   it('Clips (eigene Videos) brauchen MP4, Standbild, Titel und Maße', () => {
@@ -177,7 +169,6 @@ describe('Inhalte: Frontmatter-Prüfung', () => {
     const ok = validatePost('2026-11-24-hola', dir, { ...base(), clips: [clip] }, original, places);
     expect(ok.errors).toEqual([]);
     expect(ok.post?.clips).toEqual([clip]);
-    expect(ok.post?.videos).toEqual([]);
 
     const bad = (c: Record<string, unknown>) =>
       validatePost(

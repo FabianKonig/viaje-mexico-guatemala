@@ -8,9 +8,6 @@ photos:
     caption: 'Muss ohne GPS veröffentlicht werden'
   - file: handy.heic
     alt: 'Testbild im HEIC-Format'
-videos:
-  - youtube: 'aaaaaaaaaaa'
-    title: 'Testvideo'
 clips:
   - file: 01.mp4
     title: 'Testclip mit Ton (Testbild und Sinuston)'

@@ -77,8 +77,7 @@ trotzdem schon in der Welt.
 AGENTS.md) verkleinert sie vorher: Fotos auf 1600 px, Videos auf 720p mit Ton, jeweils ohne GPS und
 Metadaten. Die Originale bleiben bei dir (z. B. in Google Drive). So bleibt das Repository klein
 (GitHub Pages erlaubt höchstens 1 GB; der Build warnt ab 700 MiB). Eigene Videos werden von der Seite
-selbst ausgeliefert und erst nach dem Antippen von „Play“ geladen. Auf YouTube hochgeladene Videos
-gehen weiterhin per Zwei-Klick-Lösung.
+selbst ausgeliefert und erst nach dem Antippen von „Play“ geladen.
 
 ## Grenzen des Schutzes
 
