@@ -210,7 +210,7 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   Laune. Und keine Sorge, falls tú no hablas español: Die deutsche Übersetzung steht immer daneben.“,
   dann in eigenem Absatz „Wer mich
   besser kennt, weiß, dass ich nicht wirklich ein Social Media Typ bin. Von daher weiß ich noch nicht, ob ich
-  hier wirklich regelmäßig schreiben werde. Schauen wir einfach Mal, was die nächsten Wochen bringen werden :)“,
+  hier wirklich regelmäßig schreiben werde. Ich möchte hier festhalten, was ich unterwegs erlebe, und euch ein bisschen daran teilhaben lassen, von den kleinen Alltagsmomenten bis zu den großen Highlights. Schauen wir einfach Mal, was die nächsten Wochen bringen werden :)“,
   dann wieder in eigenem Absatz „¡Viel Spaß beim Lesen und hasta pronto!“ und „Fabian“) in `clamp(17px, 1.2vw + 12px, 24px)`, darunter der Knopf „Neuesten Beitrag
   lesen“ (Extra-Abstand zum Text: 28px am Handy, ab 900px 32px)
   und die Reisetag-Anzeige (beide über die volle Breite unter dem Text). Die Routenkarte (`#ruta`) steht
