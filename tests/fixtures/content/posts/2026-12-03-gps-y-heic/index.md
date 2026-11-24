@@ -11,6 +11,12 @@ photos:
 videos:
   - youtube: 'aaaaaaaaaaa'
     title: 'Testvideo'
+clips:
+  - file: 01.mp4
+    title: 'Testclip mit Ton (Testbild und Sinuston)'
+    width: 640
+    height: 360
+    duration: 2
 translation:
   source_sha256: '445281d9e14691e43d37b50f853a233fcab5999fcbe6b57f3fab47339e6f1d2c'
   segments:

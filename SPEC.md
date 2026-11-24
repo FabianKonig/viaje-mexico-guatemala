@@ -68,7 +68,8 @@ content/
     2026-11-23-hola-mexico/   ein Beitrag = ein Ordner
       index.md                Frontmatter (Titel, Datum, Ort, Fotos, Übersetzung)
       original.md             Originaltext, byte-genau wie geschrieben
-      photos/                 Fotos des Beitrags (bis 20)
+      photos/                 Fotos des Beitrags (bis 20), vom Import verkleinert (JPEG, max. 1600 px)
+      clips/                  eigene Videos: NN.mp4 (720p, mit Ton) und NN.jpg (Standbild), bis 20
 public/                       statische Dateien (Schriften, Icons, CNAME, robots.txt)
 public/media/                 vom Bildskript erzeugt (nicht eingecheckt)
 scripts/                      Build, Bildskript, Prüfungen, Lizenzhinweise, Testserver
@@ -129,7 +130,8 @@ Ein Beitrag ist ein Ordner `content/posts/JJJJ-MM-TT-slug/` mit `index.md` (nur 
 | `date` | ja | `JJJJ-MM-TT` |
 | `place` | nein | `id` aus `places.yaml`; fehlt der Ort, zeigt der Beitrag nur den Tag |
 | `photos[]` | nein | `file` (in `photos/`), `alt` (Pflicht), `caption` (optional); höchstens 20 |
-| `videos[]` | nein | `youtube` (11-stellige ID), `title` |
+| `videos[]` | nein | YouTube-Video: `youtube` (11-stellige ID), `title` |
+| `clips[]` | nein | eigenes Video: `file` (`.mp4` in `clips/`, dazu `clips/<name>.jpg` als Standbild), `title` (Pflicht, Beschreibung), `width`, `height`, `duration` (trägt der Import ein); höchstens 20 |
 | `translation.source_sha256` | ja | SHA-256 von `original.md` |
 | `translation.segments[]` | ja | `lang` (`es`/`de`), `text` (wörtlicher Ausschnitt), `de` (nur bei `es`) |
 
@@ -246,7 +248,8 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   nie vergrößert; für das erste Foto eines Beitrags zusätzlich ein Open-Graph-Bild 1200×630 (JPEG).
   Dateinamen enthalten einen Inhalts-Hash (`<name>-<hash>-<größe>.webp`), daher dauerhaft
   zwischenspeicherbar. Zwischenspeicher `.cache/media/`, Ausgabe `public/media/`, Manifest
-  `.cache/media-manifest.json` (Maße für `width`/`height`).
+  `.cache/media-manifest.json` (Maße für `width`/`height`). Das Manifest enthält auch `clips`
+  (Video und Standbild, siehe 7.7).
 - **Prüfung:** Nach der Verarbeitung und nach `astro build` werden alle Bilder im Ausgabeordner auf
   EXIF, GPS, XMP und IPTC geprüft (sharp-Metadaten und Byte-Marker); HEIC/TIFF/RAW dürfen nicht
   veröffentlicht werden. Jeder Fund bricht den Build ab.
@@ -262,10 +265,42 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   Nachbarbilder vorgeladen. Fokus startet auf „Schließen“ und kehrt zum Foto zurück.
 - **Beitragskarte:** erstes Foto (3:2, Vorschaubild) und Fotoanzahl.
 
-### 7.7 Videos (Zwei-Klick-Lösung)
+### 7.7 Videos
 
-Videos liegen nie im Repository. `videos: [{ youtube: ID, title }]` zeigt einen Platzhalter mit
-Hinweis auf die Datenübertragung und dem Knopf „Video laden“. Erst danach wird
+**Eigene Clips** (`clips:`, Komponente `Videos.astro`, Klasse `.clip`):
+
+- Das fertige MP4 liegt im Beitragsordner unter `clips/` und wird vom Bildskript (`images.mjs`) mit
+  Inhalts-Hash nach `public/media/<slug>/` kopiert (`<name>-<hash>.mp4`, Standbild
+  `<name>-<hash>-poster.jpg`). Beim Build wird nichts umgewandelt, ffmpeg ist dafür nicht nötig.
+- Anzeige: `<video controls playsinline preload="none" poster=…>`, **nicht stumm, kein Autoplay**.
+  Vor dem Antippen von „Play“ lädt der Browser nur das Standbild (etwa 15 bis 60 KB), nie das Video.
+  Darunter der `title`. Ohne JavaScript funktioniert das genauso (native Bedienelemente), ohne
+  Videounterstützung erscheint ein Link „Video herunterladen“. `max-height: 75vh`, damit
+  Hochformat-Clips auf dem Handy nicht höher als der Bildschirm werden.
+- Der Service Worker fasst Videos und Range-Anfragen nie an (`shouldHandle` lehnt `.mp4` ab):
+  Videos werden gestreamt und nie vorab zwischengespeichert. GitHub Pages liefert Teilabrufe
+  (Range); der Testserver `scripts/serve.mjs` tut das ebenfalls.
+- **Import** (`scripts/import-media.mjs`, Logik in `scripts/lib/import.mjs` und `scripts/lib/video.mjs`),
+  Aufruf `node scripts/import-media.mjs <quellordner> <slug>`: liest Handy-Originale (Foto: JPEG,
+  PNG, WebP, HEIC; Video: MP4, MOV, M4V, 3GP, WebM, MKV), schreibt nur verkleinerte Dateien in den
+  Beitragsordner (Originale werden nie kopiert) und druckt einen Frontmatter-Vorschlag.
+  Fotos: JPEG Qualität 85, lange Seite höchstens 1600 px, ohne Metadaten, `photos/NN.jpg`.
+  Videos: H.264 (Profil main) und AAC 96 kbit/s (Ton bleibt erhalten), kürzere Seite höchstens
+  720 px (nie vergrößert), höchstens 30 Bilder/s, CRF 28 mit höchstens 2,5 Mbit/s, `+faststart`
+  (Start vor dem vollständigen Laden, Spulen), `-map_metadata -1` (entfernt Standort und alle
+  Metadaten), Standbild bei etwa 1 s (JPEG, 800 px). Grenzen: höchstens 180 s und 40 MiB je Clip;
+  längere Videos werden übersprungen und gemeldet. Braucht ffmpeg und ffprobe (nur im Import und in
+  den Tests, nicht im Build). Die Prüfung `mp4Problems` sucht in jedem Ergebnis nach Standort-Atomen
+  (`©xyz`, `loci`), ISO-6709-Koordinaten und Metadatenschlüsseln; ein Fund bricht ab.
+- **Prüfung beim Build:** Jedes MP4 in `content/` und in `dist` wird mit `mp4Problems` geprüft.
+  Ein Standort-Fund bricht den Build ab.
+- **Größe:** `check-dist.mjs` summiert die veröffentlichte Seite. Ab 700 MiB eine Warnung
+  (`::warning::` in der CI), ab 900 MiB bricht der Build ab (GitHub Pages erlaubt 1 GB).
+  Faustwert: ein Foto etwa 0,3 bis 0,5 MB (mit Vorschauen), ein Clip etwa 10 bis 20 MB je Minute.
+  Wird es eng, können Videos in ein zweites Pages-Repository ausgelagert werden.
+
+**YouTube** (`videos: [{ youtube: ID, title }]`, Zwei-Klick-Lösung): Platzhalter mit Hinweis auf die
+Datenübertragung und dem Knopf „Video laden“. Erst danach wird
 `https://www.youtube-nocookie.com/embed/ID` eingebunden. Ohne JavaScript nur ein Link „Auf YouTube ansehen“.
 
 ### 7.8 Routenkarte (`src/lib/map.ts`, `src/lib/geo.ts`, `RouteMap.astro`)
@@ -324,7 +359,8 @@ Hinweis auf die Datenübertragung und dem Knopf „Video laden“. Erst danach w
   Safari wenig Speicher erlaubt.
 - **Service Worker** `sw.js` (erzeugt aus `src/pages/sw.js.ts`), Scope = Basispfad:
   HTML network-first (offline: zuletzt gesehene Fassung, sonst ein kurzer Offline-Hinweis);
-  Bilder, Schriften, `_astro`, `media`, `icons` cache-first (Dateinamen mit Hash bzw. selten geändert).
+  Bilder, Schriften, `_astro`, `media`, `icons` cache-first (Dateinamen mit Hash bzw. selten geändert);
+  **Videos (`.mp4`, `video`-Anfragen, Range-Anfragen) nie**, sie werden direkt gestreamt.
   Cache-Namen `viaje:<basispfad>:<art>-<version>` (Version = Commit-SHA des Builds). Beim Aktivieren
   werden nur alte Caches **desselben Basispfads** gelöscht. Kein `skipWaiting`: Eine neue Version wird
   beim nächsten Besuch aktiv; weil HTML network-first ist, sieht trotzdem niemand eine veraltete Seite.
@@ -349,7 +385,7 @@ Hinweis auf die Datenübertragung und dem Knopf „Video laden“. Erst danach w
 - **Impressum** (`/impressum/`): Angaben nach § 5 DDG und § 18 Abs. 2 MStV aus `src/config.ts`
   (Name, Anschrift, E-Mail wie bei Palabrita), Haftung für Inhalte (§§ 7–10 DDG) und Links. **Datenschutz** (`/datenschutz/`): passend zur Technik (GitHub Pages inkl.
   IP-Adressen und USA/DPF, keine Cookies/Analyse, Service-Worker-Speicher auf dem Gerät, selbst
-  gehostete Schriften, YouTube per Zwei-Klick, Link zu Palabrita, WhatsApp, Betroffenenrechte).
+  gehostete Schriften, eigene Videos (selbst ausgeliefert) und YouTube per Zwei-Klick, Link zu Palabrita, WhatsApp, Betroffenenrechte).
   Bei neuer Technik anpassen. Keine Rechtsberatung: vor Veröffentlichung prüfen lassen.
 - **Lizenzhinweise** (`/lizenzhinweise/`): Rechtevorbehalt, Schriften (OFL, Lizenztexte unter
   `/fonts/`), eigene Werke, Übersicht der Werkzeuge (aus `package-lock.json`).
@@ -380,7 +416,7 @@ Hinweis auf die Datenübertragung und dem Knopf „Video laden“. Erst danach w
   `docs` (nur Dokumente im Hauptordner: Lint, Unit-Tests, `npm audit`; kein Build, keine Browser),
   `content` (nur `content/` und/oder Dokumente: zusätzlich Build und Browser-Tests nur in Chromium)
   oder `full` (alles andere: alle Browser). Im Zweifel (kein Pull-Request, Git-Fehler, unbekannte
-  Datei) gilt `full`. Der Job „Tests“ läuft immer, ohne Pfadfilter im Workflow, weil ein
+  Datei) gilt `full`. Außer bei `docs` installiert die CI vor den Unit-Tests ffmpeg (Tests des Medien-Imports; der Build braucht es nicht). Der Job „Tests“ läuft immer, ohne Pfadfilter im Workflow, weil ein
   übersprungener Pflicht-Check das Mergen blockieren würde; übersprungen werden nur einzelne Schritte. Keine Artefakte (Screenshots
   und gebaute Seite wurden entfernt, der Autor kann ZIP-Dateien am Handy nicht öffnen). Bei einem
   Fehlschlag wird der Playwright-Bericht (7 Tage) hochgeladen. Das Aussehen prüft der Agent vor dem
@@ -425,10 +461,10 @@ Befehle: [AGENTS.md › Tests](AGENTS.md#tests). Jede neue Funktion bekommt eine
 | --- | --- | --- |
 | Lint | `npm run lint` | Prettier, eingecheckte-aber-ignorierte Dateien, THIRD-PARTY-NOTICES aktuell, kein starkes Copyleft |
 | Sicherheit | CI | `npm audit --audit-level=moderate` |
-| Unit | `tests/unit` (Vitest) | Pfade, Datumshilfen, Reisetag (vor Start, Tag 1, Tag 72, 3.2., danach, Monats-/Jahreswechsel, Zeitzonengrenzen), Ortsliste/Nummerierung, Zusammenfassung naher Orte, Kartenerzeugung, Beitrags-Parser (gemischt, nur Spanisch, nur Deutsch), Frontmatter-Prüfung (Pflichtfelder, Ort existiert, Fotos existieren, max. 20), Bild-Pipeline (GPS rein → ohne Metadaten raus, Größe, Drehung, HEIC, Abbruch), PWA-Logik, Lizenzen, SPEC↔Code (Versionen, Farben, Texte, Workflows) |
-| Build | `npm run build` | Bildskript mit GPS-Prüfung, HTML-Validierung, interne Links, erlaubte externe Links, noindex/Copyright/og:image je Seite, Seitengewicht |
-| Browser | `tests/e2e` (Playwright) | Smoke (keine Konsolenfehler, keine fehlgeschlagenen oder Drittanbieter-Anfragen), Startseite, Beitragsseite, Originaltreue (byte-gleich), Schalter, Lightbox (Maus, Tastatur, Wischen), Videos (keine Anfrage vor Klick), Karte (Pillen, Ausschnitte, Markergröße am Handy), Reisetag mit festgestellter Uhrzeit, PWA (Manifest, Service Worker, Cache-Bereinigung, offline, keine Vorschau-Registrierung), Rechtliches (Crawl aller Seiten: noindex, Copyright, Links, OG, keine Cookies), Layout (320–2560px, kein Überlauf, Profilbild rechts oben, Zoom, große Schrift), Barrierefreiheit (axe WCAG 2.2 AA inkl. Kontrast, Tastatur, Touch-Ziele), Unterpfad, 404, ohne JavaScript |
-| Grenzfälle | `tests/fixtures/content` | Beitrag ohne Fotos, mit 20 Fotos, sehr langer Titel, sehr langer Text, ohne Ort, nur Deutsch, nur Spanisch, Sonderzeichen, GPS-/HEIC-Foto, Video, Route mit 12 Orten |
+| Unit | `tests/unit` (Vitest) | Pfade, Datumshilfen, Reisetag (vor Start, Tag 1, Tag 72, 3.2., danach, Monats-/Jahreswechsel, Zeitzonengrenzen), Ortsliste/Nummerierung, Zusammenfassung naher Orte, Kartenerzeugung, Beitrags-Parser (gemischt, nur Spanisch, nur Deutsch), Frontmatter-Prüfung (Pflichtfelder, Ort existiert, Fotos existieren, max. 20), Bild-Pipeline (GPS rein → ohne Metadaten raus, Größe, Drehung, HEIC, Abbruch), Medien-Import (Foto und Video verkleinern, Standort entfernen, Ton behalten, Hochformat, Nummerierung; nur mit ffmpeg), Videos im Bildskript (Manifest, Standort-Abbruch), Größenprüfung der Seite, PWA-Logik (Videos nie über den Service Worker), Lizenzen, SPEC↔Code (Versionen, Farben, Texte, Workflows) |
+| Build | `npm run build` | Bildskript mit GPS-Prüfung (Fotos und Videos), Größe der Seite (Warnung/Fehler), HTML-Validierung, interne Links, erlaubte externe Links, noindex/Copyright/og:image je Seite, Seitengewicht |
+| Browser | `tests/e2e` (Playwright) | Smoke (keine Konsolenfehler, keine fehlgeschlagenen oder Drittanbieter-Anfragen), Startseite, Beitragsseite, Originaltreue (byte-gleich), Schalter, Lightbox (Maus, Tastatur, Wischen), Videos (keine Anfrage vor Klick; Clips: Standbild vorab, Video erst nach „Play“, Ton nicht stumm, Teilabrufe, ohne JavaScript), Karte (Pillen, Ausschnitte, Markergröße am Handy), Reisetag mit festgestellter Uhrzeit, PWA (Manifest, Service Worker, Cache-Bereinigung, offline, keine Vorschau-Registrierung), Rechtliches (Crawl aller Seiten: noindex, Copyright, Links, OG, keine Cookies), Layout (320–2560px, kein Überlauf, Profilbild rechts oben, Zoom, große Schrift), Barrierefreiheit (axe WCAG 2.2 AA inkl. Kontrast, Tastatur, Touch-Ziele), Unterpfad, 404, ohne JavaScript |
+| Grenzfälle | `tests/fixtures/content` | Beitrag ohne Fotos, mit 20 Fotos, sehr langer Titel, sehr langer Text, ohne Ort, nur Deutsch, nur Spanisch, Sonderzeichen, GPS-/HEIC-Foto, YouTube-Video, eigener Clip, Route mit 12 Orten |
 | Nächtlich | `nightly.yml` | alle Browser-Projekte inkl. Edge/Chrome/iPad/Galaxy, Erreichbarkeit von Palabrita, `npm audit` |
 | Manuell | `MANUAL-TESTS.md` | echte Geräte, Samsung Internet, Firefox Android, Home-Bildschirm, WhatsApp-Vorschau |
 

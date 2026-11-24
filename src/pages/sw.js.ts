@@ -2,6 +2,7 @@
  * Service Worker (wird beim Build erzeugt).
  * - HTML: network-first (immer aktuell, offline die zuletzt gesehene Fassung)
  * - Bilder, Schriften, gehashte Assets (_astro): cache-first
+ * - Videos (und Range-Anfragen): nie, sie werden direkt vom Netz gestreamt
  * - Cache-Namen mit Basispfad und Version; beim Aktivieren werden alte Caches desselben Basispfads gelöscht
  * - kein skipWaiting: eine neue Version wird beim nächsten Besuch aktiv
  * - in Vorschauen: Service Worker, der sich selbst abmeldet
@@ -91,6 +92,7 @@ self.addEventListener('fetch', (event) => {
   if (!shouldHandle(request.url, request.method, SCOPE)) return;
   const url = new URL(request.url);
   if (url.pathname.endsWith('/sw.js')) return;
+  if (request.destination === 'video' || request.destination === 'audio' || request.headers.has('range')) return;
   if (isPage(request)) event.respondWith(networkFirst(request));
   else if (isAsset(request, url)) event.respondWith(cacheFirst(request));
 });

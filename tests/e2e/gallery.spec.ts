@@ -167,3 +167,53 @@ test.describe('Videos (Zwei-Klick-Lösung)', () => {
     await expect(iframe).toHaveAttribute('title', 'Testvideo');
   });
 });
+
+test.describe('Eigene Videos (Clips)', () => {
+  const URL = PREVIEW_URL + 'entradas/2026-12-03-gps-y-heic/';
+
+  test('Standbild vorab, Video erst nach dem Abspielen, Ton nicht stumm', async ({ page }) => {
+    const mp4: string[] = [];
+    page.on('request', (r) => {
+      if (/\.mp4(\?|$)/.test(r.url())) mp4.push(r.url());
+    });
+    await page.goto(URL);
+    await page.waitForLoadState('networkidle');
+    const video = page.locator('video.clip__video');
+    await expect(video).toHaveCount(1);
+    await expect(video).toHaveAttribute('preload', 'none');
+    await expect(video).toHaveAttribute('poster', /-poster\.jpg$/);
+    await expect(video).toHaveAttribute('controls', '');
+    await expect(video).toHaveAttribute('aria-label', /Testclip/);
+    expect(await video.evaluate((v: HTMLVideoElement) => v.muted)).toBe(false);
+    expect(await video.evaluate((v: HTMLVideoElement) => v.autoplay)).toBe(false);
+    // Vor dem Abspielen wird die Videodatei nicht geladen.
+    expect(mp4).toEqual([]);
+    await expect(page.locator('.clip__title')).toHaveText(/Testclip/);
+    // Nach dem Abspielen wird sie angefragt (Chromium ohne H.264 kann sie nicht dekodieren).
+    await video.evaluate((v: HTMLVideoElement) => v.play().catch(() => undefined));
+    await expect.poll(() => mp4.length).toBeGreaterThan(0);
+  });
+
+  test('Videodatei hat keinen Standort und wird in Teilen abrufbar geliefert', async ({
+    page,
+    request,
+  }) => {
+    await page.goto(URL);
+    const src = await page.locator('video.clip__video source').getAttribute('src');
+    const url = new globalThis.URL(src!, page.url()).toString();
+    const part = await request.get(url, { headers: { Range: 'bytes=0-99' } });
+    expect(part.status()).toBe(206);
+    expect((await part.body()).length).toBe(100);
+    const body = await (await request.get(url)).body();
+    expect(body.includes(Buffer.from([0xa9, 0x78, 0x79, 0x7a]))).toBe(false);
+    expect(body.subarray(4, 8).toString('latin1')).toBe('ftyp');
+  });
+
+  test.describe('ohne JavaScript', () => {
+    test.use({ javaScriptEnabled: false });
+    test('Video mit Bedienelementen und Download-Link ist vorhanden', async ({ page }) => {
+      await page.goto(URL);
+      await expect(page.locator('video.clip__video[controls]')).toHaveCount(1);
+    });
+  });
+});

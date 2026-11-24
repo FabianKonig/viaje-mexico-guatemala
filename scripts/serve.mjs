@@ -32,18 +32,32 @@ const TYPES = {
   '.avif': 'image/avif',
   '.ico': 'image/x-icon',
   '.woff2': 'font/woff2',
+  '.mp4': 'video/mp4',
   '.txt': 'text/plain; charset=utf-8',
   '.xml': 'application/xml; charset=utf-8',
 };
 
-function send(res, status, file, method) {
+function send(res, status, file, method, range) {
   const type = TYPES[path.extname(file).toLowerCase()] || 'application/octet-stream';
   const body = fs.readFileSync(file);
-  res.writeHead(status, {
-    'Content-Type': type,
-    'Content-Length': body.length,
-    'Cache-Control': 'no-cache',
-  });
+  const headers = { 'Content-Type': type, 'Cache-Control': 'no-cache', 'Accept-Ranges': 'bytes' };
+  // Teilabrufe (Range) wie bei GitHub Pages, damit Videos gestreamt und gespult werden können.
+  const m = status === 200 && range ? /^bytes=(\d*)-(\d*)$/.exec(range) : null;
+  if (m && (m[1] || m[2])) {
+    const start = m[1] ? Number(m[1]) : Math.max(0, body.length - Number(m[2]));
+    const end = m[1] && m[2] ? Math.min(Number(m[2]), body.length - 1) : body.length - 1;
+    if (start > end || start >= body.length) {
+      res.writeHead(416, { 'Content-Range': `bytes */${body.length}` });
+      return res.end();
+    }
+    res.writeHead(206, {
+      ...headers,
+      'Content-Range': `bytes ${start}-${end}/${body.length}`,
+      'Content-Length': end - start + 1,
+    });
+    return res.end(method === 'HEAD' ? undefined : body.subarray(start, end + 1));
+  }
+  res.writeHead(status, { ...headers, 'Content-Length': body.length });
   res.end(method === 'HEAD' ? undefined : body);
 }
 
@@ -79,7 +93,7 @@ const server = http.createServer((req, res) => {
     const index = path.join(file, 'index.html');
     return fs.existsSync(index) ? send(res, 200, index, method) : notFound(res, method);
   }
-  if (fs.existsSync(file)) return send(res, 200, file, method);
+  if (fs.existsSync(file)) return send(res, 200, file, method, req.headers.range);
   if (fs.existsSync(file + '.html')) return send(res, 200, file + '.html', method);
   return notFound(res, method);
 });

@@ -13,8 +13,14 @@ export interface PhotoMedia {
   og?: string;
 }
 
+export interface ClipMedia {
+  src: string;
+  poster: string;
+}
+
 export interface MediaManifest {
   photos: Record<string, PhotoMedia>;
+  clips: Record<string, ClipMedia>;
   profile: { 240: string; 132: string } | null;
 }
 
@@ -36,5 +42,12 @@ export function photoMedia(slug: string, file: string): PhotoMedia {
   const m = loadManifest().photos[`${slug}/${file}`];
   if (!m)
     throw new Error(`Bild ${slug}/${file} wurde nicht verarbeitet. Bildskript erneut ausführen.`);
+  return m;
+}
+
+export function clipMedia(slug: string, file: string): ClipMedia {
+  const m = loadManifest().clips?.[`${slug}/${file}`];
+  if (!m)
+    throw new Error(`Video ${slug}/${file} wurde nicht verarbeitet. Bildskript erneut ausführen.`);
   return m;
 }

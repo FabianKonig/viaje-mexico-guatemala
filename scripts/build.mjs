@@ -35,7 +35,7 @@ try {
   if (r.problems.length)
     throw new Error('Prüfung des Build-Ergebnisses:\n  ' + r.problems.join('\n  '));
   console.log(
-    `Build-Prüfung ${outDir}: ${r.pages} Seiten ok (Links, HTML, noindex, Copyright), Startseite ohne Fotos ${Math.round(r.homeBytes / 1024)} KB.`,
+    `Build-Prüfung ${outDir}: ${r.pages} Seiten ok (Links, HTML, noindex, Copyright), Startseite ohne Fotos ${Math.round(r.homeBytes / 1024)} KB, gesamt ${Math.round(r.distBytes / 1048576)} MiB.`,
   );
 } catch (e) {
   console.error('\n✗ ' + (e instanceof Error ? e.message : String(e)));

@@ -7,6 +7,8 @@
  *    WebP Qualität 80) und für das erste Foto jedes Beitrags ein Open-Graph-Bild (1200×630 JPEG)
  *  - verarbeitet nur Fotos, die im Frontmatter eines Beitrags stehen
  *  - prüft am Ende, dass keine Metadaten mehr enthalten sind; bricht sonst ab (Exit-Code 1)
+ *  - kopiert die fertigen Videos (clips/*.mp4) mit Standbild nach public/media/ (kein Umwandeln, nur
+ *    Prüfung auf Standort/Metadaten; umgewandelt wird beim Import, scripts/import-media.mjs)
  * Ausgabe: public/media/ (nicht eingecheckt) und .cache/media-manifest.json
  *
  * Aufruf: node scripts/images.mjs            (Inhaltsordner aus CONTENT_DIR, Standard: content)
@@ -19,6 +21,7 @@ import sharp from 'sharp';
 import heicConvert from 'heic-convert';
 import YAML from 'yaml';
 import { exifHasGps, rawMetadataMarkers } from './lib/exif.mjs';
+import { mp4Problems } from './lib/video.mjs';
 
 export const PIPELINE_VERSION = 1;
 export const LARGE = 1600;
@@ -102,6 +105,9 @@ export async function verifyDir(dir) {
         count++;
         const problems = await inspectImage(p);
         if (problems.length) bad.push(`${p}: ${problems.join(', ')}`);
+      } else if (/\.mp4$/i.test(entry.name)) {
+        const problems = mp4Problems(fs.readFileSync(p));
+        if (problems.length) bad.push(`${p}: ${problems.join(', ')}`);
       } else if (/\.(heic|heif|tiff?|dng|raw)$/i.test(entry.name)) {
         bad.push(`${p}: Originalformat darf nicht veröffentlicht werden`);
       }
@@ -155,7 +161,7 @@ export async function processAll({
 } = {}) {
   fs.rmSync(outDir, { recursive: true, force: true });
   fs.mkdirSync(outDir, { recursive: true });
-  const manifest = { photos: {}, profile: null };
+  const manifest = { photos: {}, clips: {}, profile: null };
   const postsDir = path.join(contentDir, 'posts');
   const emit = (rel, buf) => {
     const file = path.join(outDir, rel);
@@ -216,6 +222,26 @@ export async function processAll({
       if (i === 0) entry.og = emit(path.join(slug, `${stem}-${h}-og.jpg`), read('og.jpg'));
       manifest.photos[`${slug}/${ph.file}`] = entry;
     }
+
+    const clips = Array.isArray(fm.clips) ? fm.clips : [];
+    for (const c of clips) {
+      if (!c?.file || typeof c.file !== 'string') continue;
+      const src = path.join(postsDir, slug, 'clips', c.file);
+      const posterSrc = src.replace(/\.mp4$/i, '.jpg');
+      if (!fs.existsSync(src) || !fs.existsSync(posterSrc)) continue; // meldet die Inhaltsprüfung
+      const video = fs.readFileSync(src);
+      const problems = mp4Problems(video);
+      if (problems.length) throw new Error(`${slug}/clips/${c.file}: ${problems.join(', ')}`);
+      const h = hash(video);
+      const stem = path
+        .basename(c.file, path.extname(c.file))
+        .toLowerCase()
+        .replace(/[^a-z0-9-]+/g, '-');
+      manifest.clips[`${slug}/${c.file}`] = {
+        src: emit(path.join(slug, `${stem}-${h}.mp4`), video),
+        poster: emit(path.join(slug, `${stem}-${h}-poster.jpg`), fs.readFileSync(posterSrc)),
+      };
+    }
   }
 
   const profileSrc = fs.existsSync(contentDir)
@@ -235,7 +261,7 @@ export async function processAll({
   fs.mkdirSync(path.dirname(manifestFile), { recursive: true });
   fs.writeFileSync(manifestFile, JSON.stringify(manifest, null, 2));
   log(
-    `Bilder: ${Object.keys(manifest.photos).length} Fotos (${processed} neu verarbeitet), ${checked} Dateien ohne Metadaten geprüft.`,
+    `Bilder: ${Object.keys(manifest.photos).length} Fotos (${processed} neu verarbeitet), ${Object.keys(manifest.clips).length} Videos, ${checked} Dateien ohne Metadaten geprüft.`,
   );
   return manifest;
 }

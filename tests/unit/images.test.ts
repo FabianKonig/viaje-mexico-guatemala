@@ -126,3 +126,64 @@ describe('Bild-Pipeline', () => {
     expect([prof.width, prof.height]).toEqual([240, 240]);
   });
 });
+
+describe('Videos im Bildskript', () => {
+  const mp4 = (extra: Buffer = Buffer.alloc(0)) =>
+    Buffer.concat([
+      Buffer.from([0, 0, 0, 16]),
+      Buffer.from('ftypisom', 'latin1'),
+      Buffer.from('mdat....', 'latin1'),
+      extra,
+    ]);
+  const setup = async (video: Buffer) => {
+    const content = tmp('content-');
+    const out = tmp('out-');
+    const dir = path.join(content, 'posts', '2026-11-25-a');
+    fs.mkdirSync(path.join(dir, 'clips'), { recursive: true });
+    fs.writeFileSync(path.join(dir, 'clips', '01.mp4'), video);
+    await sharp({ create: { width: 8, height: 8, channels: 3, background: '#c4552d' } })
+      .jpeg()
+      .toFile(path.join(dir, 'clips', '01.jpg'));
+    fs.writeFileSync(
+      path.join(dir, 'index.md'),
+      "---\ntitle: 'A'\nclips:\n  - file: 01.mp4\n    title: 'T'\n---\n",
+    );
+    return { content, out };
+  };
+
+  it('kopiert Video und Standbild mit Hash im Namen und trägt sie ins Manifest ein', async () => {
+    const { content, out } = await setup(mp4());
+    const manifest = await processAll({
+      contentDir: content,
+      outDir: path.join(out, 'media'),
+      cacheDir: path.join(out, 'cache'),
+      manifestFile: path.join(out, 'm.json'),
+      log: () => undefined,
+    });
+    const c = manifest.clips['2026-11-25-a/01.mp4'];
+    expect(c.src).toMatch(/^media\/2026-11-25-a\/01-[0-9a-f]{10}\.mp4$/);
+    expect(c.poster).toMatch(/^media\/2026-11-25-a\/01-[0-9a-f]{10}-poster\.jpg$/);
+    expect(fs.existsSync(path.join(out, c.src))).toBe(true);
+  });
+
+  it('bricht ab, wenn das Video einen Standort enthält', async () => {
+    const { content, out } = await setup(mp4(Buffer.from('+48.1351+011.5820/', 'latin1')));
+    await expect(
+      processAll({
+        contentDir: content,
+        outDir: path.join(out, 'media'),
+        cacheDir: path.join(out, 'cache'),
+        manifestFile: path.join(out, 'm.json'),
+        log: () => undefined,
+      }),
+    ).rejects.toThrow(/GPS/);
+  });
+
+  it('verifyDir findet Standort in veröffentlichten MP4-Dateien', async () => {
+    const dir = tmp('dist-');
+    fs.writeFileSync(path.join(dir, 'gut.mp4'), mp4());
+    await expect(verifyDir(dir)).resolves.toBe(0);
+    fs.writeFileSync(path.join(dir, 'schlecht.mp4'), mp4(Buffer.from([0xa9, 0x78, 0x79, 0x7a])));
+    await expect(verifyDir(dir)).rejects.toThrow(/schlecht\.mp4/);
+  });
+});

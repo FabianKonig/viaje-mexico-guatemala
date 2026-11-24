@@ -1,21 +1,47 @@
 ---
 /**
- * Zwei-Klick-Lösung für YouTube-Videos: Erst nach Klick auf „Video laden“ wird
- * youtube-nocookie.com eingebunden. Vorher gibt es keine Anfrage an YouTube.
- * Ohne JavaScript: nur ein Link zu YouTube.
+ * Videos eines Beitrags.
+ *  - Eigene Clips (`clips`): selbst ausgeliefertes MP4 mit Ton. Der Browser lädt erst nach dem
+ *    Antippen von „Play“ (preload="none"); vorher nur das kleine Standbild. Funktioniert ohne JavaScript.
+ *  - YouTube (`videos`): Zwei-Klick-Lösung. Erst nach Klick auf „Video laden“ wird
+ *    youtube-nocookie.com eingebunden. Vorher gibt es keine Anfrage an YouTube.
+ *    Ohne JavaScript: nur ein Link zu YouTube.
  */
-import type { VideoRef } from '../lib/content';
+import type { ClipRef, VideoRef } from '../lib/content';
+import { clipMedia } from '../lib/media';
+import { href } from '../lib/site';
 
 interface Props {
+  slug: string;
   videos: VideoRef[];
+  clips?: ClipRef[];
 }
-const { videos } = Astro.props;
+const { slug, videos, clips = [] } = Astro.props;
+const clipItems = clips.map((c) => ({ ...c, media: clipMedia(slug, c.file) }));
 ---
 
-{videos.length > 0 && (
+{(videos.length > 0 || clipItems.length > 0) && (
   <section class="videos" aria-labelledby="videos-titel">
     <h2 id="videos-titel">Videos</h2>
     <ul class="videos__list" role="list">
+      {clipItems.map((c) => (
+        <li class="clip card">
+          <video
+            class="clip__video"
+            controls
+            playsinline
+            preload="none"
+            poster={href(c.media.poster)}
+            width={c.width}
+            height={c.height}
+            aria-label={c.title}
+          >
+            <source src={href(c.media.src)} type="video/mp4" />
+            <a href={href(c.media.src)}>Video herunterladen</a>
+          </video>
+          <p class="clip__title">{c.title}</p>
+        </li>
+      ))}
       {videos.map((v) => (
         <li class="video card" data-video={v.youtube} data-title={v.title}>
           <div class="video__frame" data-video-frame>
@@ -74,6 +100,21 @@ const { videos } = Astro.props;
     list-style: none;
     margin: 0;
     padding: 0;
+  }
+  .clip {
+    overflow: hidden;
+  }
+  .clip__video {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 75vh;
+    background: var(--ink);
+  }
+  .clip__title {
+    margin: 0;
+    padding: 12px 16px;
+    font-size: 0.9375rem;
   }
   .video {
     overflow: hidden;

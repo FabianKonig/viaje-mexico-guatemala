@@ -14,6 +14,7 @@ import {
 } from './translation';
 
 export const MAX_PHOTOS = 20;
+export const MAX_CLIPS = 20;
 export const PHOTO_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif'];
 
 export interface Place {
@@ -37,6 +38,15 @@ export interface VideoRef {
   title: string;
 }
 
+/** Eigenes Video (liegt als MP4 in clips/, mit Standbild gleichen Namens als JPEG). */
+export interface ClipRef {
+  file: string;
+  title: string;
+  width: number;
+  height: number;
+  duration: number;
+}
+
 export interface Post {
   slug: string;
   dir: string;
@@ -46,6 +56,7 @@ export interface Post {
   place?: Place;
   photos: PhotoRef[];
   videos: VideoRef[];
+  clips: ClipRef[];
   /** Originaltext, byte-genau aus original.md. */
   original: string;
   translationData: TranslationData;
@@ -175,6 +186,43 @@ export function validatePost(
         videos.push({ youtube: String(v?.youtube), title: String(v?.title) });
       });
   }
+  const clips: ClipRef[] = [];
+  if (data.clips !== undefined) {
+    if (!Array.isArray(data.clips)) at('clips muss eine Liste sein');
+    else {
+      if (data.clips.length > MAX_CLIPS)
+        at(`höchstens ${MAX_CLIPS} Videos (clips) erlaubt (${data.clips.length})`);
+      const seen = new Set<string>();
+      data.clips.forEach((c: Record<string, unknown>, i: number) => {
+        const w = `clips[${i}]`;
+        if (typeof c?.file !== 'string' || !c.file) return at(`${w}.file fehlt`);
+        if (seen.has(c.file)) at(`${w}.file "${c.file}" doppelt`);
+        seen.add(c.file);
+        if (path.extname(c.file).toLowerCase() !== '.mp4')
+          at(`${w}.file muss eine .mp4-Datei sein`);
+        if (c.file.includes('/') || c.file.includes('\\'))
+          at(`${w}.file: nur Dateiname, ohne Ordner`);
+        else {
+          if (!fs.existsSync(path.join(dir, 'clips', c.file)))
+            at(`${w}.file: clips/${c.file} existiert nicht`);
+          const poster = c.file.replace(/\.mp4$/i, '.jpg');
+          if (!fs.existsSync(path.join(dir, 'clips', poster)))
+            at(`${w}: Standbild clips/${poster} fehlt (Import-Skript ausführen)`);
+        }
+        if (typeof c.title !== 'string' || !c.title.trim()) at(`${w}.title (Beschreibung) fehlt`);
+        for (const k of ['width', 'height', 'duration'] as const)
+          if (typeof c[k] !== 'number' || !(c[k] as number) || (c[k] as number) < 0)
+            at(`${w}.${k} fehlt (Import-Skript trägt es ein)`);
+        clips.push({
+          file: c.file,
+          title: String(c.title ?? ''),
+          width: Number(c.width),
+          height: Number(c.height),
+          duration: Number(c.duration),
+        });
+      });
+    }
+  }
   if (original === undefined) at('original.md fehlt');
   else if (original.trim() === '') at('original.md ist leer');
   else for (const e of validateTranslation(original, data.translation)) at(e);
@@ -192,6 +240,7 @@ export function validatePost(
       ...(place ? { place } : {}),
       photos,
       videos,
+      clips,
       original: original as string,
       translationData,
       translation: buildTranslation(original as string, translationData),

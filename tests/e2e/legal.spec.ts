@@ -15,7 +15,11 @@ async function crawl(page: Page, start: string): Promise<string[]> {
       const u = new URL(l);
       u.hash = '';
       const s = u.toString();
-      if (s.startsWith(start) && !/\.(webp|jpg|png|txt|svg)$/.test(u.pathname) && !seen.has(s)) {
+      if (
+        s.startsWith(start) &&
+        !/\.(webp|jpg|png|txt|svg|mp4)$/.test(u.pathname) &&
+        !seen.has(s)
+      ) {
         seen.add(s);
         queue.push(s);
       }
