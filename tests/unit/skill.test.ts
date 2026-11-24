@@ -18,9 +18,11 @@ describe('Skill neuer-beitrag', () => {
     const refs = [...skill.matchAll(/„([^“]+)“/g)].map((m) => m[1]);
     const headings = [...agents.matchAll(/^#{2,3} (.+)$/gm)].map((m) => m[1]);
     const sections = refs.filter((r) =>
-      /^(Ablauf|Medien holen|Übersetzungsregeln|Fotoregeln|Kartenregeln)/.test(r),
+      /^(Ablauf|Medien holen|Übersetzungsregeln|Spanisch-Lernhilfe|Fotoregeln|Kartenregeln)/.test(
+        r,
+      ),
     );
-    expect(sections.length).toBeGreaterThanOrEqual(5);
+    expect(sections.length).toBeGreaterThanOrEqual(6);
     for (const s of sections)
       expect(
         headings.some((h) => h.startsWith(s)),
@@ -50,5 +52,21 @@ describe('Skill neuer-beitrag', () => {
       expect(text).not.toMatch(/beschreibender deutscher `alt`/);
       expect(text).not.toMatch(/Fotos und Videos\s+ansehen/);
     }
+  });
+
+  it('Lern-Datei (Spanisch-Lernhilfe) ist in AGENTS.md, SPEC.md und im Skill beschrieben', () => {
+    const spec = fs.readFileSync('SPEC.md', 'utf8');
+    for (const text of [agents, spec, skill]) {
+      expect(text).toContain('Lernhilfe-Übersicht');
+      expect(text).toMatch(/Lernhilfe-<(JJJJ-MM-TT-)?(slug|ordner)>/);
+    }
+    // Kategorien für die Übersicht stehen fest in AGENTS.md
+    for (const term of ['Akzente und Schreibung', '`ser`/`estar`', 'Verbformen und Zeiten'])
+      expect(agents, term).toContain(term);
+    // privat: nie ins Repository
+    expect(agents).toMatch(/nur in Google Drive/i);
+    expect(skill).toMatch(/nie ins Repository/);
+    // Anker aus SPEC.md zeigt auf die echte Überschrift
+    expect(agents).toContain('## Spanisch-Lernhilfe (Lern-Datei in Google Drive)');
   });
 });

@@ -150,6 +150,16 @@ Liste in Reihenfolge der Reise. Felder: `id`, `name` (spanisch), `lat`, `lon`, `
 `arrived` (`JJJJ-MM-TT`, nicht vor dem vorherigen Ort), optional `region`. Nummer = Position in der
 Liste, der letzte Eintrag ist der aktuelle Ort. Zu Beginn nur „Ciudad de México“.
 
+### 6.3 Spanisch-Lernhilfe (außerhalb der Seite)
+
+Zu jedem Beitrag mit spanischen Passagen legt der Agent in Google Drive eine Lern-Datei an: ein Google
+Doc `Lernhilfe-<ordner>` im Drive-Unterordner des Beitrags (korrigierte Fassung, Fehler mit Erklärung,
+Stilvorschläge, Grammatik) und pflegt das Sammel-Doc `Lernhilfe-Übersicht` im Hauptordner (Fehler je
+Kategorie und Beitrag, Wiederholungsfehler). Sie gehört nicht ins Repository, nicht auf die Seite und
+verändert `original.md` nicht. Rein deutsche Beiträge bekommen keine. Einzelheiten, Kategorien und
+Regeln: [AGENTS.md › Spanisch-Lernhilfe](AGENTS.md#spanisch-lernhilfe-lern-datei-in-google-drive).
+
+
 ## 7. Design
 
 ### 7.1 Farben (Kontrast mindestens 4,5:1 für normalen Text)

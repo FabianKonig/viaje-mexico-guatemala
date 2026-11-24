@@ -176,6 +176,10 @@ Hash berechnen: `node scripts/hash-original.mjs content/posts/<ordner>/original.
 9. **Tests:** `npm test`. Screenshots von Startseite und Beitrag (Handy und Computer) nur zur
    **Layoutprüfung** ansehen (Anordnung, Überlauf, Abstände), nicht um Bildinhalte zu beschreiben.
 10. **Pull-Request** öffnen: kurze Beschreibung, erkannte Sprachen, offene Fragen (Ort, Titel).
+11. **Lern-Datei** (nur bei Beiträgen mit spanischen Passagen): sobald der Autor „fertig“ sagt, das
+    Google Doc `Lernhilfe-<slug>` im Drive-Unterordner des Beitrags anlegen und das Sammel-Doc
+    `Lernhilfe-Übersicht` aktualisieren (Regeln: Abschnitt „Spanisch-Lernhilfe“). In der
+    Abschlussmeldung den Link nennen.
 
 ## Übersetzungsregeln
 
@@ -185,6 +189,66 @@ Hash berechnen: `node scripts/hash-original.mjs content/posts/<ordner>/original.
 - Deutsche Passagen des Autors 1:1 übernehmen (Tippfehler bleiben).
 - Reihenfolge wie im Original, keine farbliche Hervorhebung einzelner Passagen.
 - Spanische Eigennamen bleiben (z. B. „Zócalo“), bekannte Orte dürfen deutsch heißen (Mexiko-Stadt).
+
+## Spanisch-Lernhilfe (Lern-Datei in Google Drive)
+
+Der Autor lernt Spanisch (Anfänger) und will aus seinen Fehlern lernen. Zu **jedem Beitrag mit
+mindestens einem `lang: es`-Segment** entsteht deshalb eine Lern-Datei. Rein deutsche Beiträge: keine.
+Die Lern-Datei liegt **nur in Google Drive**, nie im Repository und nie auf der Seite, und sie ändert
+**nichts** am Original (`original.md` bleibt byte-genau, die Seite zeigt weiter seinen Text).
+
+**Zeitpunkt:** wenn der Autor „fertig“ sagt (nicht nach jeder Überarbeitung). Ändert er den Text nach
+dem Anlegen noch, die Lern-Datei aktualisieren.
+
+**Wo und wie:**
+
+- **Je Beitrag:** Google Doc `Lernhilfe-<JJJJ-MM-TT-slug>` im Drive-Unterordner des Beitrags (neben dem
+  Text-Doc). Nicht freigeben (gehört dem Autor). Anlegen mit `create_file` (`textContent` als HTML,
+  `contentMimeType: text/html`, wird in ein Google Doc umgewandelt; so gibt es Überschriften und
+  Tabellen). Vorher den Skill `anthropic-skills:google-workspace` lesen. Danach mit
+  `read_file_content` prüfen, dass Überschriften und Tabellen ankamen.
+- **Sammel-Doc:** Google Doc `Lernhilfe-Übersicht` im Hauptordner `reiseblog-viaje-mexico-guatemala`.
+  Beim ersten Mal anlegen, danach nach jedem neuen Beitrag **neu aufbauen** aus dem alten Stand plus
+  dem neuen Beitrag (Einzel-Docs per `search_files`: `title contains 'Lernhilfe-'`). Ob `update_file`
+  den Inhalt ersetzen kann, beim ersten Mal ausprobieren und hier festhalten; sonst neue Datei
+  anlegen, die alte in den Papierkorb legen (`trash_file`) und den neuen Link nennen.
+- Beim Suchen der Beitragsdateien (Schritt „Medien holen“) Dateien mit `Lernhilfe-` am Anfang
+  ignorieren: Das Text-Doc ist das andere Doc.
+
+**Inhalt der Lern-Datei je Beitrag** (Deutsch, einfach, am Handy lesbar, Fachbegriffe kurz erklärt;
+Niveau Anfänger, A1 bis A2):
+
+1. **Kurzfazit:** Anzahl der Fehler, die ein bis drei häufigsten Themen und **zuerst etwas, das gut
+   gelungen ist** (konkret, nicht pauschal).
+2. **Korrigierte Fassung:** die spanischen Passagen vollständig, korrigierte Stellen **fett**. Deutsche
+   Passagen weglassen.
+3. **Fehler im Detail:** je Fehler ein Block: Original → korrigiert, **Kategorie**, kurze Erklärung
+   „Warum?“ mit der Regel, zwei eigene Beispielsätze, ein Merksatz. Gleiche Fehler zusammenfassen
+   (einmal erklären, alle Fundstellen nennen).
+4. **Natürlicher klingen:** Stilvorschläge, **klar von Fehlern getrennt** („so ist es nicht falsch, aber
+   Muttersprachler sagen eher …“).
+5. **Grammatik zum Nachlesen:** nur Regeln, die im Beitrag vorkamen, mit Beispielen; bei Verben eine
+   kleine Tabelle der Formen (z. B. Pretérito indefinido von `llegar`).
+
+**Kategorien** (immer genau diese, damit die Übersicht zählen kann): Akzente und Schreibung,
+Artikel und Geschlecht, Zahl und Übereinstimmung (Adjektiv, Verb), Verbformen und Zeiten,
+`ser`/`estar`, Präpositionen, Wortschatz und falsche Freunde, Wortstellung, Satzzeichen (`¿ ¡`), Sonstiges.
+
+**Inhalt des Sammel-Docs `Lernhilfe-Übersicht`:** Tabelle je Kategorie mit Anzahl der Fehler pro
+Beitrag und insgesamt (Trend: wird es besser?), die drei Themen, die aktuell am meisten Übung
+brauchen, eine Liste der **Regeln, die der Autor schon einmal falsch hatte** (Kurzregel plus Link zum
+Beitrag), Verlauf der Beiträge (Datum, Link zur Lern-Datei).
+
+**Regeln:**
+
+- Nur **sichere** Korrekturen. Ist die Absicht unklar, die Annahme kenntlich machen oder beim
+  Autor nachfragen (wie bei der Übersetzung). Nichts erfinden.
+- Bei Auslassungen im Original (Akzente, fehlendes `¿ ¡`, Großschreibung) den Fehler zählen, aber
+  freundlich bleiben: Es ist ein Lernwerkzeug, kein Zeugnis.
+- Die Lern-Datei bespricht **nur den Text**, nie Fotos, Videos oder Orte (Regel „Medien nicht
+  inhaltlich auswerten“).
+- Nichts aus der Lern-Datei in Pull-Requests, Commit-Nachrichten oder Beschreibungen übernehmen
+  (privat). In die Abschlussmeldung nur den Link und ein bis zwei Themen.
 
 ## Fotoregeln
 
@@ -337,6 +401,7 @@ Service Worker wird beim Build erzeugt; neue Dateiarten im Zweifel network-first
 ## NIE tun
 
 - Das Spanisch (oder Deutsch) des Autors korrigieren, glätten oder „verbessern“.
+- Die Lern-Datei (Korrekturen, Fehleranalyse) ins Repository, in die Seite oder in Pull-Requests legen.
 - Originalfotos mit GPS-/EXIF-Daten veröffentlichen oder unbearbeitete Originale einchecken.
 - Externe Dienste, Tracker, Analytics, Cookies, CDNs oder Google Fonts einbinden.
 - Eine Open-Source- oder Creative-Commons-Lizenz für die Inhalte oder den Code hinzufügen.

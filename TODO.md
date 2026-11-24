@@ -36,6 +36,9 @@
 - [ ] Mit einem echten Android-Video prüfen, dass es nach dem Import auf Handy und Computer mit Ton
       abgespielt wird.
 - [x] Android-„Bewegte Fotos“ als stumme Schleife über dem Foto.
+- [ ] **Lern-Datei (Spanisch):** beim ersten echten Beitrag mit Spanisch prüfen: HTML-Upload als Google Doc
+      (Überschriften, Tabellen), ob `update_file` den Inhalt des Sammel-Docs ersetzen kann, und das Ergebnis
+      in AGENTS.md › Spanisch-Lernhilfe festhalten.
 - [ ] Erster echter Beitrag aus Drive (Text-Doc: Format von Titel und Titelbild-Hinweis danach in
       AGENTS.md festhalten).
 

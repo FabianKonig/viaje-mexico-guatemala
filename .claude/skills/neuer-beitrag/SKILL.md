@@ -7,7 +7,7 @@ description: >-
 # Neuer Beitrag
 
 Kurzfassung. **Maßgeblich ist `AGENTS.md`**, lies dort zuerst „Ablauf: neuen Beitrag anlegen“,
-„Medien holen“, „Übersetzungsregeln“, „Fotoregeln“ und „Kartenregeln“. Bei Widerspruch gilt AGENTS.md.
+„Medien holen“, „Übersetzungsregeln“, „Spanisch-Lernhilfe“, „Fotoregeln“ und „Kartenregeln“. Bei Widerspruch gilt AGENTS.md.
 
 Der Autor steuert vom Handy: Rückmeldungen kurz, am Ende nennen, was fertig ist und was er noch tun muss.
 
@@ -29,12 +29,18 @@ Der Autor steuert vom Handy: Rückmeldungen kurz, am Ende nennen, was fertig ist
    Computer nur zur Layoutprüfung ansehen.
 8. **Pull-Request** öffnen, nur wenn der Autor es verlangt oder „fertig“ sagt. Beschreibung kurz:
    erkannte Sprachen, offene Fragen (Ort, Titel). Der Autor merged per „Squash and merge“.
-9. **Aufräumen melden:** Wenn Kopien in Drive angelegt wurden, dem Autor sagen, dass er im
+9. **Lern-Datei** (nur bei spanischen Passagen, sobald der Autor „fertig“ sagt): Google Doc
+   `Lernhilfe-<slug>` im Drive-Unterordner des Beitrags mit korrigierter Fassung, Fehlern samt
+   Erklärung und Regel, Stilvorschlägen und Grammatik zum Nachlesen; danach das Sammel-Doc
+   `Lernhilfe-Übersicht` im Hauptordner aktualisieren. Nur in Drive, nie ins Repository oder in den
+   Pull-Request; im Chat nur Link und ein bis zwei Themen. Inhalt, Kategorien und Regeln: AGENTS.md
+   › „Spanisch-Lernhilfe“. Das Original bleibt unverändert.
+10. **Aufräumen melden:** Wenn Kopien in Drive angelegt wurden, dem Autor sagen, dass er im
    Drive-Papierkorb die `tmp-*`-Dateien endgültig löschen soll.
 
 ## Nie
 
 Fotos, Videos oder Bewegtfotos ansehen, analysieren oder beschreiben (Wunsch des Autors, siehe
 AGENTS.md › Fotoregeln), das Spanisch oder Deutsch des Autors verbessern, Originalfotos oder Videos ohne den Import einchecken,
-einen Ort raten, Originale in Drive freigeben, YouTube oder andere externe Dienste einbinden, direkt auf
+einen Ort raten, die Lern-Datei ins Repository legen, Originale in Drive freigeben, YouTube oder andere externe Dienste einbinden, direkt auf
 `main` pushen.
