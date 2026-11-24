@@ -236,9 +236,10 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   hier wirklich regelmäßig schreiben werde. Schauen wir einfach mal, was die nächsten Wochen bringen werden :)“,
   dann wieder in eigenem Absatz „¡Viel Spaß beim Lesen und hasta pronto!“ und „Fabian“) in Textgröße (`--fs-text`), darunter der Knopf „Neuesten Beitrag
   lesen“ (Extra-Abstand zum Text: 28px am Handy, ab 900px 32px)
-  und die Reisetag-Anzeige (beide über die volle Breite unter dem Text). Die Routenkarte (`#ruta`) steht
+  und darüber die Reisetag-Anzeige (beide untereinander, unter dem Text). Die Routenkarte (`#ruta`) steht
   im HTML vor dem gelben Kasten, damit sie schwimmen kann. Unter 900px alles untereinander
-  (Kasten, Text, Knopf, Reisetag, Karte; Reihenfolge per `order`).
+  (Kasten, Text, Reisetag, Knopf, Karte; Reihenfolge per `order`). Die Karte trägt unter 900px sichtbar die
+  Überschrift „Ruta“ (Titelgröße, oben in der Karte); ab 900px ist sie ausgeblendet.
 - **Entradas** (`#entradas`): Raster `repeat(auto-fill, minmax(min(100%, 300px), 1fr))`, neueste
   zuerst. Karte: Foto (ab PR 4), Ort und Reisetag (z. B. „Ciudad de México · Tag 1“; ohne Ort nur der
   Tag), Titel (die ganze Karte ist klickbar), Textanfang des **Originals** (ca. 160 Zeichen),
@@ -387,12 +388,13 @@ YouTube wird nicht verwendet. `videos:` im Frontmatter ist ein Fehler (Hinweis a
 
 ### 7.9 Reisetag-Anzeige (`src/lib/travelDay.ts`, `TravelDay.astro`)
 
-- Startseite, unter dem Knopf „Neuesten Beitrag lesen“. Wird bei **jedem Seitenaufruf im Browser**
+- Startseite, **über** dem Knopf „Neuesten Beitrag lesen“. Wird bei **jedem Seitenaufruf im Browser**
   berechnet (kleines Modul-Skript), mit dem heutigen Datum in der Zeitzone `America/Mexico_City`
   (`Intl.DateTimeFormat`), damit alle Besucher denselben Tag sehen. Gerechnet wird nur mit Datumswerten
   (UTC-Mitternacht), Sommer-/Winterzeit spielt keine Rolle.
 - Texte: vor dem 23.11.2026 „Los geht's am 23. November 2026“; vom 23.11.2026 (Tag 1) bis 2.2.2027
-  (Tag 72) „Tag X unterwegs“; ab 3.2.2027 „Reise beendet · wieder zurück in Alemania“.
+  (Tag 72) „Heute ist der X. Tag der Reise“; ab 3.2.2027 „Reise nach 72 Tagen beendet“ (72 = Zahl der
+  Reisetage, aus `tripStart` und `tripEnd`).
 - Testbar über `travelStatus(datum)` / `travelTextFor(jetzt, vorschau)`. Vorschau eines Datums im
   Browser: `?datum=JJJJ-MM-TT` (ungültige Werte werden ignoriert).
 - Ohne JavaScript: „Reise vom 23. November 2026 bis 2. Februar 2027“.

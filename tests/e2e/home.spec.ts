@@ -98,6 +98,22 @@ test.describe('Startseite', () => {
     expect(Math.max(...below.map((l) => l.right))).toBeGreaterThan(map!.x);
   });
 
+  test('Reisetag steht über dem Knopf; „Ruta“ ist am Handy über der Karte sichtbar, am Computer nicht', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('./');
+    const day = await page.locator('[data-travel-day]').boundingBox();
+    const btn = await page.locator('.hero__actions .btn').boundingBox();
+    expect(day!.y + day!.height).toBeLessThanOrEqual(btn!.y);
+    const title = page.locator('#ruta-titel');
+    await expect(title).toBeVisible();
+    const map = await page.locator('#ruta svg:visible').first().boundingBox();
+    expect((await title.boundingBox())!.y).toBeLessThan(map!.y);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await expect(title).toBeHidden();
+  });
+
   test('am Handy steht alles untereinander', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('./');

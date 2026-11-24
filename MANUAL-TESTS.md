@@ -22,7 +22,7 @@ pro Gerät.
 
 1. **Startseite** öffnen: Wimpelrand oben, Titel links, rundes Profilbild **rechts oben**, kein
    seitliches Wischen nötig (nichts ragt über den Rand).
-2. Gelber Kasten „México & Guatemala“, Text, Knopf „Neuesten Beitrag lesen“, **„Tag X unterwegs“**
+2. Gelber Kasten „México & Guatemala“, Text, **„Heute ist der X. Tag der Reise“**, Knopf „Neuesten Beitrag lesen“
    stimmt mit dem heutigen Datum in Mexiko überein.
 3. **Karte**: am Handy nur der Süden, Nummern gut lesbar, „Aquí estoy“ sichtbar, Legende darunter.
 4. **Beitrag** öffnen: Original und Übersetzung lesbar (Handy: untereinander), Schalter „Übersetzung

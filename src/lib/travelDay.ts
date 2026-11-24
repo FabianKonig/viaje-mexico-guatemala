@@ -25,14 +25,18 @@ export function travelStatus(
 }
 
 /** Anzeigetext der Reisetag-Anzeige. */
-export function travelText(status: TravelStatus, start: string = SITE.tripStart): string {
+export function travelText(
+  status: TravelStatus,
+  start: string = SITE.tripStart,
+  end: string = SITE.tripEnd,
+): string {
   switch (status.kind) {
     case 'before':
       return `Los geht's am ${formatDateDe(start)}`;
     case 'after':
-      return 'Reise beendet · wieder zurück in Alemania';
+      return `Reise nach ${daysBetween(start, end)} Tagen beendet`;
     default:
-      return `Tag ${status.day} unterwegs`;
+      return `Heute ist der ${status.day}. Tag der Reise`;
   }
 }
 

@@ -15,7 +15,7 @@ const latest = posts[0];
   <section class="hero wrap" aria-label="Über dieses Reisetagebuch">
     <div class="hero__intro">
       <section id="ruta" class="hero__map card" aria-labelledby="ruta-titel">
-        <h2 id="ruta-titel" class="visually-hidden">
+        <h2 id="ruta-titel" class="hero__map-title">
           Ruta
         </h2>
         <RouteMap places={places} />
@@ -44,12 +44,12 @@ const latest = posts[0];
         </p>
       </div>
       <div class="hero__actions">
+        <TravelDay />
         {latest && (
           <a class="btn" href={href(`entradas/${latest.slug}/`)}>
             Neuesten Beitrag lesen
           </a>
         )}
-        <TravelDay />
       </div>
     </div>
   </section>
@@ -110,10 +110,14 @@ const latest = posts[0];
   .hero__actions {
     order: 3;
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 14px 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
     margin-top: 28px;
+  }
+  .hero__map-title {
+    font-size: var(--fs-title);
+    margin: 4px 6px 10px;
   }
   .hero__map {
     order: 4;
@@ -126,6 +130,9 @@ const latest = posts[0];
   @media (min-width: 900px) {
     .hero__intro {
       display: flow-root;
+    }
+    .hero__map-title {
+      display: none;
     }
     .hero__map {
       float: right;
