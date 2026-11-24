@@ -146,9 +146,11 @@ test.describe('Videos (Clips)', () => {
   const URL = PREVIEW_URL + 'entradas/2026-12-03-gps-y-heic/';
 
   test('Standbild vorab, Video erst nach dem Abspielen, Ton nicht stumm', async ({ page }) => {
+    // Nur echte Antworten zählen: Playwright-WebKit meldet für Videoelemente auch Scheinanfragen
+    // (Status 0, ohne Header), die den Server nie erreichen.
     const mp4: string[] = [];
-    page.on('request', (r) => {
-      if (/\.mp4(\?|$)/.test(r.url())) mp4.push(r.url());
+    page.on('response', (r) => {
+      if (/\.mp4(\?|$)/.test(r.url()) && r.status() >= 200) mp4.push(r.url());
     });
     await page.goto(URL);
     await page.waitForLoadState('networkidle');
