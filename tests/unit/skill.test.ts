@@ -84,9 +84,12 @@ describe('Skill neuer-beitrag', () => {
     expect(spec).toMatch(/Zählung ersetzt/);
   });
 
-  it('Fehlendes ¿ und ¡ am Anfang wird in der Lern-Datei nie korrigiert (Wunsch des Autors)', () => {
+  it('¿ und ¡ am Anfang: in der Fassung still setzen, sonst nie erwähnen (Wunsch des Autors)', () => {
     const spec = fs.readFileSync('SPEC.md', 'utf8');
-    for (const text of [agents, skill, spec]) expect(text).toMatch(/nie erwähnen|nie erwähnt/);
+    for (const text of [agents, skill, spec]) {
+      expect(text).toMatch(/still/);
+      expect(text).toMatch(/nie erwähn/);
+    }
     for (const text of [agents, spec]) expect(text).toContain('`¿`');
     // keine eigene Kategorie mehr für ¿ ¡
     expect(agents).toContain('Satzzeichen (ohne `¿ ¡`)');

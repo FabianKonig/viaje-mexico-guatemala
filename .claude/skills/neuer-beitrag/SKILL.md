@@ -34,7 +34,7 @@ Der Autor steuert vom Handy: Rückmeldungen kurz, am Ende nennen, was fertig ist
    Erklärung und Regel, Stilvorschlägen und Grammatik zum Nachlesen; danach das Sammel-Doc
    `Lernhilfe-Übersicht` im Hauptordner aktualisieren. Nur in Drive, nie ins Repository oder in den
    Pull-Request; im Chat nur Link und ein bis zwei Themen. Inhalt, Kategorien und Regeln: AGENTS.md
-   › „Spanisch-Lernhilfe“. Das Original bleibt unverändert. **Fehlendes `¿ ¡` am Anfang nie erwähnen, zählen oder ergänzen** (Wunsch des Autors).
+   › „Spanisch-Lernhilfe“. Das Original bleibt unverändert. **`¿ ¡` am Anfang** in der korrigierten Fassung still setzen (unmarkiert), sonst nie erwähnen, zählen oder erklären (Wunsch des Autors).
 10. **Aufräumen melden:** Wenn Kopien in Drive angelegt wurden, dem Autor sagen, dass er im
    Drive-Papierkorb die `tmp-*`-Dateien endgültig löschen soll.
 
