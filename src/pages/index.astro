@@ -4,11 +4,16 @@ import PostCard from '../components/PostCard.astro';
 import PalabritaTile from '../components/PalabritaTile.astro';
 import RouteMap from '../components/RouteMap.astro';
 import TravelDay from '../components/TravelDay.astro';
+import OlderPosts from '../components/OlderPosts.astro';
 import { getContent } from '../lib/data';
 import { href } from '../lib/site';
 
 const { posts, places } = getContent();
 const latest = posts[0];
+// Die neuesten Beiträge stehen als Karten, alle weiteren in „Ältere Beiträge“.
+const RECENT_COUNT = 6;
+const recent = posts.slice(0, RECENT_COUNT);
+const older = posts.slice(RECENT_COUNT);
 ---
 
 <Base home>
@@ -60,13 +65,14 @@ const latest = posts[0];
       <p>Noch keine Beiträge. Bald geht's los!</p>
     ) : (
       <ul class="post-grid" role="list">
-        {posts.map((post) => (
+        {recent.map((post) => (
           <li>
             <PostCard post={post} />
           </li>
         ))}
       </ul>
     )}
+    <OlderPosts posts={older} />
   </section>
 
   <section class="wrap palabrita-wrap" aria-label="Vokabellern-App Palabrita">

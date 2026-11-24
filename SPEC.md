@@ -246,6 +246,10 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   Tag), Titel (die ganze Karte ist klickbar), Textanfang des **Originals** (ca. 160 Zeichen),
   Fotoanzahl (nur wenn Fotos vorhanden), Sprachhinweis „ES · DE“ bzw. „DE“. Keine Kommentare.
   Lange Wörter brechen um (`overflow-wrap`), nichts läuft über den Kartenrand.
+  Als Karten erscheinen nur die **6 neuesten** Beiträge. Gibt es mehr, folgt darunter ein eingeklapptes
+  Feld „Ältere Beiträge (N)“ (natives `<details>`, funktioniert ohne JavaScript, `#aeltere-beitraege`):
+  aufgeklappt eine Liste aller übrigen Beiträge, neueste zuerst, je Zeile Ort · Reisetag und Titel
+  (Komponente `OlderPosts.astro`, Anzahl `RECENT_COUNT` in `index.astro`). Bis 6 Beiträge gibt es das Feld nicht.
 - **Palabrita-Kachel** ganz unten vor dem Fußbereich: volle Marigold-Kachel mit Rahmen und hartem
   Schatten, links Karteikarten-Illustration (eigenes SVG), „Kennst du schon meine Vokabellern-App?“,
   „Hier geht's zu Palabrita.“, rechts dunkler Knopf „Palabrita öffnen →“. Die ganze Kachel ist ein

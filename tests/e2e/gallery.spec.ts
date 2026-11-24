@@ -107,9 +107,9 @@ test('Lightbox: Wischen am Handy', async ({ page }) => {
 
 test('Beitragskarte zeigt Foto und Fotoanzahl', async ({ page }) => {
   await page.goto(PREVIEW_URL);
-  const card = page.locator('.post-card', { hasText: 'Entrada de ejemplo' });
+  const card = page.locator('.post-card', { hasText: 'Veinte fotos' });
   await expect(card.locator('.post-card__img')).toBeVisible();
-  await expect(card).toContainText('3 Fotos');
+  await expect(card).toContainText('20 Fotos');
 });
 
 test('Beitrag ohne Fotos hat keine Galerie', async ({ page }) => {
