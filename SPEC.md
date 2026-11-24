@@ -200,17 +200,23 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
 
 ### 7.4 Startseite
 
-- **Titelbereich** ohne Überschrift und ohne Titelfoto. Ab 900px zwei Spalten (5:7), oben bündig
-  (`align-items: start`): links der gelbe Kasten mit dem Text ¡Bienvenido / Willkommen! (Marigold, Rahmen, Schatten),
+- **Titelbereich** ohne Überschrift und ohne Titelfoto. Ab 900px schwimmt die Routenkarte rechts
+  (`float: right`, 7 von 12 Teilen, 40px Abstand, oben bündig mit dem gelben Kasten). Der Text
+  umfließt sie: Zeilen neben der Karte bleiben links, Zeilen unterhalb der Karte laufen über die
+  volle Breite (kein Weißraum neben langem Text). Links der gelbe Kasten mit dem Text ¡Bienvenido / Willkommen! (Marigold, Rahmen, Schatten),
   darunter der Begrüßungstext („¡Hola! Schön, dass du hier bist. Dies ist
   mein Versuch eines Reiseblogs. Und zugleich ein Versuch, mein Spanisch durch Schreiben zu festigen. Mit
-  Beiträgen mal auf Spanisch (und inklusiver aller Anfängerfehler), aber auch mal auf Deutsch, je nach Lust und
-  Laune. Und keine Sorge, falls tú no hablas español: Die deutsche Übersetzung steht immer daneben. Wer mich
-  besser kennt, weiß, dass ich nicht wirklich ein Social Media Typ bin. Von daher weiß ich noch nicht, ob ich
-  hier wirklich regelmäßig schreiben werde. Schauen wir einfach Mal, was die nächsten Wochen bringen werden :)“,
-  dann in eigenem Absatz „¡Viel Spaß beim Lesen und hasta pronto!“ und „Fabian“) in `clamp(17px, 1.2vw + 12px, 24px)`, darunter der Knopf „Neuesten Beitrag
+  Beiträgen mal auf Spanisch (und inklusive aller Anfängerfehler), aber auch mal auf Deutsch, je nach Lust und
+  Laune. Und keine Sorge, falls tú no hablas español: Die deutsche Übersetzung steht immer daneben.“,
+  dann in eigenem Absatz „Ich möchte hier festhalten, was ich unterwegs erlebe, und euch ein bisschen daran
+  teilhaben lassen, von den kleinen Alltagsmomenten bis zu den großen Highlights.“, dann in eigenem Absatz „Wer mich
+  besser kennt, weiß aber auch, dass ich nicht wirklich ein Social-Media-Typ bin. Von daher weiß ich noch nicht, ob ich
+  hier wirklich regelmäßig schreiben werde. Schauen wir einfach mal, was die nächsten Wochen bringen werden :)“,
+  dann wieder in eigenem Absatz „¡Viel Spaß beim Lesen und hasta pronto!“ und „Fabian“) in `clamp(17px, 1.2vw + 12px, 24px)`, darunter der Knopf „Neuesten Beitrag
   lesen“ (Extra-Abstand zum Text: 28px am Handy, ab 900px 32px)
-  und die Reisetag-Anzeige. Rechts die Routenkarte (`#ruta`). Unter 900px alles untereinander.
+  und die Reisetag-Anzeige (beide über die volle Breite unter dem Text). Die Routenkarte (`#ruta`) steht
+  im HTML vor dem gelben Kasten, damit sie schwimmen kann. Unter 900px alles untereinander
+  (Kasten, Text, Knopf, Reisetag, Karte; Reihenfolge per `order`).
 - **Entradas** (`#entradas`): Raster `repeat(auto-fill, minmax(min(100%, 300px), 1fr))`, neueste
   zuerst. Karte: Foto (ab PR 4), Ort und Reisetag (z. B. „Ciudad de México · Tag 1“; ohne Ort nur der
   Tag), Titel (die ganze Karte ist klickbar), Textanfang des **Originals** (ca. 160 Zeichen),

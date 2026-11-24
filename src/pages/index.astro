@@ -14,16 +14,28 @@ const latest = posts[0];
 <Base home>
   <section class="hero wrap" aria-label="Über dieses Reisetagebuch">
     <div class="hero__intro">
+      <section id="ruta" class="hero__map card" aria-labelledby="ruta-titel">
+        <h2 id="ruta-titel" class="visually-hidden">
+          Ruta
+        </h2>
+        <RouteMap places={places} />
+      </section>
       <p class="hero__badge">¡Bienvenido / Willkommen!</p>
       <div class="hero__lead">
         <p>
           ¡Hola! Schön, dass du hier bist. Dies ist mein Versuch eines Reiseblogs. Und zugleich ein
           Versuch, mein Spanisch durch Schreiben zu festigen. Mit Beiträgen mal auf Spanisch (und
-          inklusiver aller Anfängerfehler), aber auch mal auf Deutsch, je nach Lust und Laune. Und
-          keine Sorge, falls tú no hablas español: Die deutsche Übersetzung steht immer daneben. Wer
-          mich besser kennt, weiß, dass ich nicht wirklich ein Social Media Typ bin. Von daher weiß
-          ich noch nicht, ob ich hier wirklich regelmäßig schreiben werde. Schauen wir einfach Mal,
-          was die nächsten Wochen bringen werden :)
+          inklusive aller Anfängerfehler), aber auch mal auf Deutsch, je nach Lust und Laune. Und
+          keine Sorge, falls tú no hablas español: Die deutsche Übersetzung steht immer daneben.
+        </p>
+        <p>
+          Ich möchte hier festhalten, was ich unterwegs erlebe, und euch ein bisschen daran
+          teilhaben lassen, von den kleinen Alltagsmomenten bis zu den großen Highlights.
+        </p>
+        <p>
+          Wer mich besser kennt, weiß aber auch, dass ich nicht wirklich ein Social-Media-Typ bin.
+          Von daher weiß ich noch nicht, ob ich hier wirklich regelmäßig schreiben werde. Schauen
+          wir einfach mal, was die nächsten Wochen bringen werden :)
         </p>
         <p>
           ¡Viel Spaß beim Lesen und hasta pronto!
@@ -40,12 +52,6 @@ const latest = posts[0];
         <TravelDay />
       </div>
     </div>
-    <section id="ruta" class="hero__map card" aria-labelledby="ruta-titel">
-      <h2 id="ruta-titel" class="visually-hidden">
-        Ruta
-      </h2>
-      <RouteMap places={places} />
-    </section>
   </section>
 
   <section id="entradas" class="entradas wrap" aria-labelledby="entradas-titel">
@@ -70,23 +76,17 @@ const latest = posts[0];
 
 <style>
   .hero {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 28px;
-    align-items: start;
     margin-top: 20px;
   }
-  @media (min-width: 900px) {
-    .hero {
-      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-      gap: 40px;
-    }
-  }
+  /* Handy: alles untereinander, die Karte steht (per order) unter Text und Knopf. */
   .hero__intro {
+    display: flex;
+    flex-direction: column;
     min-width: 0;
   }
   .hero__badge {
-    display: inline-block;
+    order: 1;
+    align-self: flex-start;
     margin: 0 0 18px;
     padding: 10px 18px;
     background: var(--marigold);
@@ -99,25 +99,45 @@ const latest = posts[0];
     line-height: 1.15;
   }
   .hero__lead {
+    order: 2;
     font-size: clamp(17px, 1.2vw + 12px, 24px);
     line-height: 1.5;
     max-width: 34ch;
   }
   .hero__actions {
+    order: 3;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 14px 20px;
     margin-top: 28px;
   }
+  .hero__map {
+    order: 4;
+    min-width: 0;
+    margin-top: 28px;
+    padding: clamp(10px, 3vw, 16px);
+  }
+  /* Ab 900px schwimmt die Karte rechts (7 von 12 Teilen, 40px Abstand). Der Text umfließt sie,
+     Zeilen unterhalb der Karte laufen über die ganze Breite. */
   @media (min-width: 900px) {
+    .hero__intro {
+      display: flow-root;
+    }
+    .hero__map {
+      float: right;
+      width: calc((100% - 40px) * 7 / 12);
+      margin: 0 0 28px 40px;
+    }
+    .hero__badge {
+      display: inline-block;
+    }
+    .hero__lead {
+      max-width: none;
+    }
     .hero__actions {
       margin-top: 32px;
     }
-  }
-  .hero__map {
-    min-width: 0;
-    padding: clamp(10px, 3vw, 16px);
   }
   .entradas {
     margin-top: 56px;
