@@ -2,10 +2,11 @@
 /**
  * Prüft das Build-Ergebnis:
  *  - interne Links und Ressourcen (href, src, srcset) zeigen auf vorhandene Dateien
- *  - externe Links nur auf erlaubte Ziele (Palabrita, YouTube, Datenschutzerklärungen)
+ *  - externe Links nur auf erlaubte Ziele (Palabrita, Datenschutzerklärung von GitHub)
  *  - jede Seite: noindex-Meta, Copyright-Zeile, Open-Graph-Bild mit absoluter URL
  *  - HTML-Validierung (html-validate)
  *  - Seitengewicht der Startseite ohne Fotos (Budget fürs Handy-Netz)
+ *  - Gesamtgröße der Seite (GitHub Pages: 1 GB; Warnung ab 700 MiB, Fehler ab 900 MiB)
  * Aufruf: node scripts/check-dist.mjs [ordner] [basispfad]
  */
 import fs from 'node:fs';
@@ -14,11 +15,18 @@ import { HtmlValidate, FileSystemConfigLoader } from 'html-validate';
 
 export const ALLOWED_EXTERNAL = [
   /^https:\/\/palabrita\.fabiankonig\.de\/?$/,
-  /^https:\/\/www\.youtube\.com\/watch\?v=[\w-]{11}$/,
   /^https:\/\/docs\.github\.com\/de\/site-policy\//,
-  /^https:\/\/policies\.google\.com\/privacy/,
   /^https:\/\/viaje\.fabiankonig\.de\//,
 ];
+/** GitHub Pages erlaubt höchstens 1 GB veröffentlichte Seite. Warnung ab 700 MiB, Fehler ab 900 MiB. */
+export const DIST_WARN = 700 * 1024 * 1024;
+export const DIST_MAX = 900 * 1024 * 1024;
+
+/** Bewertet die Gesamtgröße der veröffentlichten Seite: 'ok' | 'warn' | 'fail'. */
+export function distSizeStatus(bytes) {
+  return bytes > DIST_MAX ? 'fail' : bytes > DIST_WARN ? 'warn' : 'ok';
+}
+
 /** Budget: Startseite (HTML + CSS + JS + Schriften + SVG/Icons, ohne Fotos) in Bytes. */
 export const HOME_BUDGET = 260 * 1024;
 
@@ -100,7 +108,19 @@ export async function checkDist(dist = 'dist', base = '/') {
       `Startseite ohne Fotos: ${Math.round(bytes / 1024)} KB > Budget ${HOME_BUDGET / 1024} KB`,
     );
 
-  return { problems, pages: pages.length, homeBytes: bytes };
+  const distBytes = files.reduce((sum, f) => sum + fs.statSync(f).size, 0);
+  const mib = Math.round(distBytes / 1048576);
+  const status = distSizeStatus(distBytes);
+  if (status === 'fail')
+    problems.push(
+      `Veröffentlichte Seite ist ${mib} MiB groß (Grenze ${DIST_MAX / 1048576} MiB, GitHub Pages erlaubt 1 GB). Videos auslagern oder verkleinern.`,
+    );
+  else if (status === 'warn')
+    console.warn(
+      `::warning::Veröffentlichte Seite ist ${mib} MiB groß (Warnung ab ${DIST_WARN / 1048576} MiB, GitHub Pages erlaubt 1 GB).`,
+    );
+
+  return { problems, pages: pages.length, homeBytes: bytes, distBytes };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {

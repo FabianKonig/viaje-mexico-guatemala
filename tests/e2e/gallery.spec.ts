@@ -142,28 +142,54 @@ test.describe('ohne JavaScript', () => {
   });
 });
 
-test.describe('Videos (Zwei-Klick-Lösung)', () => {
+test.describe('Videos (Clips)', () => {
   const URL = PREVIEW_URL + 'entradas/2026-12-03-gps-y-heic/';
-  test('keine Anfrage an YouTube vor dem Klick, youtube-nocookie nach dem Klick', async ({
-    page,
-  }) => {
-    const external: string[] = [];
-    page.on('request', (r) => {
-      if (!r.url().startsWith('http://127.0.0.1')) external.push(r.url());
+
+  test('Standbild vorab, Video erst nach dem Abspielen, Ton nicht stumm', async ({ page }) => {
+    // Nur echte Antworten zählen: Playwright-WebKit meldet für Videoelemente auch Scheinanfragen
+    // (Status 0, ohne Header), die den Server nie erreichen.
+    const mp4: string[] = [];
+    page.on('response', (r) => {
+      if (/\.mp4(\?|$)/.test(r.url()) && r.status() >= 200) mp4.push(r.url());
     });
-    await page.route(/youtube/, (route) =>
-      route.fulfill({ status: 200, contentType: 'text/html', body: '<p>Testvideo</p>' }),
-    );
     await page.goto(URL);
     await page.waitForLoadState('networkidle');
-    expect(external).toEqual([]);
-    await expect(page.locator('.video iframe')).toHaveCount(0);
-    await page.getByRole('button', { name: 'Video laden' }).click();
-    const iframe = page.locator('.video iframe');
-    await expect(iframe).toHaveAttribute(
-      'src',
-      /^https:\/\/www\.youtube-nocookie\.com\/embed\/aaaaaaaaaaa/,
-    );
-    await expect(iframe).toHaveAttribute('title', 'Testvideo');
+    const video = page.locator('video.clip__video');
+    await expect(video).toHaveCount(1);
+    await expect(video).toHaveAttribute('preload', 'none');
+    await expect(video).toHaveAttribute('poster', /-poster\.jpg$/);
+    await expect(video).toHaveAttribute('controls', '');
+    await expect(video).toHaveAttribute('aria-label', /Testclip/);
+    expect(await video.evaluate((v: HTMLVideoElement) => v.muted)).toBe(false);
+    expect(await video.evaluate((v: HTMLVideoElement) => v.autoplay)).toBe(false);
+    // Vor dem Abspielen wird die Videodatei nicht geladen.
+    expect(mp4).toEqual([]);
+    await expect(page.locator('.clip__title')).toHaveText(/Testclip/);
+    // Nach dem Abspielen wird sie angefragt (Chromium ohne H.264 kann sie nicht dekodieren).
+    await video.evaluate((v: HTMLVideoElement) => v.play().catch(() => undefined));
+    await expect.poll(() => mp4.length).toBeGreaterThan(0);
+  });
+
+  test('Videodatei hat keinen Standort und wird in Teilen abrufbar geliefert', async ({
+    page,
+    request,
+  }) => {
+    await page.goto(URL);
+    const src = await page.locator('video.clip__video source').getAttribute('src');
+    const url = new globalThis.URL(src!, page.url()).toString();
+    const part = await request.get(url, { headers: { Range: 'bytes=0-99' } });
+    expect(part.status()).toBe(206);
+    expect((await part.body()).length).toBe(100);
+    const body = await (await request.get(url)).body();
+    expect(body.includes(Buffer.from([0xa9, 0x78, 0x79, 0x7a]))).toBe(false);
+    expect(body.subarray(4, 8).toString('latin1')).toBe('ftyp');
+  });
+
+  test.describe('ohne JavaScript', () => {
+    test.use({ javaScriptEnabled: false });
+    test('Video mit Bedienelementen und Download-Link ist vorhanden', async ({ page }) => {
+      await page.goto(URL);
+      await expect(page.locator('video.clip__video[controls]')).toHaveCount(1);
+    });
   });
 });

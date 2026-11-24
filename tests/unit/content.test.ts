@@ -149,23 +149,52 @@ describe('Inhalte: Frontmatter-Prüfung', () => {
     );
   });
 
-  it('Videos brauchen eine gültige YouTube-ID und einen Titel', () => {
-    const ok = validatePost(
+  it('videos (YouTube) wird nicht mehr akzeptiert und verweist auf clips', () => {
+    const r = validatePost(
       '2026-11-24-hola',
       tmpPost(),
       { ...base(), videos: [{ youtube: 'abcdefghijk', title: 'Video' }] },
       original,
       places,
     );
+    expect(r.errors.join()).toMatch(/videos \(YouTube\) gibt es nicht mehr.*clips/);
+  });
+
+  it('Clips (eigene Videos) brauchen MP4, Standbild, Titel und Maße', () => {
+    const dir = tmpPost();
+    fs.mkdirSync(path.join(dir, 'clips'));
+    fs.writeFileSync(path.join(dir, 'clips', '01.mp4'), 'x');
+    fs.writeFileSync(path.join(dir, 'clips', '01.jpg'), 'x');
+    const clip = { file: '01.mp4', title: 'Mariachis', width: 1280, height: 720, duration: 12 };
+    const ok = validatePost('2026-11-24-hola', dir, { ...base(), clips: [clip] }, original, places);
     expect(ok.errors).toEqual([]);
-    const bad = validatePost(
-      '2026-11-24-hola',
-      tmpPost(),
-      { ...base(), videos: [{ youtube: 'https://youtu.be/x' }] },
-      original,
-      places,
-    );
-    expect(bad.errors.length).toBe(2);
+    expect(ok.post?.clips).toEqual([clip]);
+
+    const bad = (c: Record<string, unknown>) =>
+      validatePost(
+        '2026-11-24-hola',
+        dir,
+        { ...base(), clips: [{ ...clip, ...c }] },
+        original,
+        places,
+      ).errors.join('\n');
+    expect(bad({ file: '02.mp4' })).toMatch(/clips\/02.mp4 existiert nicht/);
+    expect(bad({ file: '02.mp4' })).toMatch(/Standbild clips\/02.jpg fehlt/);
+    expect(bad({ file: '01.mov' })).toMatch(/\.mp4/);
+    expect(bad({ file: '../01.mp4' })).toMatch(/ohne Ordner/);
+    expect(bad({ title: ' ' })).toMatch(/title/);
+    expect(bad({ width: undefined })).toMatch(/width/);
+    expect(bad({ duration: 0 })).toMatch(/duration/);
+    const many = Array.from({ length: 21 }, () => clip);
+    expect(
+      validatePost(
+        '2026-11-24-hola',
+        dir,
+        { ...base(), clips: many },
+        original,
+        places,
+      ).errors.join(),
+    ).toMatch(/höchstens 20 Videos/);
   });
 
   it('Ordnername', () => {

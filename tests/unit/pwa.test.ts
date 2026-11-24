@@ -52,6 +52,13 @@ describe('PWA', () => {
     ).toBe(false);
   });
 
+  it('Videos laufen nie über den Service Worker (Streaming, nie vorab laden)', () => {
+    const scope = 'https://viaje.fabiankonig.de/';
+    expect(shouldHandle(scope + 'media/a/01-ab12cd.mp4', 'GET', scope)).toBe(false);
+    expect(shouldHandle(scope + 'media/a/01-ab12cd.MP4', 'GET', scope)).toBe(false);
+    expect(shouldHandle(scope + 'media/a/01-ab12cd-poster.jpg', 'GET', scope)).toBe(true);
+  });
+
   it('kein Service Worker in Vorschauen', () => {
     expect(serviceWorkerEnabled('/', undefined)).toBe(true);
     expect(serviceWorkerEnabled('/', 'true')).toBe(false);

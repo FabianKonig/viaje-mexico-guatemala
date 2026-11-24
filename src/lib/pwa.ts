@@ -21,6 +21,8 @@ export function cachesToDelete(keys: string[], prefix: string, current: string[]
 export function shouldHandle(url: string, method: string, scope: string): boolean {
   if (method !== 'GET') return false;
   const u = new URL(url);
+  // Videos nie über den Service Worker: Sie werden gestreamt (Range-Anfragen) und nie vorab geladen.
+  if (/\.(mp4|m4v|webm|mov)$/i.test(u.pathname)) return false;
   const s = new URL(scope);
   if (u.origin !== s.origin) return false;
   if (u.pathname.indexOf(s.pathname) !== 0) return false;

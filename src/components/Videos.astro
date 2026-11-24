@@ -1,67 +1,45 @@
 ---
 /**
- * Zwei-Klick-Lösung für YouTube-Videos: Erst nach Klick auf „Video laden“ wird
- * youtube-nocookie.com eingebunden. Vorher gibt es keine Anfrage an YouTube.
- * Ohne JavaScript: nur ein Link zu YouTube.
+ * Videos eines Beitrags (`clips`): selbst ausgeliefertes MP4 mit Ton. Der Browser lädt erst nach dem
+ * Antippen von „Play“ (preload="none"); vorher nur das kleine Standbild. Funktioniert ohne JavaScript.
  */
-import type { VideoRef } from '../lib/content';
+import type { ClipRef } from '../lib/content';
+import { clipMedia } from '../lib/media';
+import { href } from '../lib/site';
 
 interface Props {
-  videos: VideoRef[];
+  slug: string;
+  clips: ClipRef[];
 }
-const { videos } = Astro.props;
+const { slug, clips } = Astro.props;
+const clipItems = clips.map((c) => ({ ...c, media: clipMedia(slug, c.file) }));
 ---
 
-{videos.length > 0 && (
+{clipItems.length > 0 && (
   <section class="videos" aria-labelledby="videos-titel">
     <h2 id="videos-titel">Videos</h2>
     <ul class="videos__list" role="list">
-      {videos.map((v) => (
-        <li class="video card" data-video={v.youtube} data-title={v.title}>
-          <div class="video__frame" data-video-frame>
-            <div class="video__ph">
-              <p class="video__title">{v.title}</p>
-              <p class="video__note">
-                Beim Laden wird das Video von YouTube (Google) eingebunden. Dabei werden Daten wie
-                deine IP-Adresse an YouTube übertragen.
-              </p>
-              <button class="btn btn--light" type="button" data-video-load hidden>
-                <span aria-hidden="true">▶</span> Video laden
-              </button>
-              <a
-                class="video__link"
-                href={`https://www.youtube.com/watch?v=${v.youtube}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Auf YouTube ansehen<span class="visually-hidden"> (öffnet in einem neuen Tab)</span>
-              </a>
-            </div>
-          </div>
+      {clipItems.map((c) => (
+        <li class="clip card">
+          <video
+            class="clip__video"
+            controls
+            playsinline
+            preload="none"
+            poster={href(c.media.poster)}
+            width={c.width}
+            height={c.height}
+            aria-label={c.title}
+          >
+            <source src={href(c.media.src)} type="video/mp4" />
+            <a href={href(c.media.src)}>Video herunterladen</a>
+          </video>
+          <p class="clip__title">{c.title}</p>
         </li>
       ))}
     </ul>
   </section>
 )}
-
-<script>
-  for (const item of document.querySelectorAll<HTMLElement>('[data-video]')) {
-    const btn = item.querySelector<HTMLButtonElement>('[data-video-load]');
-    const frame = item.querySelector<HTMLElement>('[data-video-frame]');
-    if (!btn || !frame) continue;
-    btn.hidden = false;
-    btn.addEventListener('click', () => {
-      const iframe = document.createElement('iframe');
-      iframe.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(item.dataset.video ?? '')}?autoplay=1&rel=0`;
-      iframe.title = item.dataset.title ?? 'Video';
-      iframe.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
-      iframe.allowFullscreen = true;
-      iframe.referrerPolicy = 'strict-origin-when-cross-origin';
-      frame.replaceChildren(iframe);
-      iframe.focus();
-    });
-  }
-</script>
 
 <style>
   .videos {
@@ -75,49 +53,19 @@ const { videos } = Astro.props;
     margin: 0;
     padding: 0;
   }
-  .video {
+  .clip {
     overflow: hidden;
   }
-  .video__frame {
-    aspect-ratio: 16 / 9;
-    background: var(--ink);
-    color: var(--card);
-  }
-  .video__frame :global(iframe) {
+  .clip__video {
     display: block;
     width: 100%;
-    height: 100%;
-    border: 0;
+    height: auto;
+    max-height: 75vh;
+    background: var(--ink);
   }
-  .video__ph {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 8px;
-    padding: 16px 20px;
-    overflow: auto;
-  }
-  .video__title {
-    font-family: var(--font-head);
-    font-weight: 800;
-    font-size: 1.25rem;
+  .clip__title {
     margin: 0;
-  }
-  .video__note {
-    font-size: 0.875rem;
-    margin: 0;
-    max-width: 50ch;
-  }
-  .video__link {
-    color: var(--card);
-    font-size: 0.875rem;
-    min-height: 44px;
-    display: inline-flex;
-    align-items: center;
-  }
-  .video__link:hover {
-    color: var(--marigold);
+    padding: 12px 16px;
+    font-size: 0.9375rem;
   }
 </style>

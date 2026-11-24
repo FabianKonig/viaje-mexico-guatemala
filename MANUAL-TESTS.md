@@ -39,6 +39,6 @@ pro Gerät.
     „App installieren“): Icon (pinkes Fähnchen auf Gelb) erscheint, Seite öffnet sich.
 12. **Offline**: eine Seite ansehen, Flugmodus an, Seite neu laden: zuletzt gesehene Fassung erscheint.
 13. **WhatsApp-Vorschau**: Link in einen Chat mit dir selbst schicken: Titel und Bild erscheinen?
-14. Ein Video (falls vorhanden): erst nach „Video laden“ startet YouTube.
+14. Ein Video (falls vorhanden): erst nach „Play“ lädt und spielt es, mit Ton; Hochformat passt auf den Bildschirm.
 
 Gefundene Probleme bitte als Aufgabe in TODO.md eintragen (Gerät, Browser, Version, was passiert).

@@ -52,10 +52,11 @@ veröffentlicht (`.github/workflows/deploy.yml`). Details: [SPEC.md › Deployme
 
 Alles, was ins Repository hochgeladen wird, ist **öffentlich und bleibt für immer in der
 Git-Historie**, auch wenn die Datei später gelöscht wird. Handyfotos enthalten oft den genauen
-Aufnahmeort (GPS) in den EXIF-Metadaten. Das Bildskript entfernt beim Build alle Metadaten aus den
-**veröffentlichten** Bildern, aber die hochgeladene Originaldatei liegt trotzdem im Repository.
-
-Deshalb Fotos möglichst **schon auf dem Handy verkleinern und ohne Standort** hochladen:
+Aufnahmeort (GPS) in den EXIF-Metadaten. Der Import (`scripts/import-media.mjs`) entfernt alle
+Metadaten und verkleinert die Dateien, **bevor** etwas eingecheckt wird. Wer Fotos trotzdem selbst
+ins Repository lädt (z. B. per GitHub im Browser), umgeht das: Dann liegt die Originaldatei samt GPS
+in der Historie. Deshalb Fotos nie direkt hochladen, sondern über den Import, oder zumindest
+**schon auf dem Handy verkleinern und ohne Standort**:
 
 - **iPhone:** In der Fotos-App das Foto öffnen → Teilen → oben „Optionen“ → „Ort“ ausschalten.
   Zum Verkleinern z. B. in der Mail- oder Kurzbefehle-App „Bildgröße ändern“ (z. B. 2000 px) nutzen.
@@ -72,8 +73,11 @@ dem aktuellen Stand mit `git rm --cached <datei>`, aus der Historie nur durch Um
 Historie (z. B. `git filter-repo`) und erneutes Hochladen, und Forks oder Kopien sind dann
 trotzdem schon in der Welt.
 
-Videos kommen **nicht** ins Repository (GitHub-Limit 100 MiB pro Datei). Sie werden auf YouTube
-hochgeladen und datenschutzfreundlich per Zwei-Klick-Lösung eingebettet (siehe AGENTS.md).
+**Fotos und Videos nie unbearbeitet einchecken.** Der Import (`node scripts/import-media.mjs`, siehe
+AGENTS.md) verkleinert sie vorher: Fotos auf 1600 px, Videos auf 720p mit Ton, jeweils ohne GPS und
+Metadaten. Die Originale bleiben bei dir (z. B. in Google Drive). So bleibt das Repository klein
+(GitHub Pages erlaubt höchstens 1 GB; der Build warnt ab 700 MiB). Eigene Videos werden von der Seite
+selbst ausgeliefert und erst nach dem Antippen von „Play“ geladen.
 
 ## Grenzen des Schutzes
 

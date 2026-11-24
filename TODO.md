@@ -26,6 +26,17 @@
 - [ ] Beispielbeitrag `content/posts/2026-11-23-entrada-de-ejemplo/` vor dem ersten echten Beitrag löschen
       (ein Agent macht das beim ersten echten Beitrag mit).
 
+## Medien-Import (Fotos und Videos vom Handy)
+
+- [ ] **Google Drive verbinden** (claude.ai → Einstellungen → Konnektoren → Google Drive, auch für
+      Cloud-Sitzungen aktivieren) **oder** einen Drive-Ordner mit „Jeder mit dem Link“ teilen. Dann
+      einen Überordner `Reise-Inbox` anlegen, darin je Beitrag ein Unterordner mit dem Beitrags-Slug
+      (`2026-11-25-teotihuacan`). Einmal mit einem Foto und einem Video testen. Beim Link muss
+      `drive.google.com` in der Netzwerkfreigabe der Umgebung erlaubt sein.
+- [ ] Mit einem echten Android-Video prüfen: Ton, Hochformat, Dauer, Dateigröße.
+- [ ] Offen: Android-„Bewegte Fotos“ (JPEG mit eingebettetem Video) als Schleife anzeigen. Bisher wird
+      nur das Standbild übernommen. Braucht eine Beispieldatei vom Handy.
+
 ## Hinweise zu den Grenzen
 
 - Öffentliches Repository: Jeder GitHub-Nutzer darf es ansehen und forken (GitHub-Nutzungsbedingungen).
@@ -36,10 +47,11 @@
 - [x] PR 1: Grundgerüst, .gitignore, LICENSE, Dokumente, Test- und CI-Gerüst, Dependabot
 - [x] PR 2: Design und Startseite, Datenmodell, Beispielbeitrag, Layout- und axe-Tests
 - [x] PR 3: Beitragsseite mit Zweisprachigkeit
-- [x] PR 4: Fotos und Lightbox inkl. Bildskript, Zwei-Klick-Videos
+- [x] PR 4: Fotos und Lightbox inkl. Bildskript, Videos (später durch eigene Clips ersetzt, YouTube entfernt)
 - [x] PR 5: Karte inkl. Ortsliste
 - [x] PR 6: Reisetag
 - [x] PR 7: PWA
 - [x] PR 8: Impressum, Datenschutz, noindex, Lizenzhinweise
 - [x] PR 9: Deployment über GitHub Actions (keine Vorschau-Seiten, Entscheidung des Autors; PR-Artefakte später wieder entfernt)
+- [x] Medien-Import und eigene Videos (`clips`): Import-Skript, Anzeige mit Ton, Größenwarnung
 - [x] PR 10: Cross-Browser-Tests (PR: Chromium, Firefox, WebKit, Pixel 7, iPhone 15; nächtlich: Edge, Chrome, iPad, Galaxy) und manuelle Checkliste
