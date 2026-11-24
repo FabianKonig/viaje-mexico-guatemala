@@ -301,9 +301,10 @@ Beitrag), Verlauf der Beiträge (Datum, Link zur Lern-Datei).
 - Nur **sichere** Korrekturen. Ist die Absicht unklar, die Annahme kenntlich machen oder beim
   Autor nachfragen (wie bei der Übersetzung). Nichts erfinden.
 - **`¿` und `¡` am Anfang** (Wunsch des Autors: Er kennt die Regel und lässt die Zeichen aus Bequemlichkeit
-  weg): In der **korrigierten Fassung** setzen, richtig und **unmarkiert** (nicht fett). Sonst **nie
-  erwähnen**: nicht als Fehler auflisten, nicht zählen (auch nicht in der Übersicht), nicht erklären, nicht
-  loben, wenn er sie gesetzt hat. Andere Satzzeichen (z. B. Komma bei der Anrede) zählen weiter.
+  weg): In der **korrigierten Fassung** still setzen, richtig und **unmarkiert** (nicht fett). Sonst
+  **nie erwähnen**: nicht als Fehler auflisten, nicht zählen (auch nicht in der Übersicht), nicht
+  erklären, nicht loben, wenn er sie gesetzt hat. Andere Satzzeichen (z. B. Komma bei der Anrede)
+  zählen weiter.
 - Bei Auslassungen im Original (Akzente, Großschreibung) den Fehler zählen, aber freundlich bleiben:
   Es ist ein Lernwerkzeug, kein Zeugnis.
 - Die Lern-Datei bespricht **nur den Text**, nie Fotos, Videos oder Orte (Regel „Medien nicht

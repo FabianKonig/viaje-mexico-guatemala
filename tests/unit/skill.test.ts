@@ -88,7 +88,7 @@ describe('Skill neuer-beitrag', () => {
     const spec = fs.readFileSync('SPEC.md', 'utf8');
     for (const text of [agents, skill, spec]) {
       expect(text).toMatch(/still/);
-      expect(text).toMatch(/nie erwähn/);
+      expect(text).toMatch(/nie\s+erwähn/);
     }
     for (const text of [agents, spec]) expect(text).toContain('`¿`');
     // keine eigene Kategorie mehr für ¿ ¡
