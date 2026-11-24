@@ -1,4 +1,4 @@
-import { test, expect, PREVIEW_URL } from './fixtures';
+import { test, expect, latestRealPost, PREVIEW_URL } from './fixtures';
 import type { Page } from '@playwright/test';
 
 const WIDTHS = [320, 390, 768, 1280, 1920, 2560];
@@ -46,7 +46,7 @@ for (const width of WIDTHS) {
   test(`Beitragsseiten bei ${width}px: kein Überlauf, Profilbild rechts oben`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     for (const url of [
-      './entradas/2026-11-23-entrada-de-ejemplo/',
+      latestRealPost().url,
       './datenschutz/',
       './lizenzhinweise/',
       PREVIEW_URL + 'entradas/2026-11-24-titulo-muy-largo/',

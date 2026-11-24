@@ -25,7 +25,6 @@ Der Autor steuert vom Handy: Rückmeldungen kurz, am Ende nennen, was fertig ist
    an die erste Stelle) und `clips:` (`title: 'Video N'`) in `index.md` eintragen, genau wie das
    Skript es vorschlägt. **Medien nicht ansehen und nicht beschreiben.** Originale nie einchecken.
 6. **Ort:** nur eintragen, wenn er aus dem **Text** eindeutig ist (nie aus Fotos oder Videos); sonst den Autor fragen, nie raten (`content/places.yaml`).
-   Den Beispielbeitrag `2026-11-23-entrada-de-ejemplo` beim ersten echten Beitrag löschen.
 7. **Prüfen:** `npm run test:unit`, einmal bauen (`npm run build`), Screenshots Handy (390 px) und
    Computer nur zur Layoutprüfung ansehen.
 8. **Pull-Request** öffnen, nur wenn der Autor es verlangt oder „fertig“ sagt. Beschreibung kurz:

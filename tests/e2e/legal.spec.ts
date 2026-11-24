@@ -1,4 +1,12 @@
-import { test, expect, expectNoProblems, watchPage, PREVIEW_URL, ROOT_URL } from './fixtures';
+import {
+  test,
+  expect,
+  expectNoProblems,
+  latestRealPost,
+  watchPage,
+  PREVIEW_URL,
+  ROOT_URL,
+} from './fixtures';
 import type { Page } from '@playwright/test';
 
 /** Sammelt alle internen Seiten ab der Startseite (Breitensuche). */
@@ -75,10 +83,11 @@ for (const start of [ROOT_URL, PREVIEW_URL]) {
 test('Beitrag mit Fotos nutzt das erste Foto als Vorschaubild (JPEG 1200×630)', async ({
   page,
 }) => {
-  await page.goto('./entradas/2026-11-23-entrada-de-ejemplo/');
+  const post = latestRealPost();
+  await page.goto(post.url);
   await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
     'content',
-    /\/media\/2026-11-23-entrada-de-ejemplo\/.+-og\.jpg$/,
+    new RegExp(`/media/${post.slug}/.+-og\\.jpg$`),
   );
   await expect(page.locator('meta[property="og:type"]')).toHaveAttribute('content', 'article');
   await expect(page.locator('meta[property="og:image:width"]')).toHaveAttribute('content', '1200');

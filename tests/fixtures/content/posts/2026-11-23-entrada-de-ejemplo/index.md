@@ -1,5 +1,4 @@
 ---
-# BEISPIELBEITRAG aus Platzhaltern – vor dem ersten echten Beitrag löschen (siehe TODO.md).
 title: 'Entrada de ejemplo'
 titleDe: 'Beispielbeitrag'
 date: 2026-11-23
