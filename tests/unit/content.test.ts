@@ -96,7 +96,7 @@ describe('Inhalte: Frontmatter-Prüfung', () => {
     ).toMatch(/place "tikal" gibt es nicht/);
   });
 
-  it('Fotos müssen existieren, Alt-Text haben, höchstens 20', () => {
+  it('Fotos müssen existieren, Alt-Text haben, höchstens 30', () => {
     const dir = tmpPost(['01.jpg']);
     expect(
       validatePost(
@@ -123,19 +123,19 @@ describe('Inhalte: Frontmatter-Prüfung', () => {
       places,
     );
     expect(noAlt.errors.join()).toMatch(/alt/);
-    const many = Array.from({ length: 21 }, (_, i) => `${String(i).padStart(2, '0')}.jpg`);
-    const dir21 = tmpPost(many);
+    const many = Array.from({ length: 31 }, (_, i) => `${String(i).padStart(2, '0')}.jpg`);
+    const dir31 = tmpPost(many);
     const tooMany = validatePost(
       '2026-11-24-hola',
-      dir21,
+      dir31,
       { ...base(), photos: many.map((file) => ({ file, alt: 'x' })) },
       original,
       places,
     );
-    expect(tooMany.errors.join()).toMatch(/höchstens 20/);
-    const twenty = many.slice(0, 20).map((file) => ({ file, alt: 'x' }));
+    expect(tooMany.errors.join()).toMatch(/höchstens 30 Fotos/);
+    const thirty = many.slice(0, 30).map((file) => ({ file, alt: 'x' }));
     expect(
-      validatePost('2026-11-24-hola', dir21, { ...base(), photos: twenty }, original, places)
+      validatePost('2026-11-24-hola', dir31, { ...base(), photos: thirty }, original, places)
         .errors,
     ).toEqual([]);
   });
@@ -224,7 +224,7 @@ describe('Inhalte: Frontmatter-Prüfung', () => {
     expect(bad({ title: ' ' })).toMatch(/title/);
     expect(bad({ width: undefined })).toMatch(/width/);
     expect(bad({ duration: 0 })).toMatch(/duration/);
-    const many = Array.from({ length: 21 }, () => clip);
+    const many = Array.from({ length: 11 }, () => clip);
     expect(
       validatePost(
         '2026-11-24-hola',
@@ -233,7 +233,7 @@ describe('Inhalte: Frontmatter-Prüfung', () => {
         original,
         places,
       ).errors.join(),
-    ).toMatch(/höchstens 20 Videos/);
+    ).toMatch(/höchstens 10 Videos/);
   });
 
   it('Ordnername', () => {

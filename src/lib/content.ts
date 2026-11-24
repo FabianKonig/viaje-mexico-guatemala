@@ -13,8 +13,8 @@ import {
   type TranslationData,
 } from './translation';
 
-export const MAX_PHOTOS = 20;
-export const MAX_CLIPS = 20;
+export const MAX_PHOTOS = 30;
+export const MAX_CLIPS = 10;
 export const PHOTO_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif'];
 
 export interface Place {

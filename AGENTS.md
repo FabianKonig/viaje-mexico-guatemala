@@ -105,12 +105,12 @@ titleDe: 'Hallo, Mexiko!'          # optional: Übersetzung des Titels
 date: 2026-11-23                   # Datum des Beitrags (JJJJ-MM-TT)
 place: ciudad-de-mexico            # id aus content/places.yaml (optional, siehe Kartenregeln)
 cover: 01.jpg                      # optional: Titelbild (Datei aus photos/), sonst das erste Foto
-photos:                            # optional, höchstens 20, chronologisch (älteste zuerst)
+photos:                            # optional, höchstens 30, chronologisch (älteste zuerst)
   - file: 01.jpg                   # Datei in photos/
     alt: 'Foto 1 von 18'           # Pflicht: kurzer deutscher Alt-Text, Standard „Foto N von M“ (kein Bildinhalt)
     caption: 'El Zócalo'           # optional: Bildunterschrift
     motion: 02.mp4                 # optional: Bewegtfoto, stumme Schleife in photos/ (trägt der Import ein)
-clips:                             # optional, höchstens 20: eigene Videos (Standard für Handyclips)
+clips:                             # optional, höchstens 10: eigene Videos (Standard für Handyclips)
   - file: 01.mp4                   # Datei in clips/ (der Import erzeugt sie samt Standbild 01.jpg)
     title: 'Video 1'               # Pflicht: Standard „Video N“ (der Inhalt wird nicht beschrieben)
     width: 1280                    # width, height, duration trägt der Import ein (Vorschlag
@@ -315,7 +315,7 @@ Beitrag), Verlauf der Beiträge (Datum, Link zur Lern-Datei).
 
 ## Fotoregeln
 
-- Höchstens 20 Fotos und 20 Videos (`clips`) pro Beitrag. Eingangsformate: JPG, PNG, WebP, HEIC.
+- Höchstens 30 Fotos und 10 Videos (`clips`) pro Beitrag. Eingangsformate: JPG, PNG, WebP, HEIC.
 - Der **Import** (`scripts/import-media.mjs`) macht aus jedem Foto ein JPEG mit höchstens 1600 px und
   ohne Metadaten (EXIF/GPS). Das Bildskript (`scripts/images.mjs`) erzeugt beim Build die
   Vorschaubilder (400/800 px) und prüft das Ergebnis. Bei GPS-Resten bricht der Build ab.
