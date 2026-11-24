@@ -38,10 +38,17 @@ const ogImage = cover?.og
       {post.titleDe && <p class="post__title-de">{post.titleDe}</p>}
       <p class="post__meta">
         {post.place && <span lang="es">{post.place.name}</span>}
-        {post.place && <span aria-hidden="true"> · </span>}
-        {day >= 1 && <span>Tag {day}</span>}
-        {day >= 1 && <span aria-hidden="true"> · </span>}
-        <time datetime={post.date}>{formatDateDe(post.date)}</time>
+        {post.place && (
+          <span class="post__sep" aria-hidden="true">
+            {' '}
+            ·{' '}
+          </span>
+        )}
+        <span class="post__when">
+          {day >= 1 && <span>Tag {day}</span>}
+          {day >= 1 && <span aria-hidden="true"> · </span>}
+          <time datetime={post.date}>{formatDateDe(post.date)}</time>
+        </span>
       </p>
     </header>
 
@@ -85,6 +92,18 @@ const ogImage = cover?.og
     letter-spacing: 0.02em;
     font-size: var(--fs-text);
     margin: 0;
+  }
+  .post__when time {
+    white-space: nowrap;
+  }
+  /* Handy: Ort in der ersten, Tag und Datum immer in der zweiten Zeile */
+  @media (max-width: 699px) {
+    .post__sep {
+      display: none;
+    }
+    .post__when {
+      display: block;
+    }
   }
   .post__back {
     margin-top: 40px;

@@ -102,3 +102,21 @@ for (const width of [390, 1280]) {
     expect(title).toBeGreaterThan(text);
   });
 }
+
+test('Beitragsseite: Tag und Datum stehen am Handy in einer eigenen Zeile, am Computer neben dem Ort', async ({
+  page,
+}) => {
+  const url = PREVIEW_URL + 'entradas/2026-12-02-veinte-fotos/';
+  const tops = () =>
+    page.evaluate(() => {
+      const top = (s: string) => document.querySelector(s)!.getBoundingClientRect().top;
+      return { place: top('.post__meta [lang="es"]'), when: top('.post__when') };
+    });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(url);
+  const mobile = await tops();
+  expect(mobile.when, 'Handy: Datum in der nächsten Zeile').toBeGreaterThan(mobile.place + 10);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  const desktop = await tops();
+  expect(Math.abs(desktop.when - desktop.place), 'Computer: gleiche Zeile').toBeLessThan(5);
+});
