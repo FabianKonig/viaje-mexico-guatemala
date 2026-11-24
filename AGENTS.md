@@ -36,7 +36,9 @@ und was er noch von Hand tun muss.
 
 ### Wie viel lokal testen?
 
-Die CI (`ci.yml`) führt im Pull-Request **alles** aus, und ohne grüne CI lässt sich nicht mergen.
+Die CI (`ci.yml`) wählt ihren Umfang selbst nach den geänderten Dateien (`scripts/ci-scope.mjs`):
+nur Dokumente im Hauptordner → Lint und Unit-Tests; nur `content/` → zusätzlich Build und Chromium;
+alles andere → voller Lauf mit allen Browsern. Ohne grüne CI lässt sich nicht mergen.
 Der volle lokale Lauf ist nur eine zweite Absicherung und kostet Zeit. Darum nach Art der Änderung:
 
 | Änderung                                    | Lokal                                                                                  |

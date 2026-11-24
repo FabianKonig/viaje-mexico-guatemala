@@ -1,4 +1,7 @@
 # Tests bei jedem Pull-Request. Beim Merge in main laufen sie nicht erneut (siehe deploy.yml).
+# Der Testumfang richtet sich nach den geänderten Dateien (scripts/ci-scope.mjs): nur Dokumente =
+# Lint und Unit-Tests; nur Inhalt = zusätzlich Build und Chromium; sonst alles. Der Job läuft immer
+# (kein Pfadfilter), damit der Pflicht-Check „Tests“ in jedem Fall grün werden kann.
 # Ein Pull-Request darf nur gemergt werden, wenn dieser Workflow grün ist (Branch-Schutz, siehe TODO.md).
 name: Tests
 
@@ -22,11 +25,15 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          fetch-depth: 2
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
           check-latest: true
           cache: npm
+      - name: Testumfang bestimmen (docs, content oder full)
+        id: scope
+        run: node scripts/ci-scope.mjs
       - name: npm aktualisieren
         run: npm install -g npm@12
       - name: Abhängigkeiten installieren
@@ -38,11 +45,17 @@ jobs:
       - name: Unit-Tests
         run: npm run test:unit
       - name: Build (Hauptseite und Vorschau-Variante, inkl. Bild- und Build-Prüfungen)
+        if: steps.scope.outputs.scope != 'docs'
         run: npm run build:e2e
-      - name: Playwright-Browser installieren
-        run: npx playwright install --with-deps chromium firefox webkit
+      - name: Playwright-Browser installieren (bei reinem Inhalt nur Chromium)
+        if: steps.scope.outputs.scope != 'docs'
+        run: npx playwright install --with-deps ${{ steps.scope.outputs.scope == 'content' && 'chromium' || 'chromium firefox webkit' }}
       - name: Browser-Tests (Chromium, Firefox, WebKit, Pixel 7, iPhone 15)
+        if: steps.scope.outputs.scope == 'full'
         run: npm run test:e2e
+      - name: Browser-Tests (nur Chromium, da nur Inhalt geändert)
+        if: steps.scope.outputs.scope == 'content'
+        run: npm run test:e2e:local
       - name: Testbericht hochladen
         if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

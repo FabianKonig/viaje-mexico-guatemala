@@ -372,7 +372,14 @@ Hinweis auf die Datenübertragung und dem Knopf „Video laden“. Erst danach w
   Schlägt ein Schritt fehl, wird nicht veröffentlicht.
   Die Tests laufen dabei **nicht** erneut: Das Ruleset verlangt „Require branches to be up to date
   before merging“, der Pull-Request testet also genau den Stand, der in `main` landet.
-- **`.github/workflows/ci.yml`** bei jedem Pull-Request: Tests wie oben. Keine Artefakte (Screenshots
+- **`.github/workflows/ci.yml`** bei jedem Pull-Request: Tests wie oben, **mit angepasstem
+  Testumfang**: `scripts/ci-scope.mjs` (Logik in `scripts/lib/ci-scope.mjs`) vergleicht die
+  geänderten Dateien mit dem Stand von `main` und wählt
+  `docs` (nur Dokumente im Hauptordner: Lint, Unit-Tests, `npm audit`; kein Build, keine Browser),
+  `content` (nur `content/` und/oder Dokumente: zusätzlich Build und Browser-Tests nur in Chromium)
+  oder `full` (alles andere: alle Browser). Im Zweifel (kein Pull-Request, Git-Fehler, unbekannte
+  Datei) gilt `full`. Der Job „Tests“ läuft immer, ohne Pfadfilter im Workflow, weil ein
+  übersprungener Pflicht-Check das Mergen blockieren würde; übersprungen werden nur einzelne Schritte. Keine Artefakte (Screenshots
   und gebaute Seite wurden entfernt, der Autor kann ZIP-Dateien am Handy nicht öffnen). Bei einem
   Fehlschlag wird der Playwright-Bericht (7 Tage) hochgeladen. Das Aussehen prüft der Agent vor dem
   PR per Screenshot und beschreibt es im PR.
@@ -410,7 +417,7 @@ geprüft (Layout-Tests), die Handy-Profile decken Touch und Geräte-Viewport ab.
 
 ## 10. Tests
 
-Befehle: [AGENTS.md › Tests](AGENTS.md#tests). Jede neue Funktion bekommt einen Test.
+Befehle: [AGENTS.md › Tests](AGENTS.md#tests). Jede neue Funktion bekommt einen Test. Welche Tests die CI im Pull-Request ausführt, hängt von den geänderten Dateien ab (Abschnitt 8, `ci.yml`); der nächtliche Lauf deckt alles ab.
 
 | Bereich | Wo | Was |
 | --- | --- | --- |
