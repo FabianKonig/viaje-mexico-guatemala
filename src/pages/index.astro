@@ -14,17 +14,19 @@ const latest = posts[0];
 <Base home>
   <section class="hero wrap" aria-label="Über dieses Reisetagebuch">
     <div class="hero__intro">
-      <p class="hero__badge">Bienvenido / Willkommen</p>
+      <p class="hero__badge">¡Bienvenido / Willkommen!</p>
       <div class="hero__lead">
         <p>
-          Dies ist ein Experiment. Es ist mein Versuch eines Reiseblogs. Und zugleich ein Versuch,
-          mein Spanisch durch Schreiben zu festigen. Mit Beiträgen mal auf Spanisch und inklusiver
-          aller Anfängerfehler, aber auch mal auf Deutsch, je nach Lust. Und keine Sorge, falls du
-          no hablas español: Die deutsche Übersetzung steht immer daneben. Mal werde ich regelmäßig,
-          mal unregelmäßig schreiben, schauen wir mal.
+          ¡Hola! Schön, dass du hier bist. Dies ist mein Versuch eines Reiseblogs. Und zugleich ein
+          Versuch, mein Spanisch durch Schreiben zu festigen. Mit Beiträgen mal auf Spanisch (und
+          inklusiver aller Anfängerfehler), aber auch mal auf Deutsch, je nach Lust und Laune. Und
+          keine Sorge, falls tú no hablas español: Die deutsche Übersetzung steht immer daneben. Wer
+          mich besser kennt, weiß, dass ich nicht wirklich ein Social Media Typ bin. Von daher weiß
+          ich noch nicht, ob ich hier wirklich regelmäßig schreiben werde. Schauen wir einfach Mal,
+          was die nächsten Wochen bringen werden :)
         </p>
         <p>
-          ¡Viel Spaß und hasta pronto!
+          ¡Viel Spaß beim Lesen und hasta pronto!
           <br />
           Fabian
         </p>
@@ -106,6 +108,12 @@ const latest = posts[0];
     flex-wrap: wrap;
     align-items: center;
     gap: 14px 20px;
+    margin-top: 28px;
+  }
+  @media (min-width: 900px) {
+    .hero__actions {
+      margin-top: 32px;
+    }
   }
   .hero__map {
     min-width: 0;
