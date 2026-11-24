@@ -76,3 +76,29 @@ test('vergrößerte Systemschrift (24px Grundschrift): kein Überlauf', async ({
   await page.addStyleTag({ content: 'html{font-size:150%}' });
   await checkLayout(page, 390);
 });
+
+for (const width of [390, 1280]) {
+  test(`Beitragsseite bei ${width}px: genau drei Schriftgrößen, Überschrift > Titel > Text`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto(PREVIEW_URL + 'entradas/2026-12-02-veinte-fotos/');
+    const { sizes, heading, title, text } = await page.evaluate(() => {
+      const px = (el: Element) => parseFloat(getComputedStyle(el).fontSize);
+      const sizes = new Set<number>();
+      for (const el of document.querySelectorAll('body *')) {
+        const hasText = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent?.trim());
+        if (hasText && !el.closest('svg') && (el as HTMLElement).offsetParent) sizes.add(px(el));
+      }
+      return {
+        sizes: [...sizes],
+        heading: px(document.querySelector('.site-title')!),
+        title: px(document.querySelector('.post__title')!),
+        text: px(document.querySelector('.original')!),
+      };
+    });
+    expect(sizes.length, `Schriftgrößen: ${sizes.join(', ')}`).toBeLessThanOrEqual(3);
+    expect(heading).toBeGreaterThan(title);
+    expect(title).toBeGreaterThan(text);
+  });
+}

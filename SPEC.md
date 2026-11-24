@@ -194,6 +194,11 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
 - Schriften selbst gehostet in `public/fonts/` (WOFF2, variable Achse `wght`, Teilmengen latin und
   latin-ext, `font-display: swap`): **Fraunces** für Überschriften, **DM Sans** für Text. Lizenz SIL OFL 1.1.
 - Grundschrift 17px, Zeilenhöhe 1,6.
+- **Drei Schriftgrößen, hierarchisch** (CSS-Variablen in `global.css`): `--fs-heading` Überschrift der Seite
+  (Seitentitel im Kopf, 32–52px), `--fs-title` Titel eines Beitrags (24–36px), `--fs-text` alles Übrige
+  (17px: Fließtext, Original und Übersetzung, Kachel- und Abschnittsüberschriften wie „Original“ und
+  „Fotos“ in Fraunces fett, Beschriftungen, Schalter, Fußbereich). Der Titel ist immer kleiner als die
+  Überschrift und größer als der Text; ein E2E-Test prüft das auf der Beitragsseite.
 - Fokus: 3px Umriss in `turquoise-dark`. Touch-Ziele mindestens 44px. `prefers-reduced-motion` schaltet
   Bewegungen ab.
 
