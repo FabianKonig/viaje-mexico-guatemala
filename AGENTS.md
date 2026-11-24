@@ -20,7 +20,9 @@ und was er noch von Hand tun muss.
 1. Pro Aufgabe ein Feature-Branch von `main` (z. B. `post/2026-11-25-teotihuacan`, `feat/...`, `fix/...`).
 2. Code, Tests **und** Dokumente (SPEC.md, AGENTS.md, TODO.md, README.md) im selben Pull-Request
    aktualisieren. **Spezifikation und Code müssen immer übereinstimmen.**
-3. `npm test` lokal grün, Aussehen per Screenshot prüfen (Computer **und** Handy).
+3. Lokal nur so viel testen, wie die Änderung verlangt (Tabelle unten), Aussehen per Screenshot
+   prüfen (Computer **und** Handy). Den vollen Lauf aller Tests und Browser macht die CI im
+   Pull-Request.
 4. Pull-Request öffnen. Der Autor merged selbst, **immer per „Squash and merge“**.
 5. Baut ein Pull-Request auf einem anderen, noch offenen auf: nach dessen Squash-Merge den Branch auf
    den neuen `main` rebasen (`git rebase --onto origin/main <alter-basis-commit>`) und mit
@@ -31,6 +33,25 @@ und was er noch von Hand tun muss.
    `git fetch origin main && git rebase origin/main`, Tests prüfen und mit `--force-with-lease`
    pushen (nur eigene Feature-Branches). Die CI läuft danach neu. Der Autor kann stattdessen auch
    „Update branch“ in GitHub tippen.
+
+### Wie viel lokal testen?
+
+Die CI (`ci.yml`) führt im Pull-Request **alles** aus, und ohne grüne CI lässt sich nicht mergen.
+Der volle lokale Lauf ist nur eine zweite Absicherung und kostet Zeit. Darum nach Art der Änderung:
+
+| Änderung                                    | Lokal                                                                                  |
+| ------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Nur Dokumente (SPEC, TODO, README, AGENTS)  | `npm run lint`; bei SPEC-Änderungen zusätzlich `npm run test:unit` (SPEC-Abgleich)     |
+| Beitrag, noch in Überarbeitung              | nichts; nicht nach jeder Chatnachricht testen, bauen oder pushen                       |
+| Beitrag fertig (Autor sagt „fertig“)        | `npm run test:unit`, einmal bauen, je ein Screenshot Handy und Computer, dann PR       |
+| Code, Layout, Karte, Skripte                | `npm run lint`, `npm run test:unit`, `npm run test:e2e:local` (nur Chromium)           |
+| Abhängigkeiten, Build, Service Worker, Test | voller Lauf `npm test`                                                                 |
+
+- Bei einem Beitrag in Überarbeitung Änderungen sammeln und erst committen und pushen, wenn der
+  Autor „fertig“ sagt. Das spart CI-Läufe.
+- Wird die CI rot, den Log holen und gezielt beheben, statt auf Verdacht lokal alles zu wiederholen.
+- Die Sicherheit bleibt: Branch-Schutz, „Require branches to be up to date“ und der rote Deploy
+  bleiben unverändert.
 
 ## Versionen und Sicherheit
 
