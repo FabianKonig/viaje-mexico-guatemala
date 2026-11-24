@@ -194,6 +194,13 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
 - Schriften selbst gehostet in `public/fonts/` (WOFF2, variable Achse `wght`, Teilmengen latin und
   latin-ext, `font-display: swap`): **Fraunces** für Überschriften, **DM Sans** für Text. Lizenz SIL OFL 1.1.
 - Grundschrift 17px, Zeilenhöhe 1,6.
+- **Drei Schriftgrößen, hierarchisch** (CSS-Variablen in `global.css`): `--fs-heading` Überschrift der Seite
+  (Seitentitel im Kopf, 32–52px), `--fs-title` Titel (24–36px: Beitragstitel, Kartentitel und „Entradas“
+  auf der Startseite), `--fs-text` alles Übrige (17px: Fließtext, Begrüßung, Original und Übersetzung,
+  Kachel- und Abschnittsüberschriften wie „Original“, „Fotos“ und im gelben Kasten in Fraunces fett,
+  Beschriftungen, Karten-Legende, Schalter, Fußbereich). Der Titel ist immer kleiner als die
+  Überschrift und größer als der Text; ein E2E-Test prüft das auf Start- und Beitragsseite. Die
+  Rechtstexte (Prose) haben eigene Größen.
 - Fokus: 3px Umriss in `turquoise-dark`. Touch-Ziele mindestens 44px. `prefers-reduced-motion` schaltet
   Bewegungen ab.
 
@@ -227,11 +234,13 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   teilhaben lassen, von den kleinen Alltagsmomenten bis zu den großen Highlights.“, dann in eigenem Absatz „Wer mich
   besser kennt, weiß aber auch, dass ich nicht wirklich ein Social-Media-Typ bin. Von daher weiß ich noch nicht, ob ich
   hier wirklich regelmäßig schreiben werde. Schauen wir einfach mal, was die nächsten Wochen bringen werden :)“,
-  dann wieder in eigenem Absatz „¡Viel Spaß beim Lesen und hasta pronto!“ und „Fabian“) in `clamp(17px, 1.2vw + 12px, 24px)`, darunter der Knopf „Neuesten Beitrag
+  dann wieder in eigenem Absatz „¡Viel Spaß beim Lesen und hasta pronto!“ und „Fabian“) in Textgröße (`--fs-text`), darunter der Knopf „Neuesten Beitrag
   lesen“ (Extra-Abstand zum Text: 28px am Handy, ab 900px 32px)
-  und die Reisetag-Anzeige (beide über die volle Breite unter dem Text). Die Routenkarte (`#ruta`) steht
+  und darüber die Reisetag-Anzeige (beide untereinander, unter dem Text). Die Routenkarte (`#ruta`) steht
   im HTML vor dem gelben Kasten, damit sie schwimmen kann. Unter 900px alles untereinander
-  (Kasten, Text, Knopf, Reisetag, Karte; Reihenfolge per `order`).
+  (Kasten, Text, Reisetag, Knopf, Karte; Reihenfolge per `order`). Über der Karte steht unter 900px sichtbar die
+  Überschrift „Ruta“ (Titelgröße, direkt auf der Seite wie „Entradas“, nicht in der Karte); ab 900px nur
+  noch für Screenreader.
 - **Entradas** (`#entradas`): Raster `repeat(auto-fill, minmax(min(100%, 300px), 1fr))`, neueste
   zuerst. Karte: Foto (ab PR 4), Ort und Reisetag (z. B. „Ciudad de México · Tag 1“; ohne Ort nur der
   Tag), Titel (die ganze Karte ist klickbar), Textanfang des **Originals** (ca. 160 Zeichen),
@@ -245,8 +254,10 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
 
 ### 7.5 Beitragsseite (`/entradas/<ordner>/`)
 
-- Großer Titel (`h1`, Fraunces, `clamp(2.25rem, 1.5rem + 3.5vw, 4rem)`), optional `titleDe` darunter,
-  Zeile „Ort · Tag X · Datum“ (ohne Ort nur Tag und Datum; vor Reisebeginn nur das Datum).
+- Titel (`h1`, Fraunces, `--fs-title`), optional `titleDe` darunter,
+  Zeile „Ort · Tag X · Datum“ (ohne Ort nur Tag und Datum; vor Reisebeginn nur das Datum). Am Handy
+  (unter 700px) steht der Ort in der ersten Zeile und „Tag X · Datum“ immer in der zweiten, ab 700px alles
+  in einer Zeile.
 - Schalter „Übersetzung ausblenden“ / „Übersetzung einblenden“ (echter `<button>` mit
   `aria-expanded` und `aria-controls`). Ohne JavaScript ist er verborgen, beide Kacheln sind sichtbar.
   Standard: Übersetzung sichtbar. Die Einstellung wird nicht gespeichert (keine Cookies/Speicher).
@@ -378,12 +389,13 @@ YouTube wird nicht verwendet. `videos:` im Frontmatter ist ein Fehler (Hinweis a
 
 ### 7.9 Reisetag-Anzeige (`src/lib/travelDay.ts`, `TravelDay.astro`)
 
-- Startseite, unter dem Knopf „Neuesten Beitrag lesen“. Wird bei **jedem Seitenaufruf im Browser**
+- Startseite, **über** dem Knopf „Neuesten Beitrag lesen“. Wird bei **jedem Seitenaufruf im Browser**
   berechnet (kleines Modul-Skript), mit dem heutigen Datum in der Zeitzone `America/Mexico_City`
   (`Intl.DateTimeFormat`), damit alle Besucher denselben Tag sehen. Gerechnet wird nur mit Datumswerten
   (UTC-Mitternacht), Sommer-/Winterzeit spielt keine Rolle.
 - Texte: vor dem 23.11.2026 „Los geht's am 23. November 2026“; vom 23.11.2026 (Tag 1) bis 2.2.2027
-  (Tag 72) „Tag X unterwegs“; ab 3.2.2027 „Reise beendet · wieder zurück in Alemania“.
+  (Tag 72) „Heute ist der X. Tag der Reise“; ab 3.2.2027 „Reise nach 72 Tagen beendet“ (72 = Zahl der
+  Reisetage, aus `tripStart` und `tripEnd`).
 - Testbar über `travelStatus(datum)` / `travelTextFor(jetzt, vorschau)`. Vorschau eines Datums im
   Browser: `?datum=JJJJ-MM-TT` (ungültige Werte werden ignoriert).
 - Ohne JavaScript: „Reise vom 23. November 2026 bis 2. Februar 2027“.

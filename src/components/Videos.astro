@@ -45,6 +45,9 @@ const clipItems = clips.map((c) => ({ ...c, media: clipMedia(slug, c.file) }));
   .videos {
     margin-top: 48px;
   }
+  .videos h2 {
+    font-size: var(--fs-text);
+  }
   .videos__list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
@@ -66,6 +69,6 @@ const clipItems = clips.map((c) => ({ ...c, media: clipMedia(slug, c.file) }));
   .clip__title {
     margin: 0;
     padding: 12px 16px;
-    font-size: 0.9375rem;
+    font-size: var(--fs-text);
   }
 </style>

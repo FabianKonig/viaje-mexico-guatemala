@@ -67,6 +67,12 @@ test.describe('Startseite', () => {
   }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('./');
+    // Der Begrüßungstext hat Textgröße und passt ganz neben die Karte: für den Test so viel
+    // Text anhängen, dass er sicher unter die Karte läuft.
+    await page.locator('.hero__lead').evaluate((el) => {
+      const filler = 'Testtext zum Auffüllen, damit die Zeilen unter der Karte weiterlaufen. ';
+      el.insertAdjacentHTML('beforeend', `<p>${filler.repeat(40)}</p>`);
+    });
     const map = await page.locator('#ruta').boundingBox();
     const lines = await page.locator('.hero__lead').evaluate((el) => {
       // Nur Textzeilen (Textknoten), nicht die Kästen der Absätze.
@@ -90,6 +96,27 @@ test.describe('Startseite', () => {
     // Neben der Karte bleiben die Zeilen links davon, darunter reichen sie unter die Karte.
     for (const l of beside) expect(l.right).toBeLessThanOrEqual(map!.x);
     expect(Math.max(...below.map((l) => l.right))).toBeGreaterThan(map!.x);
+  });
+
+  test('Reisetag steht über dem Knopf; „Ruta“ ist am Handy über der Karte sichtbar, am Computer nicht', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('./');
+    const day = await page.locator('[data-travel-day]').boundingBox();
+    const btn = await page.locator('.hero__actions .btn').boundingBox();
+    expect(day!.y + day!.height).toBeLessThanOrEqual(btn!.y);
+    const title = page.locator('#ruta-titel');
+    await expect(title).toBeVisible();
+    const map = await page.locator('#ruta svg:visible').first().boundingBox();
+    const titleBox = (await title.boundingBox())!;
+    expect(
+      titleBox.y + titleBox.height,
+      'Überschrift über der Karte, nicht in ihr',
+    ).toBeLessThanOrEqual((await page.locator('#ruta').boundingBox())!.y);
+    expect(titleBox.y).toBeLessThan(map!.y);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    expect((await title.boundingBox())!.width, 'nur für Screenreader').toBeLessThanOrEqual(1);
   });
 
   test('am Handy steht alles untereinander', async ({ page }) => {

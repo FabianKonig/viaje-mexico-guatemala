@@ -76,3 +76,52 @@ test('vergrößerte Systemschrift (24px Grundschrift): kein Überlauf', async ({
   await page.addStyleTag({ content: 'html{font-size:150%}' });
   await checkLayout(page, 390);
 });
+
+for (const [name, path, titleSel] of [
+  ['Beitragsseite', 'entradas/2026-12-02-veinte-fotos/', '.post__title'],
+  ['Startseite', '', '#entradas-titel'],
+] as const) {
+  for (const width of [390, 1280]) {
+    test(`${name} bei ${width}px: genau drei Schriftgrößen, Überschrift > Titel > Text`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto(PREVIEW_URL + path);
+      const { sizes, heading, title, text } = await page.evaluate((sel) => {
+        const px = (el: Element) => parseFloat(getComputedStyle(el).fontSize);
+        const sizes = new Set<number>();
+        for (const el of document.querySelectorAll('body *')) {
+          const hasText = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent?.trim());
+          if (hasText && !el.closest('svg') && (el as HTMLElement).offsetParent) sizes.add(px(el));
+        }
+        return {
+          sizes: [...sizes],
+          heading: px(document.querySelector('.site-title')!),
+          title: px(document.querySelector(sel)!),
+          text: px(document.body),
+        };
+      }, titleSel);
+      expect(sizes.length, `Schriftgrößen: ${sizes.join(', ')}`).toBeLessThanOrEqual(3);
+      expect(heading).toBeGreaterThan(title);
+      expect(title).toBeGreaterThan(text);
+    });
+  }
+}
+
+test('Beitragsseite: Tag und Datum stehen am Handy in einer eigenen Zeile, am Computer neben dem Ort', async ({
+  page,
+}) => {
+  const url = PREVIEW_URL + 'entradas/2026-12-02-veinte-fotos/';
+  const tops = () =>
+    page.evaluate(() => {
+      const top = (s: string) => document.querySelector(s)!.getBoundingClientRect().top;
+      return { place: top('.post__meta [lang="es"]'), when: top('.post__when') };
+    });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(url);
+  const mobile = await tops();
+  expect(mobile.when, 'Handy: Datum in der nächsten Zeile').toBeGreaterThan(mobile.place + 10);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  const desktop = await tops();
+  expect(Math.abs(desktop.when - desktop.place), 'Computer: gleiche Zeile').toBeLessThan(5);
+});
