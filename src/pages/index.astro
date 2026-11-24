@@ -14,11 +14,21 @@ const latest = posts[0];
 <Base home>
   <section class="hero wrap" aria-label="Über dieses Reisetagebuch">
     <div class="hero__intro">
-      <p class="hero__badge">México &amp; Guatemala</p>
-      <p class="hero__lead">
-        Mein Reisetagebuch, auf Spanisch geschrieben, mit allen Fehlern. Daneben immer die deutsche
-        Übersetzung.
-      </p>
+      <p class="hero__badge">Bienvenido / Willkommen</p>
+      <div class="hero__lead">
+        <p>
+          Dies ist ein Experiment. Es ist mein Versuch eines Reiseblogs. Und zugleich ein Versuch,
+          mein Spanisch durch Schreiben zu festigen. Mit Beiträgen mal auf Spanisch und inklusiver
+          aller Anfängerfehler, aber auch mal auf Deutsch, je nach Lust. Und keine Sorge, falls du
+          no hablas español: Die deutsche Übersetzung steht immer daneben. Mal werde ich regelmäßig,
+          mal unregelmäßig schreiben, schauen wir mal.
+        </p>
+        <p>
+          ¡Viel Spaß und hasta pronto!
+          <br />
+          Fabian
+        </p>
+      </div>
       <div class="hero__actions">
         {latest && (
           <a class="btn" href={href(`entradas/${latest.slug}/`)}>
@@ -83,7 +93,7 @@ const latest = posts[0];
     box-shadow: var(--shadow);
     font-family: var(--font-head);
     font-weight: 800;
-    font-size: clamp(1.375rem, 1rem + 1.5vw, 2rem);
+    font-size: clamp(1.25rem, 0.5rem + 1.5vw, 1.75rem);
     line-height: 1.15;
   }
   .hero__lead {
