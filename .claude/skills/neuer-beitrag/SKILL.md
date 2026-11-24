@@ -23,7 +23,7 @@ Der Autor steuert vom Handy: Rückmeldungen kurz, am Ende nennen, was fertig ist
 5. **Medien importieren:** Dateien in einen leeren Ordner **außerhalb** von `content/`, dann
    `node scripts/import-media.mjs <ordner> <slug>`. Danach `photos:` (`alt: 'Foto N von M'`, Titelbild
    an die erste Stelle) und `clips:` (`title: 'Video N'`) in `index.md` eintragen, genau wie das
-   Skript es vorschlägt. **Medien nicht ansehen und nicht beschreiben.** Originale nie einchecken.
+   Skript es vorschlägt (Reihenfolge nach Aufnahmezeit). **Medien nicht ansehen und nicht beschreiben.** Originale nie einchecken.
 6. **Ort:** nur eintragen, wenn er aus dem **Text** eindeutig ist (nie aus Fotos oder Videos); sonst den Autor fragen, nie raten (`content/places.yaml`).
 7. **Prüfen:** `npm run test:unit`, einmal bauen (`npm run build`), Screenshots Handy (390 px) und
    Computer nur zur Layoutprüfung ansehen.

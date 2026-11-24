@@ -195,7 +195,7 @@ Doc im Unterordner ohne diese Präfixe. Alles andere Unbekannte: den Autor frage
 
 **Medien geändert:**
 
-1. Drive-Unterordner listen (ohne `Lernhilfe-`/`tmp-`). Der Import hat die Dateien nach Namen sortiert
+1. Drive-Unterordner listen (ohne `Lernhilfe-`/`tmp-`). Der Import hat die Dateien nach Aufnahmezeit sortiert
    nummeriert (`photos/NN.jpg`, `clips/NN.mp4`); so lässt sich zuordnen, welche Datei neu ist und
    welche fehlt. Ist es nicht eindeutig (Namen vertauscht, mehrere Änderungen), den Autor nach den
    Dateinamen fragen, nie raten.
@@ -380,8 +380,11 @@ und `drive.usercontent.google.com` müssen im Netzwerk der Umgebung erlaubt sein
 Thema `environment.network`).
 
 Das **Titelbild** ist das erste Foto im Beitrag (`photos[0]`; auch Vorschaubild und WhatsApp-Bild).
-Der Import nummeriert nach Dateiname; das Titelbild des Autors deshalb in `index.md` an die erste
-Stelle von `photos:` setzen (Dateien nicht umbenennen).
+Der Import nummeriert nach **Aufnahmezeit** (Zeitpunkt des Auslösens; erst alle Fotos, dann alle Videos,
+je Gruppe älteste zuerst). Das Titelbild des Autors in `index.md` an die erste Stelle von `photos:`
+setzen (Dateien nicht umbenennen); alle übrigen Fotos bleiben in Aufnahmereihenfolge. Bei späteren
+Ergänzungen die neuen Einträge nach Aufnahmezeit einsortieren: Zeiten der Originale zeigt
+`node scripts/import-media.mjs --times <ordner>`.
 
 **Skill:** Für den ganzen Ablauf gibt es den Skill `neuer-beitrag` (`.claude/skills/neuer-beitrag/`).
 Er ist nur eine Kurzfassung; maßgeblich ist diese Datei.

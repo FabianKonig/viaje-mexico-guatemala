@@ -53,6 +53,8 @@ export function probeVideo(file) {
     duration: Number(info.format?.duration ?? v.duration ?? 0),
     fps: fpsOf(v),
     hasAudio: (info.streams ?? []).some((s) => s.codec_type === 'audio'),
+    /** Erstellungszeit aus dem Container (ISO 8601), falls vorhanden */
+    created: info.format?.tags?.creation_time ?? v.tags?.creation_time ?? null,
   };
 }
 
