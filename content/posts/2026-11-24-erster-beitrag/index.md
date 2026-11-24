@@ -4,40 +4,40 @@ titleDe: 'Regen, Salsa und viel Strom'
 date: 2026-11-24
 place: ciudad-de-mexico
 photos:
-  - file: 16.jpg
-    alt: 'Foto 1 von 17'
   - file: 01.jpg
-    alt: 'Foto 2 von 17'
+    alt: 'Foto 1 von 17'
   - file: 02.jpg
-    alt: 'Foto 3 von 17'
+    alt: 'Foto 2 von 17'
   - file: 03.jpg
-    alt: 'Foto 4 von 17'
+    alt: 'Foto 3 von 17'
   - file: 04.jpg
-    alt: 'Foto 5 von 17'
+    alt: 'Foto 4 von 17'
   - file: 05.jpg
-    alt: 'Foto 6 von 17'
+    alt: 'Foto 5 von 17'
   - file: 06.jpg
-    alt: 'Foto 7 von 17'
+    alt: 'Foto 6 von 17'
   - file: 07.jpg
-    alt: 'Foto 8 von 17'
+    alt: 'Foto 7 von 17'
   - file: 08.jpg
-    alt: 'Foto 9 von 17'
+    alt: 'Foto 8 von 17'
   - file: 09.jpg
-    alt: 'Foto 10 von 17'
+    alt: 'Foto 9 von 17'
   - file: 10.jpg
-    alt: 'Foto 11 von 17'
+    alt: 'Foto 10 von 17'
   - file: 11.jpg
-    alt: 'Foto 12 von 17'
+    alt: 'Foto 11 von 17'
     motion: 11.mp4
   - file: 12.jpg
-    alt: 'Foto 13 von 17'
+    alt: 'Foto 12 von 17'
     motion: 12.mp4
   - file: 13.jpg
-    alt: 'Foto 14 von 17'
+    alt: 'Foto 13 von 17'
   - file: 14.jpg
-    alt: 'Foto 15 von 17'
+    alt: 'Foto 14 von 17'
     motion: 14.mp4
   - file: 15.jpg
+    alt: 'Foto 15 von 17'
+  - file: 16.jpg
     alt: 'Foto 16 von 17'
   - file: 17.jpg
     alt: 'Foto 17 von 17'

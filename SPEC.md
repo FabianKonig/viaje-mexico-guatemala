@@ -323,8 +323,8 @@ Alle Videos sind eigene Clips (`clips:`, Komponente `Videos.astro`, Klasse `.cli
   (`scripts/lib/captured.mjs`): Foto EXIF `DateTimeOriginal` (+ `SubSecTimeOriginal`), dann
   `DateTimeDigitized`/`DateTime`; Video `creation_time` im Container (ffprobe); sonst ein Zeitstempel im
   Dateinamen (`PXL_20261124_153012345`, `IMG_20261124_153012`). Gleiche Zeit: nach Dateiname; Dateien ohne
-  Zeit stehen am Ende der Gruppe. Das Titelbild ist die Ausnahme (siehe AGENTS.md: der Autor bestimmt
-  `photos[0]`). `node scripts/import-media.mjs --times <ordner>` zeigt nur die Zeiten, ohne zu schreiben.
+  Zeit stehen am Ende der Gruppe. Es gibt keine Ausnahme: Das Titelbild (Beitragskarte, Vorschau) ist
+  immer `photos[0]`, also das älteste Foto. `node scripts/import-media.mjs --times <ordner>` zeigt nur die Zeiten, ohne zu schreiben.
   Fotos: JPEG Qualität 85, lange Seite höchstens 1600 px, ohne Metadaten, `photos/NN.jpg`.
   **Android-Bewegtfotos** (Motion Photo: JPEG mit angehängtem MP4, erkennbar an `*.MP.jpg`; `extractMotionVideo`
   liest XMP `Item:Semantic="MotionPhoto"` mit `Item:Length` bzw. das ältere `MicroVideoOffset`) werden zu

@@ -21,9 +21,8 @@ Der Autor steuert vom Handy: Rückmeldungen kurz, am Ende nennen, was fertig ist
 3. **Text** unverändert nach `original.md` (nie korrigieren), Hash mit `node scripts/hash-original.mjs`.
 4. **Übersetzen** (Spanisch → natürliches Deutsch, Deutsches 1:1), Segmente in `index.md`.
 5. **Medien importieren:** Dateien in einen leeren Ordner **außerhalb** von `content/`, dann
-   `node scripts/import-media.mjs <ordner> <slug>`. Danach `photos:` (`alt: 'Foto N von M'`, Titelbild
-   an die erste Stelle) und `clips:` (`title: 'Video N'`) in `index.md` eintragen, genau wie das
-   Skript es vorschlägt (Reihenfolge nach Aufnahmezeit). **Medien nicht ansehen und nicht beschreiben.** Originale nie einchecken.
+   `node scripts/import-media.mjs <ordner> <slug>`. Danach `photos:` (`alt: 'Foto N von M'`) und `clips:` (`title: 'Video N'`) in `index.md` eintragen, genau wie das
+   Skript es vorschlägt (streng nach Aufnahmezeit; das älteste Foto ist das Titelbild). **Medien nicht ansehen und nicht beschreiben.** Originale nie einchecken.
 6. **Ort:** nur eintragen, wenn er aus dem **Text** eindeutig ist (nie aus Fotos oder Videos); sonst den Autor fragen, nie raten (`content/places.yaml`).
 7. **Prüfen:** `npm run test:unit`, einmal bauen (`npm run build`), Screenshots Handy (390 px) und
    Computer nur zur Layoutprüfung ansehen.
