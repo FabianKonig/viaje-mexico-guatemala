@@ -8,7 +8,7 @@ test.describe('Startseite', () => {
     ).toBeVisible();
     await expect(page.locator('.avatar')).toBeVisible();
     await expect(page.locator('#ruta')).toBeVisible();
-    await expect(page.getByText('“Bienvenido / Willkommen”', { exact: true })).toBeVisible();
+    await expect(page.getByText('¡Bienvenido / Willkommen!', { exact: true })).toBeVisible();
     await expect(page.getByText('Mein Versuch eines Reiseblogs.')).toBeVisible();
     await expect(page.getByRole('heading', { level: 2, name: 'Entradas' })).toBeVisible();
     await expect(page.locator('.post-card').first()).toBeVisible();
