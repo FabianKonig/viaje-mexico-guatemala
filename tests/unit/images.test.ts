@@ -187,3 +187,42 @@ describe('Videos im Bildskript', () => {
     await expect(verifyDir(dir)).rejects.toThrow(/schlecht\.mp4/);
   });
 });
+
+describe('Bewegtfoto im Bildskript', () => {
+  it('kopiert die Schleife mit Hash und trägt sie ins Manifest ein, bricht bei Standort ab', async () => {
+    const mk = async (extra: Buffer) => {
+      const content = tmp('content-');
+      const out = tmp('out-');
+      const dir = path.join(content, 'posts', '2026-11-25-a');
+      fs.mkdirSync(path.join(dir, 'photos'), { recursive: true });
+      await sharp({ create: { width: 40, height: 30, channels: 3, background: '#fff' } })
+        .jpeg()
+        .toFile(path.join(dir, 'photos', '01.jpg'));
+      fs.writeFileSync(
+        path.join(dir, 'photos', '01.mp4'),
+        Buffer.concat([
+          Buffer.from([0, 0, 0, 16]),
+          Buffer.from('ftypisom', 'latin1'),
+          Buffer.from('mdat....', 'latin1'),
+          extra,
+        ]),
+      );
+      fs.writeFileSync(
+        path.join(dir, 'index.md'),
+        "---\ntitle: 'A'\nphotos:\n  - file: 01.jpg\n    alt: 'x'\n    motion: 01.mp4\n---\n",
+      );
+      return () =>
+        processAll({
+          contentDir: content,
+          outDir: path.join(out, 'media'),
+          cacheDir: path.join(out, 'cache'),
+          manifestFile: path.join(out, 'm.json'),
+          log: () => undefined,
+        });
+    };
+    const manifest = await (await mk(Buffer.alloc(0)))();
+    const m = manifest.photos['2026-11-25-a/01.jpg'];
+    expect(m.motion).toMatch(/^media\/2026-11-25-a\/01-[0-9a-f]{10}-motion\.mp4$/);
+    await expect((await mk(Buffer.from('+48.1351+011.5820/', 'latin1')))()).rejects.toThrow(/GPS/);
+  });
+});

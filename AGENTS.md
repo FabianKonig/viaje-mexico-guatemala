@@ -106,11 +106,12 @@ date: 2026-11-23                   # Datum des Beitrags (JJJJ-MM-TT)
 place: ciudad-de-mexico            # id aus content/places.yaml (optional, siehe Kartenregeln)
 photos:                            # optional, höchstens 20
   - file: 01.jpg                   # Datei in photos/
-    alt: 'Blick über den Zócalo'   # Pflicht: deutscher Alt-Text, beschreibt das Bild
+    alt: 'Foto 1 von 18'           # Pflicht: kurzer deutscher Alt-Text, Standard „Foto N von M“ (kein Bildinhalt)
     caption: 'El Zócalo'           # optional: Bildunterschrift
+    motion: 02.mp4                 # optional: Bewegtfoto, stumme Schleife in photos/ (trägt der Import ein)
 clips:                             # optional, höchstens 20: eigene Videos (Standard für Handyclips)
   - file: 01.mp4                   # Datei in clips/ (der Import erzeugt sie samt Standbild 01.jpg)
-    title: 'Mariachis auf der Plaza'  # Pflicht: deutsche Beschreibung (Bildunterschrift und Alt-Text)
+    title: 'Video 1'               # Pflicht: Standard „Video N“ (der Inhalt wird nicht beschrieben)
     width: 1280                    # width, height, duration trägt der Import ein (Vorschlag
     height: 720                    # wird vom Skript gedruckt), nicht von Hand ändern
     duration: 12.4
@@ -159,17 +160,20 @@ Hash berechnen: `node scripts/hash-original.mjs content/posts/<ordner>/original.
    `node scripts/import-media.mjs <quellordner> <JJJJ-MM-TT-slug>` ausführen. Das Skript verkleinert
    und entfernt GPS/Metadaten, schreibt `photos/NN.jpg` bzw. `clips/NN.mp4` + `NN.jpg` und druckt
    einen Frontmatter-Vorschlag. **Originale nie einchecken, nie ohne den Import in `photos/` oder
-   `clips/` legen.** Dann `photos:` und `clips:` in `index.md` eintragen: für jedes Foto ein
-   beschreibender deutscher `alt`, für jedes Video ein kurzer deutscher `title` (Fotos und Videos
-   ansehen: Standbild `clips/NN.jpg`). **Jedes** Foto und Video, das der Autor schickt, wird
+   `clips/` legen.** Dann `photos:` und `clips:` in `index.md` eintragen, mit den **neutralen
+   Standardtexten** des Skripts (`alt: 'Foto N von M'`, `title: 'Video N'`). **Die Mediendateien nicht
+   ansehen und nicht inhaltlich beschreiben** (Regel „Medien nicht inhaltlich auswerten“ unten).
+   Android-Bewegtfotos (`*.MP.jpg`) werden zum Foto **plus**
+   stummer Schleife (`photos/NN.mp4`, Feld `motion`). **Jedes** Foto und Video, das der Autor schickt, wird
    übernommen (Videos mit Ton, nicht stumm). Zu lange Videos (über 180 s) meldet das Skript; dann dem
    Autor sagen, dass er es kürzen soll. Braucht ffmpeg
    (`sudo apt-get install -y ffmpeg`, falls es fehlt).
-7. **Ort klären:** Ist der Ort aus Text oder Fotos **eindeutig** erkennbar? Wenn nicht: **den Autor
+7. **Ort klären:** Ist der Ort aus dem **Text** **eindeutig** erkennbar (nie aus den Medien)? Wenn nicht: **den Autor
    fragen, wo er gerade ist. Nie raten.**
 8. **Karte und Ortsliste aktualisieren:** Neuer Ort → am Ende von `content/places.yaml` eintragen
    (wird automatisch „Aquí estoy“). Bekannter Ort → nur `place:` im Beitrag setzen.
-9. **Tests:** `npm test`. Screenshots von Startseite und Beitrag (Handy und Computer) ansehen.
+9. **Tests:** `npm test`. Screenshots von Startseite und Beitrag (Handy und Computer) nur zur
+   **Layoutprüfung** ansehen (Anordnung, Überlauf, Abstände), nicht um Bildinhalte zu beschreiben.
 10. **Pull-Request** öffnen: kurze Beschreibung, erkannte Sprachen, offene Fragen (Ort, Titel).
 
 ## Übersetzungsregeln
@@ -193,6 +197,15 @@ Hash berechnen: `node scripts/hash-original.mjs content/posts/<ordner>/original.
   Personen oder Kinder darauf zu sehen sind, und nicht nach deren Einverständnis fragen. Die
   Verantwortung dafür liegt allein beim Autor.
 - Keine Fotos, Texte oder Grafiken von Dritten ohne Erlaubnis des Autors.
+- **Medien nicht inhaltlich auswerten (Wunsch des Autors):** Fotos, Videos und Bewegtfotos werden
+  **nicht** angesehen, analysiert oder beschrieben: nicht, was zu sehen ist, wer oder was abgebildet
+  ist, wo es aufgenommen wurde, nicht in Texten, im Chat oder in Pull-Requests. Dafür keine
+  Bilddatei öffnen (kein `Read` auf Bilder, keine Bildbetrachter, keine Video-Einzelbilder ansehen).
+  `alt` und `title` bekommen die neutralen Standardtexte (`Foto N von M`, `Video N`); eine echte
+  Beschreibung nur, wenn der Autor sie selbst liefert (z. B. im Google Doc). Der Ort kommt aus dem
+  Text, das Titelbild nennt der Autor mit Dateinamen. Der Drive-Konnektor zeigt heruntergeladene
+  Bilder von selbst im Chat an; das lässt sich nicht abstellen, davon wird nichts verwendet.
+  Technische Prüfungen (Größe, Format, Metadaten, Laufzeit, Layout per Screenshot) bleiben erlaubt.
 - **Videos:** Eigene Videos kommen als `clips:` ins Repository, aber **nur nach dem Import** (720p,
   H.264/AAC, mit Ton, ohne Standort, höchstens 180 s und 40 MiB je Clip). Die Seite liefert sie
   selbst aus und lädt sie erst nach dem Antippen von „Play“. YouTube wird nicht verwendet (der
@@ -203,20 +216,48 @@ Hash berechnen: `node scripts/hash-original.mjs content/posts/<ordner>/original.
 
 ## Medien holen (Quelle der Originale)
 
-Die Originale kommen vom Autor, nicht aus dem Repository. In dieser Reihenfolge versuchen:
+Die Originale liegen im Google Drive des Autors: Ordner `reiseblog-viaje-mexico-guatemala`
+(ID `1Qu7wqLXW14XaZgrblZB4PZW2PaHg5b3M`), darin **ein Unterordner je Beitrag** `JJJJ-MM-TT-slug` mit
+einem Google Doc (Text, Hinweis auf das Titelbild), den Fotos, Videos und Bewegtfotos (`*.MP.jpg`).
+Der Autor meldet nur: „Neuer Beitrag `JJJJ-MM-TT-slug`“. Zugriff über den Drive-Konnektor
+(`mcp__Google_Drive__*`, per ToolSearch laden). Ist ein Anhang im Chat, hat er Vorrang (liegt schon
+im Arbeitsordner).
 
-1. **Anhänge im Chat** (liegen schon im Arbeitsordner).
-2. **Google-Drive-Konnektor:** der Autor legt die Dateien in einen Drive-Ordner, ein Unterordner je
-   Beitrag, benannt wie der Beitrags-Slug (`Reise-Inbox/2026-11-25-teotihuacan/`). Nur diesen
-   Unterordner herunterladen. Ist der Konnektor nicht verbunden oder liefert er keine Binärdateien,
-   weiter mit 3.
-3. **Geteilter Ordner-Link** („Jeder mit dem Link“): herunterladen, wenn die Netzwerkfreigabe der
-   Umgebung `drive.google.com` und `drive.usercontent.google.com` erlaubt (sonst `read_documentation`
-   mit Thema `environment.network` und den Autor um die Freigabe bitten).
+1. **Unterordner und Dateien finden:** `search_files` mit `parentId = '<ordner-id>' and trashed = false`
+   (erst den Unterordner, dann dessen Inhalt). Eine Antwort kann leer sein und nur `nextPageToken`
+   enthalten: dann die nächste Seite mit dem Token holen. Sieht der Konnektor nichts, obwohl der
+   Autor Dateien hochgeladen hat: Konnektor-Berechtigung prüfen lassen (er sah anfangs nur Dateien,
+   die er selbst angelegt hatte).
+2. **Text:** `download_file_content` mit `exportMimeType: text/plain` (oder `read_file_content`).
+   Text so übernehmen, wie das Doc ihn liefert (nur Export-Artefakte wie BOM entfernen), nie
+   korrigieren. Titel und Titelbild stehen im Doc; ist etwas unklar, den Autor fragen.
+3. **Dateien bis 10 MB:** `download_file_content`. Die Datei wird automatisch im Ordner
+   `…/tool-results/` gespeichert (Pfad steht in der Antwort; Bilder werden zusätzlich angezeigt).
+   Größe mit `fileSize` aus der Suche vergleichen. Dateien nie von Hand abtippen oder einfügen.
+4. **Dateien über 10 MB (Grenze des Konnektors, meist Videos):** nie das Original freigeben, sondern
+   eine **Kopie** nutzen und sofort aufräumen:
+   1. `copy_file` (`title: tmp-<name>`, `parentId` = derselbe Unterordner)
+   2. `share_file` (`role: reader`, `permissionId: anyoneWithLink`) nur für die Kopie
+   3. `curl -L -o <ziel> "https://drive.usercontent.google.com/download?id=<kopie-id>&export=download&confirm=t"`
+   4. Größe der Datei mit `fileSize` vergleichen (bei Abweichung ist es eine HTML-Fehlerseite) und
+      sofort danach `update_file` mit `downloadRestriction: {restrictedReader: true}` (sperrt den
+      Download), dann `trash_file`. Auch bei Fehlern **immer** sperren und in den Papierkorb legen.
+   Der Papierkorb allein beendet den Link **nicht** (geprüft); erst die Download-Sperre tut es.
+   Freigaben lassen sich mit den Werkzeugen nicht zurücknehmen. Am Ende dem Autor sagen:
+   „Bitte im Drive-Papierkorb die `tmp-*`-Dateien endgültig löschen.“
+5. Alle Dateien in einen neuen, leeren Ordner **außerhalb von `content/`** legen (z. B.
+   `<scratchpad>/<slug>/`) und dann importieren (Ablauf, Schritt 6). Originale nie einchecken.
 
-Heruntergeladene Dateien immer in einen neuen, leeren Ordner außerhalb von `content/` legen und
-nach dem Import nicht einchecken. Wichtig: Bei Android-„Bewegten Fotos“ (JPEG mit eingebettetem
-Video) wird nur das Standbild übernommen.
+Alternativen, falls der Konnektor fehlt: geteilter Ordner-Link („Jeder mit dem Link“); `drive.google.com`
+und `drive.usercontent.google.com` müssen im Netzwerk der Umgebung erlaubt sein (`read_documentation`,
+Thema `environment.network`).
+
+Das **Titelbild** ist das erste Foto im Beitrag (`photos[0]`; auch Vorschaubild und WhatsApp-Bild).
+Der Import nummeriert nach Dateiname; das Titelbild des Autors deshalb in `index.md` an die erste
+Stelle von `photos:` setzen (Dateien nicht umbenennen).
+
+**Skill:** Für den ganzen Ablauf gibt es den Skill `neuer-beitrag` (`.claude/skills/neuer-beitrag/`).
+Er ist nur eine Kurzfassung; maßgeblich ist diese Datei.
 
 ## Kartenregeln
 
@@ -224,7 +265,7 @@ Video) wird nur das Standbild übernommen.
 - Reihenfolge der Einträge = Reiseverlauf. Nummern zählen die Orte (1, 2, 3 …), nicht die Beiträge.
 - Der **letzte** Eintrag ist der aktuelle Ort („Aquí estoy“).
 - Ein neuer Ort wird **nur** eingetragen, wenn der Autor sagt, dass er dort war (oder es eindeutig
-  aus Beitrag/Fotos hervorgeht). **Im Zweifel fragen, nie raten.**
+  aus dem Beitragstext hervorgeht, nie aus Fotos oder Videos). **Im Zweifel fragen, nie raten.**
 - Eintrag: `id` (klein, mit Bindestrichen), `name` (spanischer Name), `lat`, `lon` (Dezimalgrad,
   Stadtzentrum genügt), `country` (`MX` oder `GT`), `arrived` (JJJJ-MM-TT), optional `region`
   (z. B. `Yucatán`, `Chiapas`; benennt den Kartenausschnitt). Liegen mehrere Orte nahe beieinander,

@@ -43,6 +43,19 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
                 loading={i < 4 ? 'eager' : 'lazy'}
                 decoding="async"
               />
+              {p.media.motion && (
+                <video
+                  class="gallery__motion"
+                  data-motion
+                  src={href(p.media.motion)}
+                  muted
+                  loop
+                  playsinline
+                  preload="none"
+                  aria-hidden="true"
+                  tabindex="-1"
+                />
+              )}
             </a>
             {p.caption && <figcaption lang="es">{p.caption}</figcaption>}
           </figure>
@@ -76,7 +89,9 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
 
 <script>
   import { initLightbox } from '../scripts/lightbox';
+  import { initMotion } from '../scripts/motion';
   initLightbox();
+  initMotion();
 </script>
 
 <style>
@@ -102,6 +117,7 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
     min-width: 0;
   }
   .gallery__link {
+    position: relative;
     display: block;
     border: var(--border);
     border-radius: 10px;
@@ -122,6 +138,20 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
     height: auto;
     aspect-ratio: 4 / 3;
     object-fit: cover;
+  }
+  .gallery__motion {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+  }
+  .gallery__motion {
+    opacity: 0;
+  }
+  .gallery__motion[data-playing] {
+    opacity: 1;
   }
   .gallery__item figcaption {
     margin-top: 8px;

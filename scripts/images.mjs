@@ -7,6 +7,7 @@
  *    WebP Qualität 80) und für das erste Foto jedes Beitrags ein Open-Graph-Bild (1200×630 JPEG)
  *  - verarbeitet nur Fotos, die im Frontmatter eines Beitrags stehen
  *  - prüft am Ende, dass keine Metadaten mehr enthalten sind; bricht sonst ab (Exit-Code 1)
+ *  - kopiert die stumme Schleife eines Bewegtfotos (photos/NN.mp4, Feld `motion`) wie die Clips
  *  - kopiert die fertigen Videos (clips/*.mp4) mit Standbild nach public/media/ (kein Umwandeln, nur
  *    Prüfung auf Standort/Metadaten; umgewandelt wird beim Import, scripts/import-media.mjs)
  * Ausgabe: public/media/ (nicht eingecheckt) und .cache/media-manifest.json
@@ -220,6 +221,16 @@ export async function processAll({
         thumbHeight: meta.thumbHeights[400],
       };
       if (i === 0) entry.og = emit(path.join(slug, `${stem}-${h}-og.jpg`), read('og.jpg'));
+      if (typeof ph.motion === 'string') {
+        const motionSrc = path.join(postsDir, slug, 'photos', ph.motion);
+        if (fs.existsSync(motionSrc)) {
+          const video = fs.readFileSync(motionSrc);
+          const problems = mp4Problems(video);
+          if (problems.length)
+            throw new Error(`${slug}/photos/${ph.motion}: ${problems.join(', ')}`);
+          entry.motion = emit(path.join(slug, `${stem}-${hash(video)}-motion.mp4`), video);
+        }
+      }
       manifest.photos[`${slug}/${ph.file}`] = entry;
     }
 

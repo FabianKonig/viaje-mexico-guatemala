@@ -4,10 +4,12 @@
  * nie kopiert. Erst danach darf committet werden.
  *
  *   Fotos  → content/posts/<slug>/photos/NN.jpg  (lange Seite höchstens 1600 px, JPEG)
+ *   Bewegtfotos (Android) → zusätzlich photos/NN.mp4 (stumme Schleife, 720p)
  *   Videos → content/posts/<slug>/clips/NN.mp4   (kürzere Seite höchstens 720 px, H.264/AAC, mit Ton)
  *            content/posts/<slug>/clips/NN.jpg   (Standbild)
  */
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import sharp from 'sharp';
 import { decodeInput, inspectImage, IMAGE_EXT, LARGE } from '../images.mjs';
@@ -15,6 +17,7 @@ import {
   MAX_CLIP_BYTES,
   MAX_CLIP_SECONDS,
   VIDEO_EXT,
+  extractMotionVideo,
   mp4Problems,
   posterFrom,
   probeVideo,
@@ -79,14 +82,23 @@ export async function importMedia({ source, postDir, log = console.log }) {
         fs.rmSync(dest);
         throw new Error(`${name}: Metadaten im Ergebnis (${problems.join(', ')})`);
       }
-      result.photos.push({
+      const photo = {
         source: name,
         file,
         width: out.info.width,
         height: out.info.height,
         bytes: out.data.length,
-      });
-      log(`Foto   ${name} → photos/${file} (${Math.round(out.data.length / 1024)} KB)`);
+      };
+      // Android-Bewegtfoto: das eingebettete Video wird (stumm, klein) als Schleife daneben gelegt.
+      const motion = /\.jpe?g$/i.test(name) ? extractMotionVideo(fs.readFileSync(src)) : null;
+      if (motion) Object.assign(photo, importMotion(motion, photosDir, file));
+      result.photos.push(photo);
+      log(
+        `Foto   ${name} → photos/${file} (${Math.round(out.data.length / 1024)} KB)` +
+          (photo.motion
+            ? ` + Bewegung ${photo.motion} (${Math.round(photo.motionBytes / 1024)} KB)`
+            : ''),
+      );
     } else if (VIDEO_EXT.test(name)) {
       const info = probeVideo(src);
       if (info.duration > MAX_CLIP_SECONDS) {
@@ -127,21 +139,47 @@ export async function importMedia({ source, postDir, log = console.log }) {
   return result;
 }
 
-/** Frontmatter-Vorschlag für die neuen Dateien (alt und title muss der Agent ergänzen). */
+/** Wandelt das Video eines Bewegtfotos um (stumm, 720p) und legt es als photos/NN.mp4 ab. */
+function importMotion(video, photosDir, photoFile) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'motion-'));
+  try {
+    const raw = path.join(dir, 'motion.mp4');
+    fs.writeFileSync(raw, video);
+    const info = { ...probeVideo(raw), hasAudio: false };
+    const file = photoFile.replace(/\.jpg$/i, '.mp4');
+    const dest = path.join(photosDir, file);
+    transcodeVideo(raw, dest, info);
+    const buf = fs.readFileSync(dest);
+    const problems = mp4Problems(buf);
+    if (problems.length) {
+      fs.rmSync(dest);
+      throw new Error(`Bewegtfoto ${photoFile}: ${problems.join(', ')}`);
+    }
+    return { motion: file, motionBytes: buf.length };
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+/**
+ * Frontmatter-Vorschlag für die neuen Dateien. Die Texte sind bewusst neutral („Foto 1 von 3“,
+ * „Video 1“): Der Bildinhalt wird nicht ausgewertet oder beschrieben (Wunsch des Autors).
+ */
 export function frontmatterSnippet(result) {
   const lines = [];
   if (result.photos.length) {
     lines.push('photos:');
-    for (const p of result.photos) {
-      lines.push(`  - file: ${p.file}`, `    alt: 'TODO deutsche Bildbeschreibung (${p.source})'`);
+    for (const [i, p] of result.photos.entries()) {
+      lines.push(`  - file: ${p.file}`, `    alt: 'Foto ${i + 1} von ${result.photos.length}'`);
+      if (p.motion) lines.push(`    motion: ${p.motion}`);
     }
   }
   if (result.clips.length) {
     lines.push('clips:');
-    for (const c of result.clips) {
+    for (const [i, c] of result.clips.entries()) {
       lines.push(
         `  - file: ${c.file}`,
-        `    title: 'TODO kurzer Titel (${c.source})'`,
+        `    title: 'Video ${i + 1}'`,
         `    width: ${c.width}`,
         `    height: ${c.height}`,
         `    duration: ${c.duration}`,

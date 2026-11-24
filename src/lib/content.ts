@@ -31,6 +31,8 @@ export interface PhotoRef {
   file: string;
   alt: string;
   caption?: string;
+  /** Bewegtfoto: stumme Schleife (MP4 in photos/), liegt neben dem Standbild. */
+  motion?: string;
 }
 
 /** Eigenes Video (liegt als MP4 in clips/, mit Standbild gleichen Namens als JPEG). */
@@ -161,10 +163,17 @@ export function validatePost(
         if (typeof ph.alt !== 'string' || !ph.alt.trim()) at(`${w}.alt (Bildbeschreibung) fehlt`);
         if (ph.caption !== undefined && (typeof ph.caption !== 'string' || !ph.caption.trim()))
           at(`${w}.caption muss Text sein`);
+        if (ph.motion !== undefined) {
+          if (typeof ph.motion !== 'string' || !/^[^/\\]+\.mp4$/i.test(ph.motion))
+            at(`${w}.motion muss ein Dateiname mit .mp4 sein (ohne Ordner)`);
+          else if (!fs.existsSync(path.join(dir, 'photos', ph.motion)))
+            at(`${w}.motion: photos/${ph.motion} existiert nicht`);
+        }
         photos.push({
           file: ph.file,
           alt: String(ph.alt ?? ''),
           ...(ph.caption ? { caption: String(ph.caption) } : {}),
+          ...(typeof ph.motion === 'string' ? { motion: ph.motion } : {}),
         });
       });
     }
