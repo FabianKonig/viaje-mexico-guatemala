@@ -288,7 +288,8 @@ Niveau Anfänger, A1 bis A2):
 
 **Kategorien** (immer genau diese, damit die Übersicht zählen kann): Akzente und Schreibung,
 Artikel und Geschlecht, Zahl und Übereinstimmung (Adjektiv, Verb), Verbformen und Zeiten,
-`ser`/`estar`, Präpositionen, Wortschatz und falsche Freunde, Wortstellung, Satzzeichen (`¿ ¡`), Sonstiges.
+`ser`/`estar` (inkl. `hay`), Präpositionen, Wortschatz und falsche Freunde, Wortstellung,
+Satzzeichen (ohne `¿ ¡`), Sonstiges.
 
 **Inhalt des Sammel-Docs `Lernhilfe-Übersicht`:** Tabelle je Kategorie mit Anzahl der Fehler pro
 Beitrag und insgesamt (Trend: wird es besser?), die drei Themen, die aktuell am meisten Übung
@@ -299,8 +300,13 @@ Beitrag), Verlauf der Beiträge (Datum, Link zur Lern-Datei).
 
 - Nur **sichere** Korrekturen. Ist die Absicht unklar, die Annahme kenntlich machen oder beim
   Autor nachfragen (wie bei der Übersetzung). Nichts erfinden.
-- Bei Auslassungen im Original (Akzente, fehlendes `¿ ¡`, Großschreibung) den Fehler zählen, aber
-  freundlich bleiben: Es ist ein Lernwerkzeug, kein Zeugnis.
+- **Fehlendes `¿` und `¡` am Anfang nie erwähnen, zählen oder ergänzen** (Wunsch des Autors: Er
+  kennt die Regel und lässt die Zeichen aus Bequemlichkeit weg). Weder in der korrigierten Fassung noch in
+  den Fehlern, der Zählung oder der Übersicht; in der korrigierten Fassung bleibt sein Satzzeichen so,
+  wie er es schreibt. Hat er sie gesetzt, auch nicht loben. Andere Satzzeichen (z. B. Komma bei der
+  Anrede) zählen weiter.
+- Bei Auslassungen im Original (Akzente, Großschreibung) den Fehler zählen, aber freundlich bleiben:
+  Es ist ein Lernwerkzeug, kein Zeugnis.
 - Die Lern-Datei bespricht **nur den Text**, nie Fotos, Videos oder Orte (Regel „Medien nicht
   inhaltlich auswerten“).
 - Nichts aus der Lern-Datei in Pull-Requests, Commit-Nachrichten oder Beschreibungen übernehmen

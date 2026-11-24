@@ -156,7 +156,7 @@ Zu jedem Beitrag mit spanischen Passagen legt der Agent in Google Drive eine Ler
 Doc `Lernhilfe-<ordner>` im Drive-Unterordner des Beitrags (korrigierte Fassung, Fehler mit Erklärung,
 Stilvorschläge, Grammatik) und pflegt das Sammel-Doc `Lernhilfe-Übersicht` im Hauptordner (Fehler je
 Kategorie und Beitrag, Wiederholungsfehler). Sie gehört nicht ins Repository, nicht auf die Seite und
-verändert `original.md` nicht. Rein deutsche Beiträge bekommen keine. Einzelheiten, Kategorien und
+verändert `original.md` nicht. Rein deutsche Beiträge bekommen keine. Fehlendes `¿` und `¡` am Anfang wird nie erwähnt, gezählt oder ergänzt (Wunsch des Autors). Einzelheiten, Kategorien und
 Die Lern-Datei liegt im selben Drive-Ordner wie die Medien; Dateien mit Präfix `Lernhilfe-` (und
 `tmp-`) sind nie Medien oder Beitragstext und werden bei Änderungen am Beitrag ignoriert. Wird der Text
 eines bestehenden Beitrags geändert, werden Lern-Datei und Übersicht neu aufgebaut (Zählung ersetzt,
