@@ -81,9 +81,6 @@ const latest = posts[0];
       grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
       gap: 40px;
     }
-    .hero__actions {
-      margin-top: 32px;
-    }
   }
   .hero__intro {
     min-width: 0;
@@ -111,6 +108,12 @@ const latest = posts[0];
     flex-wrap: wrap;
     align-items: center;
     gap: 14px 20px;
+    margin-top: 28px;
+  }
+  @media (min-width: 900px) {
+    .hero__actions {
+      margin-top: 32px;
+    }
   }
   .hero__map {
     min-width: 0;
