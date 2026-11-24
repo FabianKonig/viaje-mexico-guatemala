@@ -9,6 +9,7 @@ import { inspectImage } from '../../scripts/images.mjs';
 import { frontmatterSnippet, importMedia, nextNumber } from '../../scripts/lib/import.mjs';
 import {
   MAX_SHORT_SIDE,
+  extractMotionVideo,
   ffmpegArgs,
   hasFfmpeg,
   mp4Problems,
@@ -178,5 +179,94 @@ describe('Import ohne Quelle', () => {
     await expect(
       importMedia({ source: '/gibt/es/nicht', postDir: tmp('p-'), log: () => undefined }),
     ).rejects.toThrow(/nicht gefunden/);
+  });
+});
+
+/** Synthetisches Android-Bewegtfoto: JPEG + XMP (Motion Photo) + angehängtes MP4. */
+async function motionPhoto(file: string, videoFile: string) {
+  const jpg = await sharp({
+    create: { width: 800, height: 600, channels: 3, background: '#2f8f83' },
+  })
+    .jpeg()
+    .withExif({
+      IFD3: {
+        GPSLatitudeRef: 'N',
+        GPSLatitude: '1/1 0/1 0/1',
+        GPSLongitudeRef: 'E',
+        GPSLongitude: '1/1 0/1 0/1',
+      },
+    })
+    .toBuffer();
+  execFileSync(
+    'ffmpeg',
+    [
+      ...['-v', 'error', '-y', '-f', 'lavfi', '-i', 'testsrc2=size=640x480:rate=15', '-t', '1'],
+    ].concat(['-c:v', 'libx264', '-pix_fmt', 'yuv420p', videoFile]),
+    { stdio: 'ignore' },
+  );
+  const mp4 = fs.readFileSync(videoFile);
+  const xmp =
+    '<x:xmpmeta><Container:Directory><rdf:Seq>' +
+    '<rdf:li><Container:Item Item:Mime="image/jpeg" Item:Semantic="Primary" Item:Length="0"/></rdf:li>' +
+    `<rdf:li><Container:Item Item:Mime="video/mp4" Item:Semantic="MotionPhoto" Item:Length="${mp4.length}"/></rdf:li>` +
+    '</rdf:Seq></Container:Directory></x:xmpmeta>';
+  fs.writeFileSync(file, Buffer.concat([jpg, Buffer.from(xmp), mp4]));
+  return { jpg, mp4 };
+}
+
+describe('Bewegtfotos (Motion Photo)', () => {
+  it('extractMotionVideo: findet das Video, sonst null (ohne ffmpeg prüfbar)', () => {
+    const head = Buffer.concat([Buffer.from([0, 0, 0, 16]), Buffer.from('ftypisom', 'latin1')]);
+    const video = Buffer.concat([head, Buffer.alloc(40, 1)]);
+    const xmp = (len: number) =>
+      `<x:xmpmeta><Container:Item Item:Mime="video/mp4" Item:Semantic="MotionPhoto" Item:Length="${len}"/></x:xmpmeta>`;
+    const photo = Buffer.concat([Buffer.alloc(100, 2), Buffer.from(xmp(video.length)), video]);
+    expect(extractMotionVideo(photo)?.equals(video)).toBe(true);
+    // Reihenfolge der Attribute ist egal; älteres Format (MicroVideoOffset)
+    const legacy = Buffer.concat([
+      Buffer.from(`<x:xmpmeta GCamera:MicroVideoOffset="${video.length}"/>`),
+      Buffer.alloc(100, 2),
+      video,
+    ]);
+    expect(extractMotionVideo(legacy)?.equals(video)).toBe(true);
+    // normales Foto, falsche Länge, Länge zeigt nicht auf ein MP4
+    expect(extractMotionVideo(Buffer.alloc(500, 3))).toBeNull();
+    expect(extractMotionVideo(Buffer.concat([Buffer.from(xmp(999999)), video]))).toBeNull();
+    expect(
+      extractMotionVideo(Buffer.concat([Buffer.from(xmp(10)), Buffer.alloc(200, 4)])),
+    ).toBeNull();
+  });
+
+  it.skipIf(!ffmpeg)(
+    'Import legt Standbild und stumme Schleife nebeneinander ab, ohne GPS',
+    async () => {
+      const source = tmp('quelle-');
+      const postDir = path.join(tmp('post-'), '2026-11-25-test');
+      const { mp4 } = await motionPhoto(
+        path.join(source, 'PXL_1.MP.jpg'),
+        path.join(tmp('v-'), 'v.mp4'),
+      );
+      const r = await importMedia({ source, postDir, log: () => undefined });
+      expect(r.photos[0]).toMatchObject({ file: '01.jpg', motion: '01.mp4' });
+      const loop = path.join(postDir, 'photos', '01.mp4');
+      expect(mp4Problems(fs.readFileSync(loop))).toEqual([]);
+      const info = probeVideo(loop);
+      expect(info.hasAudio).toBe(false);
+      expect(info.duration).toBeGreaterThan(0.5);
+      expect(fs.statSync(loop).size).toBeLessThan(mp4.length * 3);
+      expect(await inspectImage(path.join(postDir, 'photos', '01.jpg'))).toEqual([]);
+      expect(frontmatterSnippet(r)).toContain('motion: 01.mp4');
+    },
+  );
+
+  it.skipIf(!ffmpeg)('ein normales Foto bekommt keine Schleife', async () => {
+    const source = tmp('quelle-');
+    const postDir = path.join(tmp('post-'), '2026-11-25-test');
+    await sharp({ create: { width: 100, height: 100, channels: 3, background: '#fff' } })
+      .jpeg()
+      .toFile(path.join(source, 'normal.jpg'));
+    const r = await importMedia({ source, postDir, log: () => undefined });
+    expect(r.photos[0].motion).toBeUndefined();
+    expect(fs.existsSync(path.join(postDir, 'photos', '01.mp4'))).toBe(false);
   });
 });

@@ -171,3 +171,22 @@ export function mp4Problems(buf) {
   if (text.includes('mdta')) problems.push('Metadatenschlüssel');
   return [...new Set(problems)];
 }
+
+/**
+ * Holt das eingebettete Video aus einem Android-„Bewegten Foto“ (Motion Photo: JPEG mit angehängtem
+ * MP4, Pixel, Samsung). Liefert den MP4-Puffer oder null, wenn die Datei kein Bewegtfoto ist.
+ * Quellen: XMP-Container (Item mit Semantic="MotionPhoto" und Länge) oder das ältere
+ * GCamera:MicroVideoOffset (Abstand vom Dateiende).
+ */
+export function extractMotionVideo(buf) {
+  const head = buf.toString('latin1', 0, Math.min(buf.length, 262144));
+  let length = 0;
+  for (const m of head.matchAll(/<Container:Item\b[^>]*>/g)) {
+    if (!/Item:Semantic="MotionPhoto"/.test(m[0])) continue;
+    length = Number(/Item:Length="(\d+)"/.exec(m[0])?.[1] ?? 0);
+  }
+  if (!length) length = Number(/MicroVideoOffset="(\d+)"/.exec(head)?.[1] ?? 0);
+  if (!length || length >= buf.length) return null;
+  const video = buf.subarray(buf.length - length);
+  return video.toString('latin1', 4, 8) === 'ftyp' ? video : null;
+}

@@ -125,7 +125,7 @@ test('veröffentlichte Fotos (auch aus GPS- und HEIC-Originalen) sind ohne Metad
   const links = await page
     .locator('.gallery__link')
     .evaluateAll((els) => els.map((e) => (e as HTMLAnchorElement).href));
-  expect(links).toHaveLength(2);
+  expect(links).toHaveLength(3); // GPS-Foto, HEIC-Foto, Bewegtfoto
   for (const url of links) {
     const body = await (await request.get(url)).body();
     expect(body.includes(Buffer.from('Exif\0\0', 'latin1')), url).toBe(false);
@@ -190,6 +190,65 @@ test.describe('Videos (Clips)', () => {
     test('Video mit Bedienelementen und Download-Link ist vorhanden', async ({ page }) => {
       await page.goto(URL);
       await expect(page.locator('video.clip__video[controls]')).toHaveCount(1);
+    });
+  });
+});
+
+test.describe('Bewegtfoto in der Galerie', () => {
+  const URL = PREVIEW_URL + 'entradas/2026-12-03-gps-y-heic/';
+  const isMotion = (u: string) => /-motion\.mp4(\?|$)/.test(u);
+
+  test('Schleife ist unsichtbar, stumm und startet erst im Bild; Standbild bleibt Link zur Lightbox', async ({
+    page,
+  }) => {
+    const loaded: string[] = [];
+    page.on('request', (r) => {
+      if (isMotion(r.url())) loaded.push(r.url());
+    });
+    await page.goto(URL);
+    const video = page.locator('video[data-motion]');
+    await expect(video).toHaveCount(1);
+    for (const [attr, value] of [
+      ['muted', ''],
+      ['loop', ''],
+      ['playsinline', ''],
+      ['preload', 'none'],
+      ['aria-hidden', 'true'],
+    ] as const)
+      await expect(video, attr).toHaveAttribute(attr, value);
+    await expect(video).not.toHaveAttribute('autoplay', /.*/);
+    await expect(video).not.toHaveAttribute('controls', /.*/);
+    // Standbild ist im selben Link und ist das Bild mit Alt-Text
+    await expect(page.locator('a[data-lightbox-item]:has(video[data-motion]) img')).toHaveAttribute(
+      'alt',
+      /Bewegtfoto/,
+    );
+    // Beim Hineinscrollen wird die Schleife angefragt (Chromium ohne H.264 kann sie nur nicht abspielen).
+    await page.locator('a[data-lightbox-item]:has(video[data-motion])').scrollIntoViewIfNeeded();
+    await expect.poll(() => loaded.length).toBeGreaterThan(0);
+  });
+
+  test.describe('„Bewegung reduzieren“', () => {
+    test.use({ reducedMotion: 'reduce' });
+    test('lädt und zeigt keine Schleife, nur das Standbild', async ({ page }) => {
+      const loaded: string[] = [];
+      page.on('request', (r) => {
+        if (isMotion(r.url())) loaded.push(r.url());
+      });
+      await page.goto(URL);
+      await page.locator('a[data-lightbox-item]:has(video[data-motion])').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(500);
+      expect(loaded).toEqual([]);
+      await expect(page.locator('video[data-motion]')).not.toHaveAttribute('data-playing', /.*/);
+    });
+  });
+
+  test.describe('ohne JavaScript', () => {
+    test.use({ javaScriptEnabled: false });
+    test('nur das Standbild ist sichtbar', async ({ page }) => {
+      await page.goto(URL);
+      await expect(page.locator('video[data-motion]')).not.toHaveAttribute('data-playing', /.*/);
+      await expect(page.locator('.gallery__grid img').nth(2)).toBeVisible();
     });
   });
 });

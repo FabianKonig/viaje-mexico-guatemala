@@ -129,7 +129,7 @@ Ein Beitrag ist ein Ordner `content/posts/JJJJ-MM-TT-slug/` mit `index.md` (nur 
 | `titleDe` | nein | deutsche Übersetzung des Titels |
 | `date` | ja | `JJJJ-MM-TT` |
 | `place` | nein | `id` aus `places.yaml`; fehlt der Ort, zeigt der Beitrag nur den Tag |
-| `photos[]` | nein | `file` (in `photos/`), `alt` (Pflicht), `caption` (optional); höchstens 20 |
+| `photos[]` | nein | `file` (in `photos/`), `alt` (Pflicht), `caption` (optional), `motion` (optional: stumme Schleife eines Bewegtfotos, `.mp4` in `photos/`); höchstens 20 |
 | `clips[]` | nein | eigenes Video: `file` (`.mp4` in `clips/`, dazu `clips/<name>.jpg` als Standbild), `title` (Pflicht, Beschreibung), `width`, `height`, `duration` (trägt der Import ein); höchstens 20 |
 | `translation.source_sha256` | ja | SHA-256 von `original.md` |
 | `translation.segments[]` | ja | `lang` (`es`/`de`), `text` (wörtlicher Ausschnitt), `de` (nur bei `es`) |
@@ -262,6 +262,14 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   Knöpfe Schließen/Vor/Zurück (48px), Tastatur Esc/←/→, Wischen (Pointer-Events, mind. 50px
   waagerecht), Klick auf den Hintergrund schließt. Große Version wird erst beim Öffnen geladen,
   Nachbarbilder vorgeladen. Fokus startet auf „Schließen“ und kehrt zum Foto zurück.
+- **Bewegtfotos** (`motion`, `src/scripts/motion.ts`): Über dem Standbild liegt ein `<video muted loop
+  playsinline preload="none" aria-hidden tabindex="-1">`, zunächst durchsichtig (`opacity: 0`, nicht
+  `hidden`, weil ein verstecktes Element nie „im Bild“ ist). Ein `IntersectionObserver` startet es,
+  sobald mindestens die Hälfte des Fotos sichtbar ist, und hält es an, wenn es das Bild verlässt;
+  erst dann wird die Datei geladen. Läuft es, bekommt es `data-playing` (sichtbar). Bei
+  „Bewegung reduzieren“ (`prefers-reduced-motion`), ohne JavaScript oder wenn der Browser das
+  Abspielen verweigert (z. B. Stromsparmodus) bleibt es beim Standbild und nichts wird geladen.
+  Klick und Lightbox zeigen weiter das Standbild.
 - **Beitragskarte:** erstes Foto (3:2, Vorschaubild) und Fotoanzahl.
 
 ### 7.7 Videos
@@ -284,6 +292,10 @@ Alle Videos sind eigene Clips (`clips:`, Komponente `Videos.astro`, Klasse `.cli
   PNG, WebP, HEIC; Video: MP4, MOV, M4V, 3GP, WebM, MKV), schreibt nur verkleinerte Dateien in den
   Beitragsordner (Originale werden nie kopiert) und druckt einen Frontmatter-Vorschlag.
   Fotos: JPEG Qualität 85, lange Seite höchstens 1600 px, ohne Metadaten, `photos/NN.jpg`.
+  **Android-Bewegtfotos** (Motion Photo: JPEG mit angehängtem MP4, erkennbar an `*.MP.jpg`; `extractMotionVideo`
+  liest XMP `Item:Semantic="MotionPhoto"` mit `Item:Length` bzw. das ältere `MicroVideoOffset`) werden zu
+  Foto **plus** stummer Schleife `photos/NN.mp4` (gleiche Umwandlung wie Videos, ohne Ton; das Foto
+  trägt `motion: NN.mp4`). Normale Fotos bekommen keine Schleife.
   Videos: H.264 (Profil main) und AAC 96 kbit/s (Ton bleibt erhalten), kürzere Seite höchstens
   720 px (nie vergrößert), höchstens 30 Bilder/s, CRF 28 mit höchstens 2,5 Mbit/s, `+faststart`
   (Start vor dem vollständigen Laden, Spulen), `-map_metadata -1` (entfernt Standort und alle
@@ -458,10 +470,10 @@ Befehle: [AGENTS.md › Tests](AGENTS.md#tests). Jede neue Funktion bekommt eine
 | --- | --- | --- |
 | Lint | `npm run lint` | Prettier, eingecheckte-aber-ignorierte Dateien, THIRD-PARTY-NOTICES aktuell, kein starkes Copyleft |
 | Sicherheit | CI | `npm audit --audit-level=moderate` |
-| Unit | `tests/unit` (Vitest) | Pfade, Datumshilfen, Reisetag (vor Start, Tag 1, Tag 72, 3.2., danach, Monats-/Jahreswechsel, Zeitzonengrenzen), Ortsliste/Nummerierung, Zusammenfassung naher Orte, Kartenerzeugung, Beitrags-Parser (gemischt, nur Spanisch, nur Deutsch), Frontmatter-Prüfung (Pflichtfelder, Ort existiert, Fotos existieren, max. 20), Bild-Pipeline (GPS rein → ohne Metadaten raus, Größe, Drehung, HEIC, Abbruch), Medien-Import (Foto und Video verkleinern, Standort entfernen, Ton behalten, Hochformat, Nummerierung; nur mit ffmpeg), Videos im Bildskript (Manifest, Standort-Abbruch), Größenprüfung der Seite, PWA-Logik (Videos nie über den Service Worker), Lizenzen, SPEC↔Code (Versionen, Farben, Texte, Workflows) |
+| Unit | `tests/unit` (Vitest) | Pfade, Datumshilfen, Reisetag (vor Start, Tag 1, Tag 72, 3.2., danach, Monats-/Jahreswechsel, Zeitzonengrenzen), Ortsliste/Nummerierung, Zusammenfassung naher Orte, Kartenerzeugung, Beitrags-Parser (gemischt, nur Spanisch, nur Deutsch), Frontmatter-Prüfung (Pflichtfelder, Ort existiert, Fotos existieren, max. 20), Bild-Pipeline (GPS rein → ohne Metadaten raus, Größe, Drehung, HEIC, Abbruch), Medien-Import (Foto und Video verkleinern, Standort entfernen, Ton behalten, Hochformat, Nummerierung, Bewegtfoto → Foto + Schleife; nur mit ffmpeg), Skill `neuer-beitrag` (vorhanden, verweist auf existierende AGENTS-Abschnitte), Videos im Bildskript (Manifest, Standort-Abbruch), Größenprüfung der Seite, PWA-Logik (Videos nie über den Service Worker), Lizenzen, SPEC↔Code (Versionen, Farben, Texte, Workflows) |
 | Build | `npm run build` | Bildskript mit GPS-Prüfung (Fotos und Videos), Größe der Seite (Warnung/Fehler), HTML-Validierung, interne Links, erlaubte externe Links, noindex/Copyright/og:image je Seite, Seitengewicht |
-| Browser | `tests/e2e` (Playwright) | Smoke (keine Konsolenfehler, keine fehlgeschlagenen oder Drittanbieter-Anfragen), Startseite, Beitragsseite, Originaltreue (byte-gleich), Schalter, Lightbox (Maus, Tastatur, Wischen), Videos (keine Anfrage vor Klick; Clips: Standbild vorab, Video erst nach „Play“, Ton nicht stumm, Teilabrufe, ohne JavaScript), Karte (Pillen, Ausschnitte, Markergröße am Handy), Reisetag mit festgestellter Uhrzeit, PWA (Manifest, Service Worker, Cache-Bereinigung, offline, keine Vorschau-Registrierung), Rechtliches (Crawl aller Seiten: noindex, Copyright, Links, OG, keine Cookies), Layout (320–2560px, kein Überlauf, Profilbild rechts oben, Zoom, große Schrift), Barrierefreiheit (axe WCAG 2.2 AA inkl. Kontrast, Tastatur, Touch-Ziele), Unterpfad, 404, ohne JavaScript |
-| Grenzfälle | `tests/fixtures/content` | Beitrag ohne Fotos, mit 20 Fotos, sehr langer Titel, sehr langer Text, ohne Ort, nur Deutsch, nur Spanisch, Sonderzeichen, GPS-/HEIC-Foto, eigener Clip, Route mit 12 Orten |
+| Browser | `tests/e2e` (Playwright) | Smoke (keine Konsolenfehler, keine fehlgeschlagenen oder Drittanbieter-Anfragen), Startseite, Beitragsseite, Originaltreue (byte-gleich), Schalter, Lightbox (Maus, Tastatur, Wischen), Videos (keine Anfrage vor Klick; Clips: Standbild vorab, Video erst nach „Play“, Ton nicht stumm, Teilabrufe, ohne JavaScript), Bewegtfotos (unsichtbar und ungeladen bis zum Hineinscrollen, stumm, „Bewegung reduzieren“ und ohne JavaScript nur Standbild), Karte (Pillen, Ausschnitte, Markergröße am Handy), Reisetag mit festgestellter Uhrzeit, PWA (Manifest, Service Worker, Cache-Bereinigung, offline, keine Vorschau-Registrierung), Rechtliches (Crawl aller Seiten: noindex, Copyright, Links, OG, keine Cookies), Layout (320–2560px, kein Überlauf, Profilbild rechts oben, Zoom, große Schrift), Barrierefreiheit (axe WCAG 2.2 AA inkl. Kontrast, Tastatur, Touch-Ziele), Unterpfad, 404, ohne JavaScript |
+| Grenzfälle | `tests/fixtures/content` | Beitrag ohne Fotos, mit 20 Fotos, sehr langer Titel, sehr langer Text, ohne Ort, nur Deutsch, nur Spanisch, Sonderzeichen, GPS-/HEIC-Foto, Bewegtfoto, eigener Clip, Route mit 12 Orten |
 | Nächtlich | `nightly.yml` | alle Browser-Projekte inkl. Edge/Chrome/iPad/Galaxy, Erreichbarkeit von Palabrita, `npm audit` |
 | Manuell | `MANUAL-TESTS.md` | echte Geräte, Samsung Internet, Firefox Android, Home-Bildschirm, WhatsApp-Vorschau |
 

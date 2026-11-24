@@ -8,6 +8,9 @@ photos:
     caption: 'Muss ohne GPS veröffentlicht werden'
   - file: handy.heic
     alt: 'Testbild im HEIC-Format'
+  - file: 01.jpg
+    alt: 'Türkisfarbenes Testbild, das sich als Bewegtfoto bewegt'
+    motion: 01.mp4
 clips:
   - file: 01.mp4
     title: 'Testclip mit Ton (Testbild und Sinuston)'

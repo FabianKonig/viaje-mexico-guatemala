@@ -1,0 +1,39 @@
+---
+name: neuer-beitrag
+description: >-
+  Neuen Reiseblog-Beitrag aus einem Google-Drive-Unterordner anlegen (Google Doc mit Text, Fotos, Videos, Bewegtfotos): Text unverändert übernehmen und übersetzen, Medien importieren, Titelbild, Ort und Karte, Tests, Pull-Request. Verwenden, wenn der Autor einen neuen Beitrag meldet ("Neuer Beitrag 2026-…", "Ordner … ist fertig") oder fragt, wie ein Beitrag angelegt wird.
+---
+
+# Neuer Beitrag
+
+Kurzfassung. **Maßgeblich ist `AGENTS.md`**, lies dort zuerst „Ablauf: neuen Beitrag anlegen“,
+„Medien holen“, „Übersetzungsregeln“, „Fotoregeln“ und „Kartenregeln“. Bei Widerspruch gilt AGENTS.md.
+
+Der Autor steuert vom Handy: Rückmeldungen kurz, am Ende nennen, was fertig ist und was er noch tun muss.
+
+## Ablauf
+
+1. **Branch** `post/<JJJJ-MM-TT-slug>` von aktuellem `main`. Der Slug ist der Name des Drive-Unterordners.
+2. **Drive-Unterordner lesen** (Konnektor `mcp__Google_Drive__*`, vorher per ToolSearch laden): Ordner
+   `reiseblog-viaje-mexico-guatemala`, Unterordner = Beitrag. Doc als Text, Fotos und Videos
+   herunterladen. **Über 10 MB:** nur über eine Kopie (`copy_file`, `share_file`, `curl`, dann
+   Download sperren und in den Papierkorb), nie das Original freigeben. Rezept: AGENTS.md › Medien holen.
+3. **Text** unverändert nach `original.md` (nie korrigieren), Hash mit `node scripts/hash-original.mjs`.
+4. **Übersetzen** (Spanisch → natürliches Deutsch, Deutsches 1:1), Segmente in `index.md`.
+5. **Medien importieren:** Dateien in einen leeren Ordner **außerhalb** von `content/`, dann
+   `node scripts/import-media.mjs <ordner> <slug>`. Danach `photos:` (deutscher `alt` je Foto, Titelbild
+   an die erste Stelle) und `clips:` (deutscher `title`) in `index.md` eintragen. Originale nie einchecken.
+6. **Ort:** nur eintragen, wenn eindeutig; sonst den Autor fragen, nie raten (`content/places.yaml`).
+   Den Beispielbeitrag `2026-11-23-entrada-de-ejemplo` beim ersten echten Beitrag löschen.
+7. **Prüfen:** `npm run test:unit`, einmal bauen (`npm run build`), Screenshots Handy (390 px) und
+   Computer ansehen.
+8. **Pull-Request** öffnen, nur wenn der Autor es verlangt oder „fertig“ sagt. Beschreibung kurz:
+   erkannte Sprachen, offene Fragen (Ort, Titel). Der Autor merged per „Squash and merge“.
+9. **Aufräumen melden:** Wenn Kopien in Drive angelegt wurden, dem Autor sagen, dass er im
+   Drive-Papierkorb die `tmp-*`-Dateien endgültig löschen soll.
+
+## Nie
+
+Das Spanisch oder Deutsch des Autors verbessern, Originalfotos oder Videos ohne den Import einchecken,
+einen Ort raten, Originale in Drive freigeben, YouTube oder andere externe Dienste einbinden, direkt auf
+`main` pushen.

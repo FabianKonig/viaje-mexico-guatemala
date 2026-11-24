@@ -28,14 +28,16 @@
 
 ## Medien-Import (Fotos und Videos vom Handy)
 
-- [ ] **Google Drive verbinden** (claude.ai → Einstellungen → Konnektoren → Google Drive, auch für
-      Cloud-Sitzungen aktivieren) **oder** einen Drive-Ordner mit „Jeder mit dem Link“ teilen. Dann
-      einen Überordner `Reise-Inbox` anlegen, darin je Beitrag ein Unterordner mit dem Beitrags-Slug
-      (`2026-11-25-teotihuacan`). Einmal mit einem Foto und einem Video testen. Beim Link muss
-      `drive.google.com` in der Netzwerkfreigabe der Umgebung erlaubt sein.
-- [ ] Mit einem echten Android-Video prüfen: Ton, Hochformat, Dauer, Dateigröße.
-- [ ] Offen: Android-„Bewegte Fotos“ (JPEG mit eingebettetem Video) als Schleife anzeigen. Bisher wird
-      nur das Standbild übernommen. Braucht eine Beispieldatei vom Handy.
+- [x] Google-Drive-Konnektor verbunden, Ordner `reiseblog-viaje-mexico-guatemala` angelegt (Unterordner je
+      Beitrag, siehe AGENTS.md › Medien holen). Fotos bis 10 MB und Bewegtfotos laden direkt,
+      größere Dateien über eine kurze Kopie (getestet).
+- [ ] **Nach großen Videos:** im Drive-Papierkorb die `tmp-*`-Kopien endgültig löschen (der Agent
+      kann das nicht).
+- [ ] Mit einem echten Android-Video prüfen, dass es nach dem Import auf Handy und Computer mit Ton
+      abgespielt wird.
+- [x] Android-„Bewegte Fotos“ als stumme Schleife über dem Foto.
+- [ ] Erster echter Beitrag aus Drive (Text-Doc: Format von Titel und Titelbild-Hinweis danach in
+      AGENTS.md festhalten).
 
 ## Hinweise zu den Grenzen
 

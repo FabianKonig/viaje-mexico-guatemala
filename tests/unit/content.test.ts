@@ -160,6 +160,22 @@ describe('Inhalte: Frontmatter-Prüfung', () => {
     expect(r.errors.join()).toMatch(/videos \(YouTube\) gibt es nicht mehr.*clips/);
   });
 
+  it('Bewegtfoto: motion muss eine vorhandene .mp4 in photos/ sein', () => {
+    const dir = tmpPost(['01.jpg', '01.mp4']);
+    const photo = { file: '01.jpg', alt: 'Test', motion: '01.mp4' };
+    const run = (p: Record<string, unknown>) =>
+      validatePost('2026-11-24-hola', dir, { ...base(), photos: [p] }, original, places);
+    const ok = run(photo);
+    expect(ok.errors).toEqual([]);
+    expect(ok.post?.photos[0].motion).toBe('01.mp4');
+    expect(run({ ...photo, motion: '02.mp4' }).errors.join()).toMatch(
+      /photos\/02.mp4 existiert nicht/,
+    );
+    expect(run({ ...photo, motion: '01.mov' }).errors.join()).toMatch(/\.mp4/);
+    expect(run({ ...photo, motion: '../01.mp4' }).errors.join()).toMatch(/\.mp4/);
+    expect(run({ file: '01.jpg', alt: 'Test' }).post?.photos[0].motion).toBeUndefined();
+  });
+
   it('Clips (eigene Videos) brauchen MP4, Standbild, Titel und Maße', () => {
     const dir = tmpPost();
     fs.mkdirSync(path.join(dir, 'clips'));

@@ -11,6 +11,8 @@ export interface PhotoMedia {
   thumbWidth: number;
   thumbHeight: number;
   og?: string;
+  /** Bewegtfoto: stummes Schleifenvideo (MP4). */
+  motion?: string;
 }
 
 export interface ClipMedia {
