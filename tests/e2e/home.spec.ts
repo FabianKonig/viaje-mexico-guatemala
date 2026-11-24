@@ -109,9 +109,14 @@ test.describe('Startseite', () => {
     const title = page.locator('#ruta-titel');
     await expect(title).toBeVisible();
     const map = await page.locator('#ruta svg:visible').first().boundingBox();
-    expect((await title.boundingBox())!.y).toBeLessThan(map!.y);
+    const titleBox = (await title.boundingBox())!;
+    expect(
+      titleBox.y + titleBox.height,
+      'Überschrift über der Karte, nicht in ihr',
+    ).toBeLessThanOrEqual((await page.locator('#ruta').boundingBox())!.y);
+    expect(titleBox.y).toBeLessThan(map!.y);
     await page.setViewportSize({ width: 1280, height: 900 });
-    await expect(title).toBeHidden();
+    expect((await title.boundingBox())!.width, 'nur für Screenreader').toBeLessThanOrEqual(1);
   });
 
   test('am Handy steht alles untereinander', async ({ page }) => {

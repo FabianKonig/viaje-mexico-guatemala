@@ -14,10 +14,10 @@ const latest = posts[0];
 <Base home>
   <section class="hero wrap" aria-label="Über dieses Reisetagebuch">
     <div class="hero__intro">
+      <h2 id="ruta-titel" class="hero__map-title">
+        Ruta
+      </h2>
       <section id="ruta" class="hero__map card" aria-labelledby="ruta-titel">
-        <h2 id="ruta-titel" class="hero__map-title">
-          Ruta
-        </h2>
         <RouteMap places={places} />
       </section>
       <p class="hero__badge">¡Bienvenido / Willkommen!</p>
@@ -116,13 +116,13 @@ const latest = posts[0];
     margin-top: 28px;
   }
   .hero__map-title {
+    order: 4;
     font-size: var(--fs-title);
-    margin: 4px 6px 10px;
+    margin: 40px 0 12px;
   }
   .hero__map {
-    order: 4;
+    order: 5;
     min-width: 0;
-    margin-top: 28px;
     padding: clamp(10px, 3vw, 16px);
   }
   /* Ab 900px schwimmt die Karte rechts (7 von 12 Teilen, 40px Abstand). Der Text umfließt sie,
@@ -131,8 +131,15 @@ const latest = posts[0];
     .hero__intro {
       display: flow-root;
     }
+    /* Am Computer nur für Screenreader (die Karte steht neben dem Text) */
     .hero__map-title {
-      display: none;
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
     }
     .hero__map {
       float: right;

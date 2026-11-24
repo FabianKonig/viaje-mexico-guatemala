@@ -238,8 +238,9 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   lesen“ (Extra-Abstand zum Text: 28px am Handy, ab 900px 32px)
   und darüber die Reisetag-Anzeige (beide untereinander, unter dem Text). Die Routenkarte (`#ruta`) steht
   im HTML vor dem gelben Kasten, damit sie schwimmen kann. Unter 900px alles untereinander
-  (Kasten, Text, Reisetag, Knopf, Karte; Reihenfolge per `order`). Die Karte trägt unter 900px sichtbar die
-  Überschrift „Ruta“ (Titelgröße, oben in der Karte); ab 900px ist sie ausgeblendet.
+  (Kasten, Text, Reisetag, Knopf, Karte; Reihenfolge per `order`). Über der Karte steht unter 900px sichtbar die
+  Überschrift „Ruta“ (Titelgröße, direkt auf der Seite wie „Entradas“, nicht in der Karte); ab 900px nur
+  noch für Screenreader.
 - **Entradas** (`#entradas`): Raster `repeat(auto-fill, minmax(min(100%, 300px), 1fr))`, neueste
   zuerst. Karte: Foto (ab PR 4), Ort und Reisetag (z. B. „Ciudad de México · Tag 1“; ohne Ort nur der
   Tag), Titel (die ganze Karte ist klickbar), Textanfang des **Originals** (ca. 160 Zeichen),
