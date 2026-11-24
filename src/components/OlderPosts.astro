@@ -1,0 +1,104 @@
+---
+/**
+ * „Ältere Beiträge“: einklappbare Liste (natives <details>, funktioniert ohne JavaScript).
+ * Zeigt je Beitrag nur Ort, Reisetag und Titel; die neuesten Beiträge stehen als Karten darüber.
+ */
+import type { Post } from '../lib/content';
+import { formatDateDe } from '../lib/dates';
+import { tripDayNumber } from '../lib/travelDay';
+import { href } from '../lib/site';
+
+interface Props {
+  posts: Post[];
+}
+const { posts } = Astro.props;
+const rows = posts.map((post) => {
+  const day = tripDayNumber(post.date);
+  return { post, when: day >= 1 ? `Tag ${day}` : formatDateDe(post.date) };
+});
+---
+
+{rows.length > 0 && (
+  <details class="older card" id="aeltere-beitraege">
+    <summary class="older__summary">
+      Ältere Beiträge <span class="older__count">({rows.length})</span>
+    </summary>
+    <ul class="older__list" role="list">
+      {rows.map(({ post, when }) => (
+        <li>
+          <a class="older__link" href={href(`entradas/${post.slug}/`)}>
+            <span class="older__meta">
+              {post.place && <span>{post.place.name}</span>}
+              {post.place && <span aria-hidden="true"> · </span>}
+              <time datetime={post.date}>{when}</time>
+            </span>
+            <span class="older__title">{post.title}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </details>
+)}
+
+<style>
+  .older {
+    margin-top: 28px;
+  }
+  .older__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 56px;
+    padding: 12px clamp(18px, 3vw, 28px);
+    font-family: var(--font-head);
+    font-weight: 700;
+    cursor: pointer;
+    list-style: none;
+  }
+  .older__summary::-webkit-details-marker {
+    display: none;
+  }
+  .older__summary::after {
+    content: '+';
+    font: 800 1.5rem/1 var(--font-body);
+  }
+  .older[open] > .older__summary::after {
+    content: '–';
+  }
+  .older__count {
+    font-family: var(--font-body);
+    font-weight: 400;
+    margin-right: auto;
+  }
+  .older__list {
+    list-style: none;
+    margin: 0;
+    padding: 0 clamp(18px, 3vw, 28px) 8px;
+  }
+  .older__list li {
+    border-top: 2px solid var(--ink);
+  }
+  .older__link {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-height: 44px;
+    padding: 12px 0;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .older__link:hover .older__title {
+    text-decoration: underline;
+  }
+  .older__meta {
+    font-weight: 700;
+    color: var(--terracotta-text);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  .older__title {
+    font-family: var(--font-head);
+    font-weight: 700;
+  }
+</style>

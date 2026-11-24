@@ -1,4 +1,4 @@
-import { test, expect, expectNoProblems } from './fixtures';
+import { test, expect, PREVIEW_URL, expectNoProblems } from './fixtures';
 
 test.describe('Startseite', () => {
   test('zeigt Titel, Profilbild, Karte, Beiträge und Palabrita', async ({ page, problems }) => {
@@ -125,5 +125,51 @@ test.describe('Startseite', () => {
     const actions = await page.locator('.hero__actions').boundingBox();
     const map = await page.locator('#ruta').boundingBox();
     expect(map!.y).toBeGreaterThan(actions!.y + actions!.height - 1);
+  });
+});
+
+test.describe('Ältere Beiträge', () => {
+  test('nur 6 Karten, der Rest in eingeklapptem Feld (Testbeiträge: 9 → 3 ältere)', async ({
+    page,
+  }) => {
+    await page.goto(PREVIEW_URL);
+    await expect(page.locator('.post-grid > li')).toHaveCount(6);
+    const details = page.locator('#aeltere-beitraege');
+    await expect(details).toHaveCount(1);
+    await expect(details.locator('summary')).toContainText('Ältere Beiträge (3)');
+    expect(await details.evaluate((el: HTMLDetailsElement) => el.open), 'zunächst zu').toBe(false);
+    await expect(details.locator('.older__link')).toHaveCount(3);
+    await expect(details.locator('.older__link').first()).toBeHidden();
+    await details.locator('summary').click();
+    await expect(details.locator('.older__link').first()).toBeVisible();
+    // Reihenfolge: neueste zuerst, alle älter als die Karten
+    const dates = await page.evaluate(() => ({
+      cards: [...document.querySelectorAll('.post-grid time')].map((t) =>
+        t.getAttribute('datetime')!,
+      ),
+      older: [...document.querySelectorAll('.older time')].map((t) => t.getAttribute('datetime')!),
+    }));
+    expect(dates.cards).toEqual([...dates.cards].sort().reverse());
+    expect(dates.older).toEqual([...dates.older].sort().reverse());
+    expect(dates.older[0] < dates.cards.at(-1)!).toBe(true);
+    // ein Link führt zum Beitrag
+    await details.locator('.older__link').first().click();
+    await expect(page.locator('h1.post__title')).toBeVisible();
+  });
+
+  test('ohne JavaScript bedienbar (natives details)', async ({ browser }) => {
+    const ctx = await browser.newContext({ javaScriptEnabled: false });
+    const page = await ctx.newPage();
+    await page.goto(PREVIEW_URL);
+    await page.locator('#aeltere-beitraege summary').click();
+    await expect(page.locator('.older__link').first()).toBeVisible();
+    await ctx.close();
+  });
+
+  test('bis 6 Beiträge gibt es das Feld nicht (Startseite mit echten Inhalten)', async ({
+    page,
+  }) => {
+    await page.goto('./');
+    await expect(page.locator('#aeltere-beitraege')).toHaveCount(0);
   });
 });
