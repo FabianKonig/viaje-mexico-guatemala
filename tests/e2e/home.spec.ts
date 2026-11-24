@@ -67,6 +67,12 @@ test.describe('Startseite', () => {
   }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('./');
+    // Der Begrüßungstext hat Textgröße und passt ganz neben die Karte: für den Test so viel
+    // Text anhängen, dass er sicher unter die Karte läuft.
+    await page.locator('.hero__lead').evaluate((el) => {
+      const filler = 'Testtext zum Auffüllen, damit die Zeilen unter der Karte weiterlaufen. ';
+      el.insertAdjacentHTML('beforeend', `<p>${filler.repeat(40)}</p>`);
+    });
     const map = await page.locator('#ruta').boundingBox();
     const lines = await page.locator('.hero__lead').evaluate((el) => {
       // Nur Textzeilen (Textknoten), nicht die Kästen der Absätze.
