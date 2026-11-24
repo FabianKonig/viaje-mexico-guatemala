@@ -106,12 +106,12 @@ date: 2026-11-23                   # Datum des Beitrags (JJJJ-MM-TT)
 place: ciudad-de-mexico            # id aus content/places.yaml (optional, siehe Kartenregeln)
 photos:                            # optional, höchstens 20
   - file: 01.jpg                   # Datei in photos/
-    alt: 'Blick über den Zócalo'   # Pflicht: deutscher Alt-Text, beschreibt das Bild
+    alt: 'Foto 1 von 18'           # Pflicht: kurzer deutscher Alt-Text, Standard „Foto N von M“ (kein Bildinhalt)
     caption: 'El Zócalo'           # optional: Bildunterschrift
     motion: 02.mp4                 # optional: Bewegtfoto, stumme Schleife in photos/ (trägt der Import ein)
 clips:                             # optional, höchstens 20: eigene Videos (Standard für Handyclips)
   - file: 01.mp4                   # Datei in clips/ (der Import erzeugt sie samt Standbild 01.jpg)
-    title: 'Mariachis auf der Plaza'  # Pflicht: deutsche Beschreibung (Bildunterschrift und Alt-Text)
+    title: 'Video 1'               # Pflicht: Standard „Video N“ (der Inhalt wird nicht beschrieben)
     width: 1280                    # width, height, duration trägt der Import ein (Vorschlag
     height: 720                    # wird vom Skript gedruckt), nicht von Hand ändern
     duration: 12.4
@@ -160,18 +160,20 @@ Hash berechnen: `node scripts/hash-original.mjs content/posts/<ordner>/original.
    `node scripts/import-media.mjs <quellordner> <JJJJ-MM-TT-slug>` ausführen. Das Skript verkleinert
    und entfernt GPS/Metadaten, schreibt `photos/NN.jpg` bzw. `clips/NN.mp4` + `NN.jpg` und druckt
    einen Frontmatter-Vorschlag. **Originale nie einchecken, nie ohne den Import in `photos/` oder
-   `clips/` legen.** Dann `photos:` und `clips:` in `index.md` eintragen: für jedes Foto ein
-   beschreibender deutscher `alt`, für jedes Video ein kurzer deutscher `title` (Fotos und Videos
-   ansehen: Standbild `clips/NN.jpg`). Android-Bewegtfotos (`*.MP.jpg`) werden zum Foto **plus**
+   `clips/` legen.** Dann `photos:` und `clips:` in `index.md` eintragen, mit den **neutralen
+   Standardtexten** des Skripts (`alt: 'Foto N von M'`, `title: 'Video N'`). **Die Mediendateien nicht
+   ansehen und nicht inhaltlich beschreiben** (Regel „Medien nicht inhaltlich auswerten“ unten).
+   Android-Bewegtfotos (`*.MP.jpg`) werden zum Foto **plus**
    stummer Schleife (`photos/NN.mp4`, Feld `motion`). **Jedes** Foto und Video, das der Autor schickt, wird
    übernommen (Videos mit Ton, nicht stumm). Zu lange Videos (über 180 s) meldet das Skript; dann dem
    Autor sagen, dass er es kürzen soll. Braucht ffmpeg
    (`sudo apt-get install -y ffmpeg`, falls es fehlt).
-7. **Ort klären:** Ist der Ort aus Text oder Fotos **eindeutig** erkennbar? Wenn nicht: **den Autor
+7. **Ort klären:** Ist der Ort aus dem **Text** **eindeutig** erkennbar (nie aus den Medien)? Wenn nicht: **den Autor
    fragen, wo er gerade ist. Nie raten.**
 8. **Karte und Ortsliste aktualisieren:** Neuer Ort → am Ende von `content/places.yaml` eintragen
    (wird automatisch „Aquí estoy“). Bekannter Ort → nur `place:` im Beitrag setzen.
-9. **Tests:** `npm test`. Screenshots von Startseite und Beitrag (Handy und Computer) ansehen.
+9. **Tests:** `npm test`. Screenshots von Startseite und Beitrag (Handy und Computer) nur zur
+   **Layoutprüfung** ansehen (Anordnung, Überlauf, Abstände), nicht um Bildinhalte zu beschreiben.
 10. **Pull-Request** öffnen: kurze Beschreibung, erkannte Sprachen, offene Fragen (Ort, Titel).
 
 ## Übersetzungsregeln
@@ -195,6 +197,15 @@ Hash berechnen: `node scripts/hash-original.mjs content/posts/<ordner>/original.
   Personen oder Kinder darauf zu sehen sind, und nicht nach deren Einverständnis fragen. Die
   Verantwortung dafür liegt allein beim Autor.
 - Keine Fotos, Texte oder Grafiken von Dritten ohne Erlaubnis des Autors.
+- **Medien nicht inhaltlich auswerten (Wunsch des Autors):** Fotos, Videos und Bewegtfotos werden
+  **nicht** angesehen, analysiert oder beschrieben: nicht, was zu sehen ist, wer oder was abgebildet
+  ist, wo es aufgenommen wurde, nicht in Texten, im Chat oder in Pull-Requests. Dafür keine
+  Bilddatei öffnen (kein `Read` auf Bilder, keine Bildbetrachter, keine Video-Einzelbilder ansehen).
+  `alt` und `title` bekommen die neutralen Standardtexte (`Foto N von M`, `Video N`); eine echte
+  Beschreibung nur, wenn der Autor sie selbst liefert (z. B. im Google Doc). Der Ort kommt aus dem
+  Text, das Titelbild nennt der Autor mit Dateinamen. Der Drive-Konnektor zeigt heruntergeladene
+  Bilder von selbst im Chat an; das lässt sich nicht abstellen, davon wird nichts verwendet.
+  Technische Prüfungen (Größe, Format, Metadaten, Laufzeit, Layout per Screenshot) bleiben erlaubt.
 - **Videos:** Eigene Videos kommen als `clips:` ins Repository, aber **nur nach dem Import** (720p,
   H.264/AAC, mit Ton, ohne Standort, höchstens 180 s und 40 MiB je Clip). Die Seite liefert sie
   selbst aus und lädt sie erst nach dem Antippen von „Play“. YouTube wird nicht verwendet (der
@@ -254,7 +265,7 @@ Er ist nur eine Kurzfassung; maßgeblich ist diese Datei.
 - Reihenfolge der Einträge = Reiseverlauf. Nummern zählen die Orte (1, 2, 3 …), nicht die Beiträge.
 - Der **letzte** Eintrag ist der aktuelle Ort („Aquí estoy“).
 - Ein neuer Ort wird **nur** eingetragen, wenn der Autor sagt, dass er dort war (oder es eindeutig
-  aus Beitrag/Fotos hervorgeht). **Im Zweifel fragen, nie raten.**
+  aus dem Beitragstext hervorgeht, nie aus Fotos oder Videos). **Im Zweifel fragen, nie raten.**
 - Eintrag: `id` (klein, mit Bindestrichen), `name` (spanischer Name), `lat`, `lon` (Dezimalgrad,
   Stadtzentrum genügt), `country` (`MX` oder `GT`), `arrived` (JJJJ-MM-TT), optional `region`
   (z. B. `Yucatán`, `Chiapas`; benennt den Kartenausschnitt). Liegen mehrere Orte nahe beieinander,

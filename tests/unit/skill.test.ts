@@ -38,4 +38,17 @@ describe('Skill neuer-beitrag', () => {
   it('AGENTS.md nennt den Skill', () => {
     expect(agents).toContain('neuer-beitrag');
   });
+
+  it('Regel „Medien nicht inhaltlich auswerten“ steht in AGENTS.md, SPEC.md und im Skill', () => {
+    const spec = fs.readFileSync('SPEC.md', 'utf8');
+    expect(agents).toContain('Medien nicht inhaltlich auswerten');
+    expect(spec).toContain('Keine inhaltliche Auswertung der Medien');
+    expect(skill).toMatch(/nicht ansehen und nicht beschreiben/);
+    expect(skill).toMatch(/ansehen, analysieren oder beschreiben/);
+    // keine Anweisung mehr, Bilder zu beschreiben
+    for (const text of [agents, skill]) {
+      expect(text).not.toMatch(/beschreibender deutscher `alt`/);
+      expect(text).not.toMatch(/Fotos und Videos\s+ansehen/);
+    }
+  });
 });

@@ -161,22 +161,25 @@ function importMotion(video, photosDir, photoFile) {
   }
 }
 
-/** Frontmatter-Vorschlag für die neuen Dateien (alt und title muss der Agent ergänzen). */
+/**
+ * Frontmatter-Vorschlag für die neuen Dateien. Die Texte sind bewusst neutral („Foto 1 von 3“,
+ * „Video 1“): Der Bildinhalt wird nicht ausgewertet oder beschrieben (Wunsch des Autors).
+ */
 export function frontmatterSnippet(result) {
   const lines = [];
   if (result.photos.length) {
     lines.push('photos:');
-    for (const p of result.photos) {
-      lines.push(`  - file: ${p.file}`, `    alt: 'TODO deutsche Bildbeschreibung (${p.source})'`);
+    for (const [i, p] of result.photos.entries()) {
+      lines.push(`  - file: ${p.file}`, `    alt: 'Foto ${i + 1} von ${result.photos.length}'`);
       if (p.motion) lines.push(`    motion: ${p.motion}`);
     }
   }
   if (result.clips.length) {
     lines.push('clips:');
-    for (const c of result.clips) {
+    for (const [i, c] of result.clips.entries()) {
       lines.push(
         `  - file: ${c.file}`,
-        `    title: 'TODO kurzer Titel (${c.source})'`,
+        `    title: 'Video ${i + 1}'`,
         `    width: ${c.width}`,
         `    height: ${c.height}`,
         `    duration: ${c.duration}`,

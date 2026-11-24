@@ -21,12 +21,13 @@ Der Autor steuert vom Handy: Rückmeldungen kurz, am Ende nennen, was fertig ist
 3. **Text** unverändert nach `original.md` (nie korrigieren), Hash mit `node scripts/hash-original.mjs`.
 4. **Übersetzen** (Spanisch → natürliches Deutsch, Deutsches 1:1), Segmente in `index.md`.
 5. **Medien importieren:** Dateien in einen leeren Ordner **außerhalb** von `content/`, dann
-   `node scripts/import-media.mjs <ordner> <slug>`. Danach `photos:` (deutscher `alt` je Foto, Titelbild
-   an die erste Stelle) und `clips:` (deutscher `title`) in `index.md` eintragen. Originale nie einchecken.
-6. **Ort:** nur eintragen, wenn eindeutig; sonst den Autor fragen, nie raten (`content/places.yaml`).
+   `node scripts/import-media.mjs <ordner> <slug>`. Danach `photos:` (`alt: 'Foto N von M'`, Titelbild
+   an die erste Stelle) und `clips:` (`title: 'Video N'`) in `index.md` eintragen, genau wie das
+   Skript es vorschlägt. **Medien nicht ansehen und nicht beschreiben.** Originale nie einchecken.
+6. **Ort:** nur eintragen, wenn er aus dem **Text** eindeutig ist (nie aus Fotos oder Videos); sonst den Autor fragen, nie raten (`content/places.yaml`).
    Den Beispielbeitrag `2026-11-23-entrada-de-ejemplo` beim ersten echten Beitrag löschen.
 7. **Prüfen:** `npm run test:unit`, einmal bauen (`npm run build`), Screenshots Handy (390 px) und
-   Computer ansehen.
+   Computer nur zur Layoutprüfung ansehen.
 8. **Pull-Request** öffnen, nur wenn der Autor es verlangt oder „fertig“ sagt. Beschreibung kurz:
    erkannte Sprachen, offene Fragen (Ort, Titel). Der Autor merged per „Squash and merge“.
 9. **Aufräumen melden:** Wenn Kopien in Drive angelegt wurden, dem Autor sagen, dass er im
@@ -34,6 +35,7 @@ Der Autor steuert vom Handy: Rückmeldungen kurz, am Ende nennen, was fertig ist
 
 ## Nie
 
-Das Spanisch oder Deutsch des Autors verbessern, Originalfotos oder Videos ohne den Import einchecken,
+Fotos, Videos oder Bewegtfotos ansehen, analysieren oder beschreiben (Wunsch des Autors, siehe
+AGENTS.md › Fotoregeln), das Spanisch oder Deutsch des Autors verbessern, Originalfotos oder Videos ohne den Import einchecken,
 einen Ort raten, Originale in Drive freigeben, YouTube oder andere externe Dienste einbinden, direkt auf
 `main` pushen.

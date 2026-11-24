@@ -169,7 +169,10 @@ describe.skipIf(!ffmpeg)('Import (mit ffmpeg)', () => {
       photos: [{ source: 'a.jpg', file: '01.jpg' }],
       clips: [{ source: 'b.mp4', file: '01.mp4', width: 1280, height: 720, duration: 12.5 }],
     });
-    expect(snippet).toContain("file: 01.jpg\n    alt: 'TODO");
+    // neutrale Standardtexte, keine inhaltliche Bildbeschreibung und kein Platzhalter
+    expect(snippet).toContain("file: 01.jpg\n    alt: 'Foto 1 von 1'");
+    expect(snippet).toContain("title: 'Video 1'");
+    expect(snippet).not.toMatch(/TODO/);
     expect(snippet).toContain('width: 1280\n    height: 720\n    duration: 12.5');
   });
 });

@@ -129,8 +129,8 @@ Ein Beitrag ist ein Ordner `content/posts/JJJJ-MM-TT-slug/` mit `index.md` (nur 
 | `titleDe` | nein | deutsche Übersetzung des Titels |
 | `date` | ja | `JJJJ-MM-TT` |
 | `place` | nein | `id` aus `places.yaml`; fehlt der Ort, zeigt der Beitrag nur den Tag |
-| `photos[]` | nein | `file` (in `photos/`), `alt` (Pflicht), `caption` (optional), `motion` (optional: stumme Schleife eines Bewegtfotos, `.mp4` in `photos/`); höchstens 20 |
-| `clips[]` | nein | eigenes Video: `file` (`.mp4` in `clips/`, dazu `clips/<name>.jpg` als Standbild), `title` (Pflicht, Beschreibung), `width`, `height`, `duration` (trägt der Import ein); höchstens 20 |
+| `photos[]` | nein | `file` (in `photos/`), `alt` (Pflicht; Standard `Foto N von M`, siehe 7.6), `caption` (optional), `motion` (optional: stumme Schleife eines Bewegtfotos, `.mp4` in `photos/`); höchstens 20 |
+| `clips[]` | nein | eigenes Video: `file` (`.mp4` in `clips/`, dazu `clips/<name>.jpg` als Standbild), `title` (Pflicht; Standard `Video N`), `width`, `height`, `duration` (trägt der Import ein); höchstens 20 |
 | `translation.source_sha256` | ja | SHA-256 von `original.md` |
 | `translation.segments[]` | ja | `lang` (`es`/`de`), `text` (wörtlicher Ausschnitt), `de` (nur bei `es`) |
 
@@ -270,6 +270,13 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   „Bewegung reduzieren“ (`prefers-reduced-motion`), ohne JavaScript oder wenn der Browser das
   Abspielen verweigert (z. B. Stromsparmodus) bleibt es beim Standbild und nichts wird geladen.
   Klick und Lightbox zeigen weiter das Standbild.
+- **Keine inhaltliche Auswertung der Medien** (Wunsch des Autors): Weder Agenten noch Import
+  beschreiben oder analysieren, was auf Fotos und Videos zu sehen ist. `alt` und `title` bekommen
+  neutrale Standardtexte (`Foto N von M`, `Video N`, vom Import vorgeschlagen); eine echte Beschreibung
+  steht nur dort, wo der Autor sie selbst liefert. Der Ort eines Beitrags kommt aus dem Text, nie aus
+  den Medien. Das ist eine bewusste Abwägung gegen die Barrierefreiheit (Alt-Texte beschreiben dann
+  nicht den Inhalt); die Seite bleibt bedienbar, die Bildunterschrift (`caption`) kann der Autor
+  jederzeit selbst setzen.
 - **Beitragskarte:** erstes Foto (3:2, Vorschaubild) und Fotoanzahl.
 
 ### 7.7 Videos
