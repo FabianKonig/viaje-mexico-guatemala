@@ -176,6 +176,54 @@ Hash berechnen: `node scripts/hash-original.mjs content/posts/<ordner>/original.
 9. **Tests:** `npm test`. Screenshots von Startseite und Beitrag (Handy und Computer) nur zur
    **Layoutprüfung** ansehen (Anordnung, Überlauf, Abstände), nicht um Bildinhalte zu beschreiben.
 10. **Pull-Request** öffnen: kurze Beschreibung, erkannte Sprachen, offene Fragen (Ort, Titel).
+11. **Lern-Datei** (nur bei Beiträgen mit spanischen Passagen): sobald der Autor „fertig“ sagt, das
+    Google Doc `Lernhilfe-<slug>` im Drive-Unterordner des Beitrags anlegen und das Sammel-Doc
+    `Lernhilfe-Übersicht` aktualisieren (Regeln: Abschnitt „Spanisch-Lernhilfe“). In der
+    Abschlussmeldung den Link nennen.
+
+## Bestehenden Beitrag ändern (Medien oder Text)
+
+Der Autor meldet z. B. „Beitrag `<slug>`: ein Foto dazu, zwei weg“ oder „ich habe den Text geändert“.
+Eigener Branch (z. B. `fix/<slug>-update`), Änderungen sammeln und erst bei „fertig“ pushen.
+
+**Was im Drive-Unterordner liegt:** Text-Doc, Fotos, Videos, Bewegtfotos **und** `Lernhilfe-<slug>`
+(Lern-Datei, siehe „Spanisch-Lernhilfe“); im Hauptordner zusätzlich `Lernhilfe-Übersicht`.
+**Dateien, deren Name mit `Lernhilfe-` oder `tmp-` beginnt, sind nie Medien und nie der
+Beitragstext.** Nicht herunterladen, nicht importieren, nicht als „neu“, „überzählig“ oder „unbekannt“
+melden, nicht löschen (außer beim bewussten Neuaufbau der Lern-Datei). Das **Text-Doc** ist das Google
+Doc im Unterordner ohne diese Präfixe. Alles andere Unbekannte: den Autor fragen.
+
+**Medien geändert:**
+
+1. Drive-Unterordner listen (ohne `Lernhilfe-`/`tmp-`). Der Import hat die Dateien nach Namen sortiert
+   nummeriert (`photos/NN.jpg`, `clips/NN.mp4`); so lässt sich zuordnen, welche Datei neu ist und
+   welche fehlt. Ist es nicht eindeutig (Namen vertauscht, mehrere Änderungen), den Autor nach den
+   Dateinamen fragen, nie raten.
+2. **Neue Dateien:** nur diese in einen neuen, leeren Ordner außerhalb von `content/` laden und mit
+   `node scripts/import-media.mjs <ordner> <slug>` importieren. Die Nummern laufen weiter. Bereits
+   vorhandene Dateien nicht erneut importieren.
+3. **Entfernte Dateien:** die Dateien in `photos/` bzw. `clips/` löschen (bei Bewegtfotos auch
+   `NN.mp4`, bei Videos `NN.jpg`) und die Einträge in `index.md` entfernen.
+4. `photos:`/`clips:` in `index.md` ergänzen. Neutrale Texte neu durchzählen (`Foto N von M`,
+   `Video N`, M = neue Gesamtzahl). Titelbild bleibt `photos[0]`, außer der Autor nennt ein neues.
+5. Die Lern-Datei bleibt **unverändert** (Medien stehen nicht darin).
+
+**Text geändert:**
+
+1. Neuen Text aus dem Text-Doc byte-genau nach `original.md`, Segmente und Hash in `index.md`
+   anpassen (Regeln „Beitragsformat“ und „Übersetzungsregeln“). Nur geänderte Stellen neu übersetzen.
+2. **Lern-Datei neu aufbauen:** `Lernhilfe-<slug>` komplett aus dem neuen Text erzeugen (nicht nur
+   anhängen, nicht die alte Fassung stehen lassen). Gibt es das Doc schon: neue Datei mit gleichem
+   Titel anlegen, die alte mit `trash_file` in den Papierkorb legen, neuen Link nennen (Inhalt lässt sich
+   nicht ersetzen, siehe „Spanisch-Lernhilfe“).
+3. **Sammel-Doc `Lernhilfe-Übersicht` neu aufbauen:** Die Zählung dieses Beitrags **ersetzen**, nie
+   zusätzlich addieren; Summen, Trend und Regelliste neu berechnen.
+4. Haben sich nur `lang: de`-Passagen geändert, bleiben Lern-Datei und Übersicht unverändert.
+   Kommen erstmals spanische Passagen dazu, die Lern-Datei neu anlegen; fallen alle weg, die Lern-Datei
+   in den Papierkorb legen und die Übersicht neu aufbauen.
+
+**Beides geändert:** erst Medien, dann Text. Am Ende melden, was sich geändert hat, und den Link zur
+(neuen) Lern-Datei nennen, wenn sie neu aufgebaut wurde.
 
 ## Übersetzungsregeln
 
@@ -185,6 +233,84 @@ Hash berechnen: `node scripts/hash-original.mjs content/posts/<ordner>/original.
 - Deutsche Passagen des Autors 1:1 übernehmen (Tippfehler bleiben).
 - Reihenfolge wie im Original, keine farbliche Hervorhebung einzelner Passagen.
 - Spanische Eigennamen bleiben (z. B. „Zócalo“), bekannte Orte dürfen deutsch heißen (Mexiko-Stadt).
+
+## Spanisch-Lernhilfe (Lern-Datei in Google Drive)
+
+Der Autor lernt Spanisch (Anfänger) und will aus seinen Fehlern lernen. Zu **jedem Beitrag mit
+mindestens einem `lang: es`-Segment** entsteht deshalb eine Lern-Datei. Rein deutsche Beiträge: keine.
+Die Lern-Datei liegt **nur in Google Drive**, nie im Repository und nie auf der Seite, und sie ändert
+**nichts** am Original (`original.md` bleibt byte-genau, die Seite zeigt weiter seinen Text).
+
+**Zeitpunkt:** wenn der Autor „fertig“ sagt (nicht nach jeder Überarbeitung). Ändert er den Text
+nach dem Anlegen noch (siehe „Bestehenden Beitrag ändern“), die Lern-Datei **und** die Übersicht
+neu aufbauen.
+
+**Wo und wie:**
+
+- **Je Beitrag:** Google Doc `Lernhilfe-<JJJJ-MM-TT-slug>` im Drive-Unterordner des Beitrags (neben dem
+  Text-Doc). Nicht freigeben (gehört dem Autor). Ablauf (am 24.11.2026 mit Beitrag 1 geprüft):
+  1. Den Inhalt als HTML-Datei im Scratchpad schreiben (`<h1>`, `<h2>`, `<h3>`, `<p>`, `<ul>`,
+     `<table border="1">`, `<b>`, `<i>`), nicht in den Chat tippen.
+  2. `sha256sum` der Datei bilden und `create_file` mit `contentMimeType: text/html`,
+     `parentId` = Unterordner und `base64Content: sha256:<hash>:<absoluter Pfad>` aufrufen. Drive
+     wandelt das in ein Google Doc um (Überschriften, Tabellen, Fett, Kursiv und Emoji kommen an).
+  3. Mit `read_file_content` (`includeComments: true`) prüfen, dass der Text vollständig ist.
+     (`fileSize: "1"` in der Antwort ist normal.)
+  Vorher den Skill `anthropic-skills:google-workspace` lesen.
+- **Ändern geht nur über eine neue Datei:** Es gibt keinen Docs-Editor-Konnektor, und `update_file` ändert
+  nur Metadaten (Titel, Ordner), nie den Inhalt (geprüft). Also: neues Doc mit **gleichem Titel**
+  anlegen, das alte mit `trash_file` in den Papierkorb legen (nur eigene `Lernhilfe-*`-Docs, nie
+  andere Dateien), den neuen Link nennen und die Links in der Übersicht aktualisieren. Dem Autor
+  sagen, dass im Papierkorb ein altes `Lernhilfe-*` liegt (er kann es dort lassen).
+- **Sammel-Doc:** Google Doc `Lernhilfe-Übersicht` im Hauptordner `reiseblog-viaje-mexico-guatemala`.
+  Beim ersten Mal anlegen, danach nach jedem neuen Beitrag **neu aufbauen** (neue Datei, altes in den
+  Papierkorb) aus dem alten Stand plus dem neuen Beitrag (Einzel-Docs per `search_files`:
+  `title contains 'Lernhilfe-'`). Die Übersicht verlinkt die Einzel-Docs, also nach jedem
+  Neuaufbau eines Einzel-Docs auch sie neu aufbauen.
+- Die Lern-Datei liegt **im selben Ordner wie die Medien des Beitrags**. Sie ist nie ein Medium und nie
+  der Beitragstext: Dateien mit `Lernhilfe-` am Anfang (und `tmp-*`) beim „Medien holen“ und bei jeder
+  Änderung eines Beitrags ignorieren (siehe „Bestehenden Beitrag ändern“).
+
+**Inhalt der Lern-Datei je Beitrag** (Deutsch, einfach, am Handy lesbar, Fachbegriffe kurz erklärt;
+Niveau Anfänger, A1 bis A2):
+
+1. **Kurzfazit:** Anzahl der Fehler, die ein bis drei häufigsten Themen und **zuerst etwas, das gut
+   gelungen ist** (konkret, nicht pauschal).
+2. **Korrigierte Fassung:** die spanischen Passagen vollständig, korrigierte Stellen **fett**. Deutsche
+   Passagen weglassen.
+3. **Fehler im Detail:** je Fehler ein Block: Original → korrigiert, **Kategorie**, kurze Erklärung
+   „Warum?“ mit der Regel, zwei eigene Beispielsätze, ein Merksatz. Gleiche Fehler zusammenfassen
+   (einmal erklären, alle Fundstellen nennen).
+4. **Natürlicher klingen:** Stilvorschläge, **klar von Fehlern getrennt** („so ist es nicht falsch, aber
+   Muttersprachler sagen eher …“).
+5. **Grammatik zum Nachlesen:** nur Regeln, die im Beitrag vorkamen, mit Beispielen; bei Verben eine
+   kleine Tabelle der Formen (z. B. Pretérito indefinido von `llegar`).
+
+**Kategorien** (immer genau diese, damit die Übersicht zählen kann): Akzente und Schreibung,
+Artikel und Geschlecht, Zahl und Übereinstimmung (Adjektiv, Verb), Verbformen und Zeiten,
+`ser`/`estar` (inkl. `hay`), Präpositionen, Wortschatz und falsche Freunde, Wortstellung,
+Satzzeichen (ohne `¿ ¡`), Sonstiges.
+
+**Inhalt des Sammel-Docs `Lernhilfe-Übersicht`:** Tabelle je Kategorie mit Anzahl der Fehler pro
+Beitrag und insgesamt (Trend: wird es besser?), die drei Themen, die aktuell am meisten Übung
+brauchen, eine Liste der **Regeln, die der Autor schon einmal falsch hatte** (Kurzregel plus Link zum
+Beitrag), Verlauf der Beiträge (Datum, Link zur Lern-Datei).
+
+**Regeln:**
+
+- Nur **sichere** Korrekturen. Ist die Absicht unklar, die Annahme kenntlich machen oder beim
+  Autor nachfragen (wie bei der Übersetzung). Nichts erfinden.
+- **`¿` und `¡` am Anfang** (Wunsch des Autors: Er kennt die Regel und lässt die Zeichen aus Bequemlichkeit
+  weg): In der **korrigierten Fassung** still setzen, richtig und **unmarkiert** (nicht fett). Sonst
+  **nie erwähnen**: nicht als Fehler auflisten, nicht zählen (auch nicht in der Übersicht), nicht
+  erklären, nicht loben, wenn er sie gesetzt hat. Andere Satzzeichen (z. B. Komma bei der Anrede)
+  zählen weiter.
+- Bei Auslassungen im Original (Akzente, Großschreibung) den Fehler zählen, aber freundlich bleiben:
+  Es ist ein Lernwerkzeug, kein Zeugnis.
+- Die Lern-Datei bespricht **nur den Text**, nie Fotos, Videos oder Orte (Regel „Medien nicht
+  inhaltlich auswerten“).
+- Nichts aus der Lern-Datei in Pull-Requests, Commit-Nachrichten oder Beschreibungen übernehmen
+  (privat). In die Abschlussmeldung nur den Link und ein bis zwei Themen.
 
 ## Fotoregeln
 
@@ -337,6 +463,7 @@ Service Worker wird beim Build erzeugt; neue Dateiarten im Zweifel network-first
 ## NIE tun
 
 - Das Spanisch (oder Deutsch) des Autors korrigieren, glätten oder „verbessern“.
+- Die Lern-Datei (Korrekturen, Fehleranalyse) ins Repository, in die Seite oder in Pull-Requests legen.
 - Originalfotos mit GPS-/EXIF-Daten veröffentlichen oder unbearbeitete Originale einchecken.
 - Externe Dienste, Tracker, Analytics, Cookies, CDNs oder Google Fonts einbinden.
 - Eine Open-Source- oder Creative-Commons-Lizenz für die Inhalte oder den Code hinzufügen.

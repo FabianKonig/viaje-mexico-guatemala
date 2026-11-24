@@ -36,6 +36,11 @@
 - [ ] Mit einem echten Android-Video prüfen, dass es nach dem Import auf Handy und Computer mit Ton
       abgespielt wird.
 - [x] Android-„Bewegte Fotos“ als stumme Schleife über dem Foto.
+- [x] **Lern-Datei (Spanisch):** mit Beitrag 1 geprüft. HTML-Upload wird ein Google Doc (Überschriften, Tabellen,
+      Fett, Kursiv, Emoji). Inhalt lässt sich nicht ändern (`update_file` nur Metadaten, kein Docs-Editor):
+      Änderung = neue Datei, altes Doc in den Papierkorb (siehe AGENTS.md › Spanisch-Lernhilfe).
+- [ ] Autor prüft die erste Lern-Datei (Verständlichkeit, Länge, Tiefe der Erklärungen) und sagt, was er
+      anders möchte (Agent passt AGENTS.md › Spanisch-Lernhilfe an).
 - [ ] Erster echter Beitrag aus Drive (Text-Doc: Format von Titel und Titelbild-Hinweis danach in
       AGENTS.md festhalten).
 

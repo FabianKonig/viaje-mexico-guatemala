@@ -7,7 +7,7 @@ description: >-
 # Neuer Beitrag
 
 Kurzfassung. **Maßgeblich ist `AGENTS.md`**, lies dort zuerst „Ablauf: neuen Beitrag anlegen“,
-„Medien holen“, „Übersetzungsregeln“, „Fotoregeln“ und „Kartenregeln“. Bei Widerspruch gilt AGENTS.md.
+„Medien holen“, „Übersetzungsregeln“, „Spanisch-Lernhilfe“, „Bestehenden Beitrag ändern“, „Fotoregeln“ und „Kartenregeln“. Bei Widerspruch gilt AGENTS.md.
 
 Der Autor steuert vom Handy: Rückmeldungen kurz, am Ende nennen, was fertig ist und was er noch tun muss.
 
@@ -29,12 +29,28 @@ Der Autor steuert vom Handy: Rückmeldungen kurz, am Ende nennen, was fertig ist
    Computer nur zur Layoutprüfung ansehen.
 8. **Pull-Request** öffnen, nur wenn der Autor es verlangt oder „fertig“ sagt. Beschreibung kurz:
    erkannte Sprachen, offene Fragen (Ort, Titel). Der Autor merged per „Squash and merge“.
-9. **Aufräumen melden:** Wenn Kopien in Drive angelegt wurden, dem Autor sagen, dass er im
+9. **Lern-Datei** (nur bei spanischen Passagen, sobald der Autor „fertig“ sagt): Google Doc
+   `Lernhilfe-<slug>` im Drive-Unterordner des Beitrags mit korrigierter Fassung, Fehlern samt
+   Erklärung und Regel, Stilvorschlägen und Grammatik zum Nachlesen; danach das Sammel-Doc
+   `Lernhilfe-Übersicht` im Hauptordner aktualisieren. Nur in Drive, nie ins Repository oder in den
+   Pull-Request; im Chat nur Link und ein bis zwei Themen. Inhalt, Kategorien und Regeln: AGENTS.md
+   › „Spanisch-Lernhilfe“. Das Original bleibt unverändert. **`¿ ¡` am Anfang** in der korrigierten Fassung still setzen (unmarkiert), sonst nie erwähnen, zählen oder erklären (Wunsch des Autors).
+10. **Aufräumen melden:** Wenn Kopien in Drive angelegt wurden, dem Autor sagen, dass er im
    Drive-Papierkorb die `tmp-*`-Dateien endgültig löschen soll.
+
+## Bestehenden Beitrag ändern
+
+Meldet der Autor geänderte Medien („ein Foto dazu, zwei weg“) oder geänderten Text, gilt AGENTS.md
+› „Bestehenden Beitrag ändern“. Kurz: Im Drive-Unterordner liegt auch die Lern-Datei
+`Lernhilfe-<slug>`; Dateien mit `Lernhilfe-` oder `tmp-` am Anfang sind **nie** Medien oder Text, nicht
+importieren, nicht als neu oder überzählig melden. Nur neue Medien importieren (Nummern laufen weiter),
+entfernte löschen, `Foto N von M` neu durchzählen. **Text geändert und spanische Passagen betroffen:**
+`Lernhilfe-<slug>` komplett neu aufbauen und `Lernhilfe-Übersicht` neu aufbauen (Zählung dieses Beitrags
+ersetzen, nicht addieren). Bei Mehrdeutigkeit den Autor nach Dateinamen fragen.
 
 ## Nie
 
 Fotos, Videos oder Bewegtfotos ansehen, analysieren oder beschreiben (Wunsch des Autors, siehe
 AGENTS.md › Fotoregeln), das Spanisch oder Deutsch des Autors verbessern, Originalfotos oder Videos ohne den Import einchecken,
-einen Ort raten, Originale in Drive freigeben, YouTube oder andere externe Dienste einbinden, direkt auf
+einen Ort raten, die Lern-Datei ins Repository legen, Originale in Drive freigeben, YouTube oder andere externe Dienste einbinden, direkt auf
 `main` pushen.
