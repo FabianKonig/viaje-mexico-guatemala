@@ -23,7 +23,7 @@
 - [x] Profilfoto abgelegt (`content/profile.jpg`, PR #13).
 - [ ] **Manuelle Tests** auf echten Geräten nach [MANUAL-TESTS.md](MANUAL-TESTS.md) (iPhone Safari,
       Android Chrome, **Samsung Internet**, Firefox Android, iPad, Mac Safari, Windows Edge).
-- [ ] Beispielbeitrag `content/posts/2026-11-23-entrada-de-ejemplo/` vor dem ersten echten Beitrag löschen
+- [x] Beispielbeitrag `content/posts/2026-11-23-entrada-de-ejemplo/` vor dem ersten echten Beitrag löschen (mit Beitrag 1 erledigt)
       (ein Agent macht das beim ersten echten Beitrag mit).
 
 ## Medien-Import (Fotos und Videos vom Handy)
