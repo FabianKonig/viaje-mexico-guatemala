@@ -62,11 +62,34 @@ test.describe('Startseite', () => {
     expect(badge!.x).toBeLessThan(map!.x);
   });
 
+  test('am Computer umfließt der Text die Karte, Zeilen darunter nutzen die volle Breite', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('./');
+    const map = await page.locator('#ruta').boundingBox();
+    const lines = await page.locator('.hero__lead').evaluate((el) => {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      return [...range.getClientRects()]
+        .filter((r) => r.width > 0)
+        .map((r) => ({ top: r.top, bottom: r.bottom, right: r.right }));
+    });
+    const mapBottom = map!.y + map!.height;
+    const beside = lines.filter((l) => l.bottom <= mapBottom);
+    const below = lines.filter((l) => l.top >= mapBottom);
+    expect(beside.length).toBeGreaterThan(0);
+    expect(below.length).toBeGreaterThan(0);
+    // Neben der Karte bleiben die Zeilen links davon, darunter reichen sie unter die Karte.
+    for (const l of beside) expect(l.right).toBeLessThanOrEqual(map!.x);
+    expect(Math.max(...below.map((l) => l.right))).toBeGreaterThan(map!.x);
+  });
+
   test('am Handy steht alles untereinander', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('./');
-    const intro = await page.locator('.hero__intro').boundingBox();
+    const actions = await page.locator('.hero__actions').boundingBox();
     const map = await page.locator('#ruta').boundingBox();
-    expect(map!.y).toBeGreaterThan(intro!.y + intro!.height - 1);
+    expect(map!.y).toBeGreaterThan(actions!.y + actions!.height - 1);
   });
 });
