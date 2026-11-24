@@ -62,14 +62,14 @@ export async function renderPhoto(input, { og = false } = {}) {
   return { large, thumbs, og: ogImg };
 }
 
-/** Quadratisches Profilbild (2× für 76 px und 44 px). */
+/** Quadratisches Profilbild (3× für 76 px und 44 px, scharf auf Handys). */
 export async function renderProfile(input) {
   const out = {};
-  for (const size of [152, 88]) {
+  for (const size of [240, 132]) {
     out[size] = await sharp(input)
       .rotate()
       .resize({ width: size, height: size, fit: 'cover', position: 'attention' })
-      .webp({ quality: QUALITY })
+      .webp({ quality: 92 })
       .toBuffer();
   }
   return out;
@@ -143,7 +143,7 @@ function writeCached(cacheDir, name, producer) {
 
 /**
  * Verarbeitet alle Inhalte. Liefert das Manifest:
- * { photos: { "<slug>/<datei>": { width, height, thumb400, thumb800, large, og? } }, profile?: { 152, 88 } }
+ * { photos: { "<slug>/<datei>": { width, height, thumb400, thumb800, large, og? } }, profile?: { 240, 132 } }
  * Pfade sind relativ zum Basispfad der Seite (z. B. "media/<slug>/01-ab12cd-400.webp").
  */
 export async function processAll({
@@ -226,8 +226,8 @@ export async function processAll({
     const r = await renderProfile(input);
     const h = hash(fs.readFileSync(path.join(contentDir, profileSrc)));
     manifest.profile = {
-      152: emit(`profile-${h}-152.webp`, r[152]),
-      88: emit(`profile-${h}-88.webp`, r[88]),
+      240: emit(`profile-${h}-240.webp`, r[240]),
+      132: emit(`profile-${h}-132.webp`, r[132]),
     };
   }
 

@@ -122,7 +122,7 @@ describe('Bild-Pipeline', () => {
     expect(files.some((f) => f.includes('nicht-verwendet'))).toBe(false);
     expect(files.some((f) => /\.(heic|jpe?g)$/.test(f) && !f.endsWith('-og.jpg'))).toBe(false);
     await expect(verifyDir(out)).resolves.toBeGreaterThan(0);
-    const prof = await sharp(path.join(out, path.basename(manifest.profile![152]))).metadata();
-    expect([prof.width, prof.height]).toEqual([152, 152]);
+    const prof = await sharp(path.join(out, path.basename(manifest.profile![240]))).metadata();
+    expect([prof.width, prof.height]).toEqual([240, 240]);
   });
 });

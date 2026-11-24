@@ -15,7 +15,7 @@ export interface PhotoMedia {
 
 export interface MediaManifest {
   photos: Record<string, PhotoMedia>;
-  profile: { 152: string; 88: string } | null;
+  profile: { 240: string; 132: string } | null;
 }
 
 let cache: MediaManifest | undefined;

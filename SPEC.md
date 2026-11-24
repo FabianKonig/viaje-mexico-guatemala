@@ -244,7 +244,7 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
 - **Prüfung:** Nach der Verarbeitung und nach `astro build` werden alle Bilder im Ausgabeordner auf
   EXIF, GPS, XMP und IPTC geprüft (sharp-Metadaten und Byte-Marker); HEIC/TIFF/RAW dürfen nicht
   veröffentlicht werden. Jeder Fund bricht den Build ab.
-- **Profilfoto:** `content/profile.(jpg|png|webp|heic)` → quadratisch 152 und 88 px (2× für 76/44 px),
+- **Profilfoto:** `content/profile.(jpg|png|webp|heic)` → quadratisch 240 und 132 px (3× für 76/44 px, WebP Qualität 92),
   sonst Platzhalter.
 - **Galerie:** Raster (Handy mind. 2 Spalten à 150px, ab 700px `minmax(220px, 1fr)`), Vorschaubilder
   mit `srcset` 400w/800w, `width`/`height`, `aspect-ratio: 4/3`, `object-fit: cover`, Lazy Loading ab
