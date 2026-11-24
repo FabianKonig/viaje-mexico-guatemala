@@ -185,7 +185,7 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
 
 1. **Papel-Picado-Wimpelrand** ganz oben: eigenes SVG-Muster, Fähnchen in Pink, Marigold, Türkis und
    Terrakotta mit kleinen Löchern, an einer Schnur, über die volle Breite (dekorativ, `aria-hidden`).
-2. **Kopfzeile:** links der Titel „Un viaje a México y Guatemala“ (Fraunces, `clamp(32px, 5.5vw, 52px)`,
+2. **Kopfzeile:** links der Titel „Un viaje a México y Guatemala“ (Fraunces, `clamp(34px, 6vw, 60px)`,
    Link zur Startseite; auf der Startseite `h1`, sonst `p`). Ganz rechts oben das runde Profilbild
    (Startseite 76px, sonst 44px, Rahmen und harter Schatten). Das Bild bleibt in jeder Breite rechts
    oben (Flexbox ohne Umbruch, der Titel bricht stattdessen um). Auf sehr breiten Bildschirmen
@@ -203,7 +203,7 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   (`align-items: start`): links der gelbe Kasten „Bienvenido / Willkommen“ (Marigold, Rahmen, Schatten),
   darunter der Begrüßungstext („Dies ist ein Experiment. Es ist mein Versuch eines Reiseblogs. Und zugleich
   ein Versuch, mein Spanisch durch Schreiben zu festigen. Mit Beiträgen mal auf Spanisch und inklusiver aller
-  Anfängerfehler, aber auch mal auf Deutsch, je nach Lust. Und keine Sorge, falls du no hablas Español: Die
+  Anfängerfehler, aber auch mal auf Deutsch, je nach Lust. Und keine Sorge, falls du no hablas español: Die
   deutsche Übersetzung steht immer daneben. Mal werde ich regelmäßig, mal unregelmäßig schreiben, schauen wir
   mal.“, dann in eigenem Absatz „¡Viel Spaß und hasta pronto!“ und „Fabian“) in `clamp(17px, 1.2vw + 12px, 24px)`, darunter der Knopf „Neuesten Beitrag
   lesen“
