@@ -7,7 +7,7 @@ description: >-
 # Neuer Beitrag
 
 Kurzfassung. **Maßgeblich ist `AGENTS.md`**, lies dort zuerst „Ablauf: neuen Beitrag anlegen“,
-„Medien holen“, „Übersetzungsregeln“, „Spanisch-Lernhilfe“, „Fotoregeln“ und „Kartenregeln“. Bei Widerspruch gilt AGENTS.md.
+„Medien holen“, „Übersetzungsregeln“, „Spanisch-Lernhilfe“, „Bestehenden Beitrag ändern“, „Fotoregeln“ und „Kartenregeln“. Bei Widerspruch gilt AGENTS.md.
 
 Der Autor steuert vom Handy: Rückmeldungen kurz, am Ende nennen, was fertig ist und was er noch tun muss.
 
@@ -37,6 +37,16 @@ Der Autor steuert vom Handy: Rückmeldungen kurz, am Ende nennen, was fertig ist
    › „Spanisch-Lernhilfe“. Das Original bleibt unverändert.
 10. **Aufräumen melden:** Wenn Kopien in Drive angelegt wurden, dem Autor sagen, dass er im
    Drive-Papierkorb die `tmp-*`-Dateien endgültig löschen soll.
+
+## Bestehenden Beitrag ändern
+
+Meldet der Autor geänderte Medien („ein Foto dazu, zwei weg“) oder geänderten Text, gilt AGENTS.md
+› „Bestehenden Beitrag ändern“. Kurz: Im Drive-Unterordner liegt auch die Lern-Datei
+`Lernhilfe-<slug>`; Dateien mit `Lernhilfe-` oder `tmp-` am Anfang sind **nie** Medien oder Text, nicht
+importieren, nicht als neu oder überzählig melden. Nur neue Medien importieren (Nummern laufen weiter),
+entfernte löschen, `Foto N von M` neu durchzählen. **Text geändert und spanische Passagen betroffen:**
+`Lernhilfe-<slug>` komplett neu aufbauen und `Lernhilfe-Übersicht` neu aufbauen (Zählung dieses Beitrags
+ersetzen, nicht addieren). Bei Mehrdeutigkeit den Autor nach Dateinamen fragen.
 
 ## Nie
 

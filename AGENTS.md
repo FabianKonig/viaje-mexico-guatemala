@@ -181,6 +181,50 @@ Hash berechnen: `node scripts/hash-original.mjs content/posts/<ordner>/original.
     `Lernhilfe-Übersicht` aktualisieren (Regeln: Abschnitt „Spanisch-Lernhilfe“). In der
     Abschlussmeldung den Link nennen.
 
+## Bestehenden Beitrag ändern (Medien oder Text)
+
+Der Autor meldet z. B. „Beitrag `<slug>`: ein Foto dazu, zwei weg“ oder „ich habe den Text geändert“.
+Eigener Branch (z. B. `fix/<slug>-update`), Änderungen sammeln und erst bei „fertig“ pushen.
+
+**Was im Drive-Unterordner liegt:** Text-Doc, Fotos, Videos, Bewegtfotos **und** `Lernhilfe-<slug>`
+(Lern-Datei, siehe „Spanisch-Lernhilfe“); im Hauptordner zusätzlich `Lernhilfe-Übersicht`.
+**Dateien, deren Name mit `Lernhilfe-` oder `tmp-` beginnt, sind nie Medien und nie der
+Beitragstext.** Nicht herunterladen, nicht importieren, nicht als „neu“, „überzählig“ oder „unbekannt“
+melden, nicht löschen (außer beim bewussten Neuaufbau der Lern-Datei). Das **Text-Doc** ist das Google
+Doc im Unterordner ohne diese Präfixe. Alles andere Unbekannte: den Autor fragen.
+
+**Medien geändert:**
+
+1. Drive-Unterordner listen (ohne `Lernhilfe-`/`tmp-`). Der Import hat die Dateien nach Namen sortiert
+   nummeriert (`photos/NN.jpg`, `clips/NN.mp4`); so lässt sich zuordnen, welche Datei neu ist und
+   welche fehlt. Ist es nicht eindeutig (Namen vertauscht, mehrere Änderungen), den Autor nach den
+   Dateinamen fragen, nie raten.
+2. **Neue Dateien:** nur diese in einen neuen, leeren Ordner außerhalb von `content/` laden und mit
+   `node scripts/import-media.mjs <ordner> <slug>` importieren. Die Nummern laufen weiter. Bereits
+   vorhandene Dateien nicht erneut importieren.
+3. **Entfernte Dateien:** die Dateien in `photos/` bzw. `clips/` löschen (bei Bewegtfotos auch
+   `NN.mp4`, bei Videos `NN.jpg`) und die Einträge in `index.md` entfernen.
+4. `photos:`/`clips:` in `index.md` ergänzen. Neutrale Texte neu durchzählen (`Foto N von M`,
+   `Video N`, M = neue Gesamtzahl). Titelbild bleibt `photos[0]`, außer der Autor nennt ein neues.
+5. Die Lern-Datei bleibt **unverändert** (Medien stehen nicht darin).
+
+**Text geändert:**
+
+1. Neuen Text aus dem Text-Doc byte-genau nach `original.md`, Segmente und Hash in `index.md`
+   anpassen (Regeln „Beitragsformat“ und „Übersetzungsregeln“). Nur geänderte Stellen neu übersetzen.
+2. **Lern-Datei neu aufbauen:** `Lernhilfe-<slug>` komplett aus dem neuen Text erzeugen (nicht nur
+   anhängen, nicht die alte Fassung stehen lassen). Gibt es das Doc schon, den Inhalt ersetzen
+   (`update_file`, falls es geht, sonst neue Datei anlegen und die alte mit `trash_file` in den
+   Papierkorb legen; neuen Link nennen).
+3. **Sammel-Doc `Lernhilfe-Übersicht` neu aufbauen:** Die Zählung dieses Beitrags **ersetzen**, nie
+   zusätzlich addieren; Summen, Trend und Regelliste neu berechnen.
+4. Haben sich nur `lang: de`-Passagen geändert, bleiben Lern-Datei und Übersicht unverändert.
+   Kommen erstmals spanische Passagen dazu, die Lern-Datei neu anlegen; fallen alle weg, die Lern-Datei
+   in den Papierkorb legen und die Übersicht neu aufbauen.
+
+**Beides geändert:** erst Medien, dann Text. Am Ende melden, was sich geändert hat, und den Link zur
+(neuen) Lern-Datei nennen, wenn sie neu aufgebaut wurde.
+
 ## Übersetzungsregeln
 
 - Original **niemals** korrigieren, auch nicht in der Übersetzungskachel bei deutschen Passagen.
@@ -197,8 +241,9 @@ mindestens einem `lang: es`-Segment** entsteht deshalb eine Lern-Datei. Rein deu
 Die Lern-Datei liegt **nur in Google Drive**, nie im Repository und nie auf der Seite, und sie ändert
 **nichts** am Original (`original.md` bleibt byte-genau, die Seite zeigt weiter seinen Text).
 
-**Zeitpunkt:** wenn der Autor „fertig“ sagt (nicht nach jeder Überarbeitung). Ändert er den Text nach
-dem Anlegen noch, die Lern-Datei aktualisieren.
+**Zeitpunkt:** wenn der Autor „fertig“ sagt (nicht nach jeder Überarbeitung). Ändert er den Text
+nach dem Anlegen noch (siehe „Bestehenden Beitrag ändern“), die Lern-Datei **und** die Übersicht
+neu aufbauen.
 
 **Wo und wie:**
 
@@ -212,8 +257,9 @@ dem Anlegen noch, die Lern-Datei aktualisieren.
   dem neuen Beitrag (Einzel-Docs per `search_files`: `title contains 'Lernhilfe-'`). Ob `update_file`
   den Inhalt ersetzen kann, beim ersten Mal ausprobieren und hier festhalten; sonst neue Datei
   anlegen, die alte in den Papierkorb legen (`trash_file`) und den neuen Link nennen.
-- Beim Suchen der Beitragsdateien (Schritt „Medien holen“) Dateien mit `Lernhilfe-` am Anfang
-  ignorieren: Das Text-Doc ist das andere Doc.
+- Die Lern-Datei liegt **im selben Ordner wie die Medien des Beitrags**. Sie ist nie ein Medium und nie
+  der Beitragstext: Dateien mit `Lernhilfe-` am Anfang (und `tmp-*`) beim „Medien holen“ und bei jeder
+  Änderung eines Beitrags ignorieren (siehe „Bestehenden Beitrag ändern“).
 
 **Inhalt der Lern-Datei je Beitrag** (Deutsch, einfach, am Handy lesbar, Fachbegriffe kurz erklärt;
 Niveau Anfänger, A1 bis A2):
