@@ -200,8 +200,13 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
 ### 7.4 Startseite
 
 - **Titelbereich** ohne Überschrift und ohne Titelfoto. Ab 900px zwei Spalten (5:7), oben bündig
-  (`align-items: start`): links der gelbe Kasten „México & Guatemala“ (Marigold, Rahmen, Schatten),
-  darunter „Mein Versuch eines Reiseblogs. Und zugleich ein Versuch, mein Spanisch durch Schreiben zu festigen. Mit Beiträgen mal auf Spanisch und inklusive aller Anfängerfehler, aber auch mal auf Deutsch, je nach Lust. Keine Sorge: Die deutsche Übersetzung steht immer daneben. Mal werde ich regelmäßig, mal unregelmäßig schreiben, schauen wir mal. ¡Viel Spaß und hasta pronto!“ in `clamp(17px, 1.2vw + 12px, 24px)`, darunter der Knopf „Neuesten Beitrag lesen“
+  (`align-items: start`): links der gelbe Kasten „Bienvenido / Willkommen“ (Marigold, Rahmen, Schatten),
+  darunter der Begrüßungstext („Dies ist ein Experiment. Es ist mein Versuch eines Reiseblogs. Und zugleich
+  ein Versuch, mein Spanisch durch Schreiben zu festigen. Mit Beiträgen mal auf Spanisch und inklusiver aller
+  Anfängerfehler, aber auch mal auf Deutsch, je nach Lust. Und keine Sorge, falls du no hablas Español: Die
+  deutsche Übersetzung steht immer daneben. Mal werde ich regelmäßig, mal unregelmäßig schreiben, schauen wir
+  mal.“, dann in eigenem Absatz „¡Viel Spaß und hasta pronto!“ und „Fabian“) in `clamp(17px, 1.2vw + 12px, 24px)`, darunter der Knopf „Neuesten Beitrag
+  lesen“
   und die Reisetag-Anzeige. Rechts die Routenkarte (`#ruta`). Unter 900px alles untereinander.
 - **Entradas** (`#entradas`): Raster `repeat(auto-fill, minmax(min(100%, 300px), 1fr))`, neueste
   zuerst. Karte: Foto (ab PR 4), Ort und Reisetag (z. B. „Ciudad de México · Tag 1“; ohne Ort nur der
