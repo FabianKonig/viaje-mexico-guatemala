@@ -185,7 +185,7 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
 
 1. **Papel-Picado-Wimpelrand** ganz oben: eigenes SVG-Muster, Fähnchen in Pink, Marigold, Türkis und
    Terrakotta mit kleinen Löchern, an einer Schnur, über die volle Breite (dekorativ, `aria-hidden`).
-2. **Kopfzeile:** links der Titel „Un viaje a México y Guatemala“ (Fraunces, `clamp(34px, 6vw, 60px)`,
+2. **Kopfzeile:** links der Titel „Un viaje a México y Guatemala“ (Fraunces, `clamp(34px, 5.5vw, 52px)`,
    Link zur Startseite; auf der Startseite `h1`, sonst `p`). Ganz rechts oben das runde Profilbild
    (Startseite 76px, sonst 44px, Rahmen und harter Schatten). Das Bild bleibt in jeder Breite rechts
    oben (Flexbox ohne Umbruch, der Titel bricht stattdessen um). Auf sehr breiten Bildschirmen
