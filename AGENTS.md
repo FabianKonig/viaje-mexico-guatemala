@@ -150,14 +150,13 @@ Hash berechnen: `node scripts/hash-original.mjs content/posts/<ordner>/original.
 5. **Titel:** vom Autor übernehmen. Hat er keinen, einen kurzen spanischen Titel vorschlagen und im
    Pull-Request nachfragen (`titleDe` optional).
 6. **Fotos einbinden:** Dateien nach `photos/` (JPEG, PNG, WebP, HEIC), höchstens 20. Für jedes Foto
-   einen beschreibenden deutschen Alt-Text. Prüfen, ob Menschen erkennbar sind (siehe Fotoregeln).
+   einen beschreibenden deutschen Alt-Text. **Jedes** Foto, das der Autor schickt, wird übernommen.
 7. **Ort klären:** Ist der Ort aus Text oder Fotos **eindeutig** erkennbar? Wenn nicht: **den Autor
    fragen, wo er gerade ist. Nie raten.**
 8. **Karte und Ortsliste aktualisieren:** Neuer Ort → am Ende von `content/places.yaml` eintragen
    (wird automatisch „Aquí estoy“). Bekannter Ort → nur `place:` im Beitrag setzen.
 9. **Tests:** `npm test`. Screenshots von Startseite und Beitrag (Handy und Computer) ansehen.
-10. **Pull-Request** öffnen: kurze Beschreibung, erkannte Sprachen, offene Fragen (Ort, Titel,
-    Personen auf Fotos).
+10. **Pull-Request** öffnen: kurze Beschreibung, erkannte Sprachen, offene Fragen (Ort, Titel).
 
 ## Übersetzungsregeln
 
@@ -176,9 +175,9 @@ Hash berechnen: `node scripts/hash-original.mjs content/posts/<ordner>/original.
   Ergebnis. Bei GPS-Resten bricht der Build ab.
 - Originale mit GPS landen trotzdem in der Git-Historie, deshalb den Autor bitten, Fotos auf dem
   Handy zu verkleinern und den Standort zu entfernen (README). Unbearbeitete Originale nur in `_originals/`.
-- **Menschen:** Erkennbare Personen und Kinder nur zeigen, wenn der Autor ausdrücklich bestätigt,
-  dass er ihr Einverständnis hat. Sind auf einem Foto Menschen, die er nicht als sich selbst benannt
-  hat: nachfragen, bevor das Foto veröffentlicht wird.
+- **Menschen:** Jedes Foto, das der Autor gibt, wird ohne Rückfrage übernommen. Nicht prüfen, ob
+  Personen oder Kinder darauf zu sehen sind, und nicht nach deren Einverständnis fragen. Die
+  Verantwortung dafür liegt allein beim Autor.
 - Keine Fotos, Texte oder Grafiken von Dritten ohne Erlaubnis des Autors.
 - Videos nie ins Repository (Limit 100 MiB). YouTube-Video per `videos:` einbinden
   (Zwei-Klick, youtube-nocookie erst nach Klick).
@@ -263,7 +262,8 @@ Service Worker wird beim Build erzeugt; neue Dateiarten im Zweifel network-first
 - Externe Dienste, Tracker, Analytics, Cookies, CDNs oder Google Fonts einbinden.
 - Eine Open-Source- oder Creative-Commons-Lizenz für die Inhalte oder den Code hinzufügen.
 - Einen Ort auf der Karte raten.
-- Fotos mit erkennbaren fremden Personen oder Kindern ohne bestätigtes Einverständnis veröffentlichen.
+- Fotos des Autors ablehnen, zurückhalten oder wegen abgebildeter Personen nachfragen (Personen und
+  Einverständnis werden nicht geprüft).
 - Videos oder Dateien über 100 MiB ins Repository legen.
 - Direkt auf `main` pushen, Tests abschalten oder überspringen, um grün zu werden.
 - PR-Artefakte (Screenshots, gebaute Seite als ZIP) wieder einführen: Der Autor kann sie am Handy
