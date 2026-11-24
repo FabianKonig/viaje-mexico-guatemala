@@ -30,7 +30,7 @@ const ogImageUrl = absoluteUrl(site, BASE, ogImage.path);
 const fullTitle = title ? `${title} · ${SITE.title}` : SITE.title;
 const profile = loadManifest().profile;
 const avatarSrc = profile
-  ? href(home ? profile[152] : profile[88])
+  ? href(home ? profile[240] : profile[132])
   : href('profile-placeholder.svg');
 const font = (f: string) => href(`fonts/${f}`);
 const LATIN =
