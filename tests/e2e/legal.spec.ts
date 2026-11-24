@@ -71,7 +71,7 @@ for (const start of [ROOT_URL, PREVIEW_URL]) {
 test('Beitrag mit Fotos nutzt das erste Foto als Vorschaubild (JPEG 1200×630)', async ({
   page,
 }) => {
-  await page.goto('./entradas/2026-11-23-entrada-de-ejemplo/');
+  await page.goto(PREVIEW_URL + 'entradas/2026-11-23-entrada-de-ejemplo/');
   await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
     'content',
     /\/media\/2026-11-23-entrada-de-ejemplo\/.+-og\.jpg$/,

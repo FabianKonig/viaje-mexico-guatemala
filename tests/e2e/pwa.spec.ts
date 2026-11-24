@@ -53,12 +53,16 @@ test.describe('Service Worker', () => {
     // Beitrag besuchen (jetzt vom Service Worker kontrolliert)
     await page.reload();
     await expect.poll(() => page.evaluate(() => !!navigator.serviceWorker.controller)).toBe(true);
-    await page.goto('./entradas/2026-11-23-entrada-de-ejemplo/');
+    // (irgendein echter Beitrag: der erste Beitragslink der Startseite)
+    const postHref = await page.locator('a[href*="entradas/"]').first().getAttribute('href');
+    expect(postHref).toMatch(/entradas\/.+/);
+    await page.goto(postHref!);
     await expect(page.locator('h1')).toBeVisible();
+    const postTitle = (await page.locator('h1').textContent())!;
 
     await context.setOffline(true);
-    await page.goto('./entradas/2026-11-23-entrada-de-ejemplo/');
-    await expect(page.locator('h1')).toHaveText('Entrada de ejemplo');
+    await page.goto(postHref!);
+    await expect(page.locator('h1')).toHaveText(postTitle);
     await page.goto('./');
     await expect(page.locator('h1')).toHaveText('Un viaje a México y Guatemala');
     await page.goto('./noch-nie-besucht/');

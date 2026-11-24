@@ -8,7 +8,7 @@ const PAGES = [
   { name: 'Impressum', url: './impressum/' },
   { name: 'Datenschutz', url: './datenschutz/' },
   { name: 'Lizenzhinweise', url: './lizenzhinweise/' },
-  { name: 'Beitragsseite', url: './entradas/2026-11-23-entrada-de-ejemplo/' },
+  { name: 'Beitragsseite', url: PREVIEW_URL + 'entradas/2026-11-23-entrada-de-ejemplo/' },
   { name: 'Beitrag nur Deutsch', url: PREVIEW_URL + 'entradas/2026-11-30-solo-aleman/' },
   { name: 'Beitrag mit 20 Fotos und Video', url: PREVIEW_URL + 'entradas/2026-12-03-gps-y-heic/' },
   { name: 'Beitrag 20 Fotos', url: PREVIEW_URL + 'entradas/2026-12-02-veinte-fotos/' },
@@ -50,7 +50,7 @@ test('Touch-Ziele sind mindestens 44px hoch', async ({ page }) => {
 });
 
 test('Barrierefreiheit (axe): geöffnete Lightbox', async ({ page }) => {
-  await page.goto('./entradas/2026-11-23-entrada-de-ejemplo/');
+  await page.goto(PREVIEW_URL + 'entradas/2026-11-23-entrada-de-ejemplo/');
   await page.locator('.gallery__link').first().click();
   await expect(page.locator('dialog[data-lightbox]')).toBeVisible();
   const results = await new AxeBuilder({ page })

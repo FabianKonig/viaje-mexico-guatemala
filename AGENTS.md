@@ -115,8 +115,7 @@ Hash berechnen: `node scripts/hash-original.mjs content/posts/<ordner>/original.
 
 ## Ablauf: neuen Beitrag anlegen
 
-1. **Branch** `post/<JJJJ-MM-TT-slug>` von aktuellem `main` anlegen. Gibt es noch den Beispielbeitrag
-   `content/posts/2026-11-23-entrada-de-ejemplo/`, diesen beim ersten echten Beitrag löschen.
+1. **Branch** `post/<JJJJ-MM-TT-slug>` von aktuellem `main` anlegen.
 2. **Ordner** `content/posts/<JJJJ-MM-TT-slug>/` anlegen (Datum des Beitrags, kurzer Slug ohne
    Sonderzeichen).
 3. **Originaltext übernehmen:** Text des Autors unverändert in `original.md` schreiben, Zeichen für
@@ -153,6 +152,8 @@ Hash berechnen: `node scripts/hash-original.mjs content/posts/<ordner>/original.
   Ergebnis. Bei GPS-Resten bricht der Build ab.
 - Originale mit GPS landen trotzdem in der Git-Historie, deshalb den Autor bitten, Fotos auf dem
   Handy zu verkleinern und den Standort zu entfernen (README). Unbearbeitete Originale nur in `_originals/`.
+  Schickt der Autor Fotos mit GPS, **vor dem Einchecken** Metadaten entfernen (mit `sharp`: drehen, auf
+  1600 px verkleinern, als JPEG ohne Metadaten speichern) und nur diese Fassung nach `photos/` legen.
 - **Menschen:** Erkennbare Personen und Kinder nur zeigen, wenn der Autor ausdrücklich bestätigt,
   dass er ihr Einverständnis hat. Sind auf einem Foto Menschen, die er nicht als sich selbst benannt
   hat: nachfragen, bevor das Foto veröffentlicht wird.

@@ -23,8 +23,8 @@
 - [x] Profilfoto abgelegt (`content/profile.jpg`, PR #13).
 - [ ] **Manuelle Tests** auf echten Geräten nach [MANUAL-TESTS.md](MANUAL-TESTS.md) (iPhone Safari,
       Android Chrome, **Samsung Internet**, Firefox Android, iPad, Mac Safari, Windows Edge).
-- [ ] Beispielbeitrag `content/posts/2026-11-23-entrada-de-ejemplo/` vor dem ersten echten Beitrag löschen
-      (ein Agent macht das beim ersten echten Beitrag mit).
+- [x] Beispielbeitrag gelöscht (liegt nur noch als Testinhalt in `tests/fixtures/content/posts/`);
+      erster echter Beitrag: `2026-11-23-lluvia-salsa-electricidad`.
 
 ## Hinweise zu den Grenzen
 

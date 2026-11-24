@@ -46,7 +46,7 @@ for (const width of WIDTHS) {
   test(`Beitragsseiten bei ${width}px: kein Überlauf, Profilbild rechts oben`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     for (const url of [
-      './entradas/2026-11-23-entrada-de-ejemplo/',
+      PREVIEW_URL + 'entradas/2026-11-23-entrada-de-ejemplo/',
       './datenschutz/',
       './lizenzhinweise/',
       PREVIEW_URL + 'entradas/2026-11-24-titulo-muy-largo/',
