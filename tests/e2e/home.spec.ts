@@ -69,11 +69,18 @@ test.describe('Startseite', () => {
     await page.goto('./');
     const map = await page.locator('#ruta').boundingBox();
     const lines = await page.locator('.hero__lead').evaluate((el) => {
-      const range = document.createRange();
-      range.selectNodeContents(el);
-      return [...range.getClientRects()]
-        .filter((r) => r.width > 0)
-        .map((r) => ({ top: r.top, bottom: r.bottom, right: r.right }));
+      // Nur Textzeilen (Textknoten), nicht die Kästen der Absätze.
+      const rects: { top: number; bottom: number; right: number }[] = [];
+      const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+        if (!n.textContent?.trim()) continue;
+        const range = document.createRange();
+        range.selectNodeContents(n);
+        for (const r of range.getClientRects()) {
+          if (r.width > 0) rects.push({ top: r.top, bottom: r.bottom, right: r.right });
+        }
+      }
+      return rects;
     });
     const mapBottom = map!.y + map!.height;
     const beside = lines.filter((l) => l.bottom <= mapBottom);
