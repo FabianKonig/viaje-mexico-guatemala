@@ -201,7 +201,7 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
 
 - **Titelbereich** ohne Überschrift und ohne Titelfoto. Ab 900px zwei Spalten (5:7), oben bündig
   (`align-items: start`): links der gelbe Kasten mit dem Text ¡Bienvenido / Willkommen! (Marigold, Rahmen, Schatten),
-  darunter der Begrüßungstext („¡Hola! Schön, dass du hier bist! Dies ist
+  darunter der Begrüßungstext („¡Hola! Schön, dass du hier bist. Dies ist
   mein Versuch eines Reiseblogs. Und zugleich ein Versuch, mein Spanisch durch Schreiben zu festigen. Mit
   Beiträgen mal auf Spanisch (und inklusiver aller Anfängerfehler), aber auch mal auf Deutsch, je nach Lust und
   Laune. Und keine Sorge, falls tú no hablas español: Die deutsche Übersetzung steht immer daneben. Wer mich
