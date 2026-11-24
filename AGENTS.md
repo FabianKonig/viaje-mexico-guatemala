@@ -104,7 +104,8 @@ title: '¡Hola, México!'            # Titel, wie der Autor ihn schreibt (nicht 
 titleDe: 'Hallo, Mexiko!'          # optional: Übersetzung des Titels
 date: 2026-11-23                   # Datum des Beitrags (JJJJ-MM-TT)
 place: ciudad-de-mexico            # id aus content/places.yaml (optional, siehe Kartenregeln)
-photos:                            # optional, höchstens 20
+cover: 01.jpg                      # optional: Titelbild (Datei aus photos/), sonst das erste Foto
+photos:                            # optional, höchstens 20, chronologisch (älteste zuerst)
   - file: 01.jpg                   # Datei in photos/
     alt: 'Foto 1 von 18'           # Pflicht: kurzer deutscher Alt-Text, Standard „Foto N von M“ (kein Bildinhalt)
     caption: 'El Zócalo'           # optional: Bildunterschrift
@@ -195,7 +196,7 @@ Doc im Unterordner ohne diese Präfixe. Alles andere Unbekannte: den Autor frage
 
 **Medien geändert:**
 
-1. Drive-Unterordner listen (ohne `Lernhilfe-`/`tmp-`). Der Import hat die Dateien nach Namen sortiert
+1. Drive-Unterordner listen (ohne `Lernhilfe-`/`tmp-`). Der Import hat die Dateien nach Aufnahmezeit sortiert
    nummeriert (`photos/NN.jpg`, `clips/NN.mp4`); so lässt sich zuordnen, welche Datei neu ist und
    welche fehlt. Ist es nicht eindeutig (Namen vertauscht, mehrere Änderungen), den Autor nach den
    Dateinamen fragen, nie raten.
@@ -205,7 +206,7 @@ Doc im Unterordner ohne diese Präfixe. Alles andere Unbekannte: den Autor frage
 3. **Entfernte Dateien:** die Dateien in `photos/` bzw. `clips/` löschen (bei Bewegtfotos auch
    `NN.mp4`, bei Videos `NN.jpg`) und die Einträge in `index.md` entfernen.
 4. `photos:`/`clips:` in `index.md` ergänzen. Neutrale Texte neu durchzählen (`Foto N von M`,
-   `Video N`, M = neue Gesamtzahl). Titelbild bleibt `photos[0]`, außer der Autor nennt ein neues.
+   `Video N`, M = neue Gesamtzahl). Die Reihenfolge bleibt chronologisch (neue Einträge nach Aufnahmezeit einsortieren); `cover` bleibt, außer der Autor nennt ein neues.
 5. Die Lern-Datei bleibt **unverändert** (Medien stehen nicht darin).
 
 **Text geändert:**
@@ -379,9 +380,13 @@ Alternativen, falls der Konnektor fehlt: geteilter Ordner-Link („Jeder mit dem
 und `drive.usercontent.google.com` müssen im Netzwerk der Umgebung erlaubt sein (`read_documentation`,
 Thema `environment.network`).
 
-Das **Titelbild** ist das erste Foto im Beitrag (`photos[0]`; auch Vorschaubild und WhatsApp-Bild).
-Der Import nummeriert nach Dateiname; das Titelbild des Autors deshalb in `index.md` an die erste
-Stelle von `photos:` setzen (Dateien nicht umbenennen).
+Der Import nummeriert nach **Aufnahmezeit** (Zeitpunkt des Auslösens; erst alle Fotos, dann alle Videos,
+je Gruppe älteste zuerst). Die Reihenfolge in `photos:` und `clips:` ist **streng chronologisch**, ohne
+Ausnahme. Das **Titelbild** (Vorschaubild, WhatsApp-Bild) wählt der Autor (Dateiname im Google Doc oder
+im Chat) und wird mit `cover: <datei>` (Name der Datei in `photos/`) oben im Frontmatter eingetragen; es
+verschiebt nichts. Nennt er keines, gilt das erste (älteste) Foto. Bei späteren
+Ergänzungen die neuen Einträge nach Aufnahmezeit einsortieren: Zeiten der Originale zeigt
+`node scripts/import-media.mjs --times <ordner>`.
 
 **Skill:** Für den ganzen Ablauf gibt es den Skill `neuer-beitrag` (`.claude/skills/neuer-beitrag/`).
 Er ist nur eine Kurzfassung; maßgeblich ist diese Datei.

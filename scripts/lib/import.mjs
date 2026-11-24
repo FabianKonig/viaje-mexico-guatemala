@@ -14,6 +14,13 @@ import path from 'node:path';
 import sharp from 'sharp';
 import { decodeInput, inspectImage, IMAGE_EXT, LARGE } from '../images.mjs';
 import {
+  containerCaptureTime,
+  exifCaptureTime,
+  filenameCaptureTime,
+  formatCaptureTime,
+  sortByCapture,
+} from './captured.mjs';
+import {
   MAX_CLIP_BYTES,
   MAX_CLIP_SECONDS,
   VIDEO_EXT,
@@ -39,7 +46,50 @@ export function nextNumber(dir) {
 
 const pad = (n) => String(n).padStart(2, '0');
 
-const byName = (a, b) => a.localeCompare(b, 'en', { numeric: true, sensitivity: 'base' });
+/** Aufnahmezeit einer Datei (Foto: EXIF, Video: Container, sonst Dateiname) oder null. */
+export async function captureTimeOf(file) {
+  const name = path.basename(file);
+  let time = null;
+  if (IMAGE_EXT.test(name)) {
+    for (const input of [file, null]) {
+      try {
+        const meta = await sharp(input ?? (await decodeInput(file)), { failOn: 'none' }).metadata();
+        time = exifCaptureTime(meta.exif);
+      } catch {
+        time = null;
+      }
+      if (time != null) break;
+    }
+  } else if (VIDEO_EXT.test(name)) {
+    try {
+      time = containerCaptureTime(probeVideo(file).created);
+    } catch {
+      time = null;
+    }
+  }
+  return time ?? filenameCaptureTime(name);
+}
+
+/**
+ * Medien einer Quelle nach Aufnahmezeit: erst alle Fotos, dann alle Videos, je Gruppe älteste zuerst.
+ * Liefert [{ name, time, kind }] mit kind 'photo' | 'video' | 'other'.
+ */
+export async function listByCaptureTime(source) {
+  const entries = fs
+    .readdirSync(source, { withFileTypes: true })
+    .filter((e) => e.isFile() && !e.name.startsWith('.'))
+    .map((e) => e.name);
+  const kindOf = (n) => (IMAGE_EXT.test(n) ? 'photo' : VIDEO_EXT.test(n) ? 'video' : 'other');
+  const items = [];
+  for (const name of entries) {
+    const kind = kindOf(name);
+    const time = kind === 'other' ? null : await captureTimeOf(path.join(source, name));
+    items.push({ name, time, kind });
+  }
+  return ['photo', 'video', 'other'].flatMap((k) =>
+    sortByCapture(items.filter((i) => i.kind === k)),
+  );
+}
 
 /** Verkleinertes Foto ohne Metadaten (JPEG, lange Seite höchstens 1600 px). */
 export async function shrinkPhoto(input) {
@@ -58,11 +108,10 @@ export async function shrinkPhoto(input) {
 export async function importMedia({ source, postDir, log = console.log }) {
   if (!fs.existsSync(source) || !fs.statSync(source).isDirectory())
     throw new Error(`Quellordner nicht gefunden: ${source}`);
-  const files = fs
-    .readdirSync(source, { withFileTypes: true })
-    .filter((e) => e.isFile() && !e.name.startsWith('.'))
-    .map((e) => e.name)
-    .sort(byName);
+  // Fotos und Videos je nach Aufnahmezeit (Auslöser), die Nummern NN folgen dieser Reihenfolge.
+  const sorted = await listByCaptureTime(source);
+  const files = sorted.map((i) => i.name);
+  const times = new Map(sorted.map((i) => [i.name, i.time]));
   const photosDir = path.join(postDir, 'photos');
   const clipsDir = path.join(postDir, 'clips');
   const result = { photos: [], clips: [], skipped: [] };
@@ -84,6 +133,7 @@ export async function importMedia({ source, postDir, log = console.log }) {
       }
       const photo = {
         source: name,
+        taken: times.get(name),
         file,
         width: out.info.width,
         height: out.info.height,
@@ -94,7 +144,7 @@ export async function importMedia({ source, postDir, log = console.log }) {
       if (motion) Object.assign(photo, importMotion(motion, photosDir, file));
       result.photos.push(photo);
       log(
-        `Foto   ${name} → photos/${file} (${Math.round(out.data.length / 1024)} KB)` +
+        `Foto   ${name} [${formatCaptureTime(times.get(name))}] → photos/${file} (${Math.round(out.data.length / 1024)} KB)` +
           (photo.motion
             ? ` + Bewegung ${photo.motion} (${Math.round(photo.motionBytes / 1024)} KB)`
             : ''),
@@ -121,6 +171,7 @@ export async function importMedia({ source, postDir, log = console.log }) {
       fs.writeFileSync(path.join(clipsDir, `${stem}.jpg`), await posterFrom(dest, out.duration));
       result.clips.push({
         source: name,
+        taken: times.get(name),
         file: `${stem}.mp4`,
         width: out.width,
         height: out.height,
@@ -129,7 +180,7 @@ export async function importMedia({ source, postDir, log = console.log }) {
         hasAudio: out.hasAudio,
       });
       log(
-        `Video  ${name} → clips/${stem}.mp4 (${(buf.length / 1048576).toFixed(1)} MB, ${Math.round(out.duration)} s${out.hasAudio ? ', mit Ton' : ', ohne Ton'})`,
+        `Video  ${name} [${formatCaptureTime(times.get(name))}] → clips/${stem}.mp4 (${(buf.length / 1048576).toFixed(1)} MB, ${Math.round(out.duration)} s${out.hasAudio ? ', mit Ton' : ', ohne Ton'})`,
       );
     } else {
       result.skipped.push({ source: name, why: 'unbekanntes Format' });

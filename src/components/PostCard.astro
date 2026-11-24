@@ -14,7 +14,7 @@ const day = tripDayNumber(post.date);
 const url = href(`entradas/${post.slug}/`);
 const photoCount = post.photos.length;
 const langs = post.translation.hasSpanish ? 'ES · DE' : 'DE';
-const cover = post.photos[0] ? photoMedia(post.slug, post.photos[0].file) : undefined;
+const cover = post.cover ? photoMedia(post.slug, post.cover.file) : undefined;
 const langLabel = post.translation.hasSpanish ? 'Spanisch mit deutscher Übersetzung' : 'Deutsch';
 ---
 

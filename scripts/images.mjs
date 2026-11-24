@@ -4,7 +4,7 @@
  *  - entfernt ALLE Metadaten (EXIF/GPS, XMP, IPTC), dreht nach der EXIF-Ausrichtung
  *  - HEIC/HEIF → über heic-convert dekodiert
  *  - erzeugt 400 und 800 px breite Vorschaubilder, eine große Version (max. 1600 px lange Seite,
- *    WebP Qualität 80) und für das erste Foto jedes Beitrags ein Open-Graph-Bild (1200×630 JPEG)
+ *    WebP Qualität 80) und für das Titelbild jedes Beitrags (`cover`, sonst das erste Foto) ein Open-Graph-Bild (1200×630 JPEG)
  *  - verarbeitet nur Fotos, die im Frontmatter eines Beitrags stehen
  *  - prüft am Ende, dass keine Metadaten mehr enthalten sind; bricht sonst ab (Exit-Code 1)
  *  - kopiert die stumme Schleife eines Bewegtfotos (photos/NN.mp4, Feld `motion`) wie die Clips
@@ -178,7 +178,9 @@ export async function processAll({
   for (const slug of slugs) {
     const fm = readFrontmatter(path.join(postsDir, slug, 'index.md'));
     const photos = Array.isArray(fm.photos) ? fm.photos : [];
-    for (const [i, ph] of photos.entries()) {
+    // Titelbild: `cover` im Frontmatter, sonst das erste Foto (nur dafür entsteht das OG-Bild)
+    const coverFile = typeof fm.cover === 'string' ? fm.cover : photos[0]?.file;
+    for (const ph of photos) {
       if (!ph?.file || typeof ph.file !== 'string') continue;
       const src = path.join(postsDir, slug, 'photos', ph.file);
       if (!fs.existsSync(src)) continue; // meldet die Inhaltsprüfung beim Build
@@ -191,11 +193,14 @@ export async function processAll({
       const key = `${h}`;
       const metaFile = path.join(cacheDir, key, 'meta.json');
       let meta;
-      if (fs.existsSync(metaFile) && (i > 0 || fs.existsSync(path.join(cacheDir, key, 'og.jpg')))) {
+      if (
+        fs.existsSync(metaFile) &&
+        (ph.file !== coverFile || fs.existsSync(path.join(cacheDir, key, 'og.jpg')))
+      ) {
         meta = JSON.parse(fs.readFileSync(metaFile, 'utf8'));
       } else {
         const input = await decodeInput(src);
-        const r = await renderPhoto(input, { og: i === 0 });
+        const r = await renderPhoto(input, { og: ph.file === coverFile });
         fs.mkdirSync(path.join(cacheDir, key), { recursive: true });
         fs.writeFileSync(path.join(cacheDir, key, 'large.webp'), r.large.data);
         for (const w of THUMBS)
@@ -220,7 +225,8 @@ export async function processAll({
         thumbWidth: meta.thumbWidths[400],
         thumbHeight: meta.thumbHeights[400],
       };
-      if (i === 0) entry.og = emit(path.join(slug, `${stem}-${h}-og.jpg`), read('og.jpg'));
+      if (ph.file === coverFile)
+        entry.og = emit(path.join(slug, `${stem}-${h}-og.jpg`), read('og.jpg'));
       if (typeof ph.motion === 'string') {
         const motionSrc = path.join(postsDir, slug, 'photos', ph.motion);
         if (fs.existsSync(motionSrc)) {

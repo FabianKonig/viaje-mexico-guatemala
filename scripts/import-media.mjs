@@ -7,11 +7,25 @@
  *
  * Braucht ffmpeg und ffprobe (nur für Videos): sudo apt-get install -y ffmpeg
  * Schreibt nach content/posts/<slug>/photos und /clips und druckt einen Frontmatter-Vorschlag.
+ * Reihenfolge und Nummern: nach Aufnahmezeit (erst alle Fotos, dann alle Videos).
+ *
+ * Nur Aufnahmezeiten anzeigen (schreibt nichts):  node scripts/import-media.mjs --times <quellordner>
  */
 import path from 'node:path';
-import { frontmatterSnippet, importMedia } from './lib/import.mjs';
+import { formatCaptureTime } from './lib/captured.mjs';
+import { frontmatterSnippet, importMedia, listByCaptureTime } from './lib/import.mjs';
 import { hasFfmpeg } from './lib/video.mjs';
 
+if (process.argv[2] === '--times') {
+  const dir = process.argv[3];
+  if (!dir) {
+    console.error('Aufruf: node scripts/import-media.mjs --times <quellordner>');
+    process.exit(2);
+  }
+  for (const i of await listByCaptureTime(dir))
+    console.log(`${i.kind.padEnd(5)}  ${formatCaptureTime(i.time)}  ${i.name}`);
+  process.exit(0);
+}
 const [, , source, slug] = process.argv;
 if (!source || !slug) {
   console.error('Aufruf: node scripts/import-media.mjs <quellordner> <JJJJ-MM-TT-slug>');

@@ -23,9 +23,9 @@ const day = tripDayNumber(post.date);
 const description = post.titleDe
   ? `${post.titleDe}: ${excerpt(post.original, 140)}`
   : excerpt(post.original, 160);
-const cover = post.photos[0] ? photoMedia(post.slug, post.photos[0].file) : undefined;
+const cover = post.cover ? photoMedia(post.slug, post.cover.file) : undefined;
 const ogImage = cover?.og
-  ? { path: cover.og, width: 1200, height: 630, alt: post.photos[0].alt }
+  ? { path: cover.og, width: 1200, height: 630, alt: post.cover?.alt ?? '' }
   : undefined;
 ---
 
