@@ -80,8 +80,10 @@ export function initLightbox(doc: Document = document) {
     if (!dialog!.open) return;
     // Von der vollen Foto-Größe aus messen: Ein altes --reserve könnte das Foto (und damit den Kasten) schmal halten
     photo.style.removeProperty('--reserve');
+    // Handy quer: Bildunterschrift steht neben dem Foto (Bühne als Zeile) und braucht keine Höhe
+    const side = getComputedStyle(stage).flexDirection === 'row';
     for (let pass = 0; pass < 3; pass++) {
-      const gap = caption.hidden ? 0 : caption.offsetHeight + 10;
+      const gap = caption.hidden || side ? 0 : caption.offsetHeight + 10;
       // die Zeile enthält Kasten und Abstand darüber (leer, wenn das Foto keine Kameraangaben hat)
       photo.style.setProperty('--reserve', `${infoRow.offsetHeight + gap}px`);
     }

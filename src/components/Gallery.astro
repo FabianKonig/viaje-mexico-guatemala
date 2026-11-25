@@ -358,6 +358,56 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
       right: max(6px, env(safe-area-inset-right));
     }
   }
+  /* Foto nie unter 40 % der Bühnenhöhe: Sonst schrumpft es mit wachsendem Kamera-Kasten in einer Spirale
+     (schmaleres Foto → mehr Zeilen im Kasten → weniger Höhe → noch schmaleres Foto). */
+  .lightbox__img {
+    max-height: max(40cqh, calc(100cqh - var(--reserve, 0px) - 4px));
+  }
+  /* Handy quer (niedriger Bildschirm): Zähler und Schließen-Knopf schweben über dem Bild statt eine eigene
+     Zeile zu belegen, Bildunterschrift steht neben dem Foto statt darunter, Kamera-Kasten in kleiner
+     Schrift. So bekommt das Foto fast die ganze Bildschirmhöhe. */
+  @media (orientation: landscape) and (max-height: 500px) {
+    .lightbox[open] {
+      grid-template-rows: minmax(0, 1fr);
+    }
+    .lightbox__bar {
+      position: absolute;
+      inset: 0 0 auto;
+      z-index: 1;
+      padding-block: max(6px, env(safe-area-inset-top)) 0;
+      pointer-events: none;
+    }
+    .lightbox__bar > * {
+      pointer-events: auto;
+    }
+    .lightbox__count {
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgb(43 29 22 / 0.7);
+    }
+    .lightbox__stage {
+      flex-direction: row;
+      gap: 12px;
+      padding-block: max(6px, env(safe-area-inset-top)) max(6px, env(safe-area-inset-bottom));
+    }
+    .lightbox__info {
+      padding: 4px 8px;
+      font-size: 0.65rem;
+      line-height: 1.35;
+    }
+    .lightbox__caption {
+      flex: 0 1 auto;
+      min-width: 12ch;
+      max-width: min(36ch, 30cqw);
+      max-height: 100cqh;
+      padding-inline: 0;
+      text-align: left;
+      font-size: 0.85rem;
+    }
+    .lightbox__img {
+      max-height: calc(100cqh - var(--reserve, 0px) - 4px);
+    }
+  }
   @media (prefers-reduced-motion: reduce) {
     .gallery__link:hover {
       transform: none;
