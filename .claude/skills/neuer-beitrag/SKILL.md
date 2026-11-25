@@ -10,6 +10,7 @@ Kurzfassung. **Maßgeblich ist `AGENTS.md`**, lies dort zuerst „Ablauf: neuen 
 „Medien holen“, „Übersetzungsregeln“, „Spanisch-Lernhilfe“, „Bestehenden Beitrag ändern“, „Fotoregeln“ und „Kartenregeln“. Bei Widerspruch gilt AGENTS.md.
 
 Der Autor steuert vom Handy: Rückmeldungen kurz, am Ende nennen, was fertig ist und was er noch tun muss.
+**Bei jeder echten Unklarheit den Autor fragen** (gebündelt, kurz, Empfehlung zuerst; AGENTS.md › „Rückfragen“), er muss das nicht extra sagen.
 
 ## Ablauf
 

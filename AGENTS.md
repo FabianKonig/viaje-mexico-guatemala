@@ -15,6 +15,23 @@ technikaffin), Link wird in WhatsApp geteilt. Statische Seite (Astro) auf GitHub
 Der Autor steuert vom Handy: **Rückmeldungen kurz halten** und am Ende immer nennen, was fertig ist
 und was er noch von Hand tun muss.
 
+## Rückfragen (immer erlaubt, ausdrücklich erwünscht)
+
+Der Autor muss nicht jedes Mal dazusagen, dass Rückfragen erwünscht sind: **Wenn eine Anforderung
+unklar, mehrdeutig oder widersprüchlich ist, fragst du nach**, bevor du loslegst. Nicht raten und keine
+stillen Annahmen treffen.
+
+- **Gebündelt:** alle offenen Fragen in **einer** Nachricht (bzw. einem Fragedialog), nicht
+  nacheinander.
+- **Kurz und handytauglich:** knappe Fragen, wenn möglich mit Auswahlmöglichkeiten; deine Empfehlung
+  steht als erste Option.
+- **Echte Unklarheiten:** nur nachfragen, wenn die Antwort ändert, was du tust. Fakten, die sich im
+  Code oder in dieser Datei klären lassen, nicht erfragen.
+- **Offensichtliche Kleinigkeiten** (z. B. Formulierung, Dateiname): mit dem naheliegenden Standard
+  weitermachen und die Annahme im Pull-Request nennen.
+- Für Beiträge gelten weiterhin die strengeren Regeln unten (Ort, Titel, Titelbild, unklare
+  Übersetzung: immer fragen, nie raten).
+
 ## Arbeitsweise (immer)
 
 1. Pro Aufgabe ein Feature-Branch von `main` (z. B. `post/2026-11-25-teotihuacan`, `feat/...`, `fix/...`).
