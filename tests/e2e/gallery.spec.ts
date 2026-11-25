@@ -317,13 +317,13 @@ test('Lightbox: Vor-/Zurück-Pfeile stehen auf halber Höhe des Fotos, auch mit 
   }
 });
 
-test('Lightbox: Vor-/Zurück-Pfeile sind am Handy 36 px, am Computer 48 px (Schließen immer 48 px)', async ({
+test('Lightbox: Vor-/Zurück-Pfeile sind am Handy 32 px, am Computer 48 px (Schließen immer 48 px)', async ({
   page,
 }) => {
   await page.goto(EXAMPLE);
   const dialog = page.locator('dialog[data-lightbox]');
   for (const { width, height, nav } of [
-    { width: 390, height: 844, nav: 36 },
+    { width: 390, height: 844, nav: 32 },
     { width: 1280, height: 800, nav: 48 },
   ]) {
     await page.setViewportSize({ width, height });
