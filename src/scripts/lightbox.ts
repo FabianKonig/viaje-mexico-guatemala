@@ -2,6 +2,8 @@
  * Lightbox für die Fotogalerie (Progressive Enhancement):
  * <dialog> mit showModal, Zähler, Schließen, Vor/Zurück, Tastatur (Esc, ←, →), Wischen,
  * Fokus kehrt beim Schließen zum auslösenden Foto zurück. Große Bilder werden erst bei Bedarf geladen.
+ * Auf Touchgeräten startet beim Öffnen automatisch der Vollbildmodus des Browsers (Adresszeile weg,
+ * mehr Platz fürs Foto); ein Knopf beendet ihn wieder, und diese Wahl gilt für den Rest der Sitzung.
  */
 /** Transparentes 1×1-GIF als Platzhalter, solange die Lightbox geschlossen ist. */
 export const EMPTY_IMAGE =
@@ -22,6 +24,58 @@ export function initLightbox(doc: Document = document) {
   const stage = dialog.querySelector<HTMLElement>('[data-stage]')!;
   let index = 0;
   let opener: HTMLElement | null = null;
+
+  // Vollbild: nur wo der Browser es kann (nicht iPhone) und nur auf Touchgeräten (am Computer wäre es störend)
+  const fsButton = dialog.querySelector<HTMLButtonElement>('[data-fullscreen]')!;
+  const FS_KEY = 'lightbox-fullscreen';
+  const fsSupported =
+    doc.fullscreenEnabled === true && typeof doc.documentElement.requestFullscreen === 'function';
+  const fsTouch = () => doc.defaultView?.matchMedia('(pointer: coarse)').matches === true;
+  /** Wahl des Lesers für diese Sitzung: 'off' nach Beenden per Knopf oder Wischgeste, 'on' nach erneutem Einschalten. */
+  const fsPreference = () => {
+    try {
+      return sessionStorage.getItem(FS_KEY) ?? 'on';
+    } catch {
+      return 'on';
+    }
+  };
+  const fsRemember = (value: 'on' | 'off') => {
+    try {
+      sessionStorage.setItem(FS_KEY, value);
+    } catch {
+      /* ohne Speicher gilt weiter der Standard */
+    }
+  };
+  const fsActive = () => doc.fullscreenElement != null;
+  /** Umschalter: gleichbleibender Name „Vollbild“, der Zustand steht in aria-pressed (und im Symbol). */
+  function fsSync() {
+    fsButton.setAttribute('aria-pressed', String(fsActive()));
+  }
+  function fsEnter() {
+    if (!fsSupported || fsActive()) return;
+    doc.documentElement.requestFullscreen().catch(() => {});
+  }
+  function fsExit() {
+    if (fsActive()) doc.exitFullscreen().catch(() => {});
+  }
+  if (fsSupported) {
+    fsButton.hidden = false;
+    fsSync();
+    fsButton.addEventListener('click', () => {
+      if (fsActive()) {
+        fsRemember('off');
+        fsExit();
+      } else {
+        fsRemember('on');
+        fsEnter();
+      }
+    });
+    doc.addEventListener('fullscreenchange', () => {
+      fsSync();
+      // Beendet der Leser das Vollbild bei offener Großansicht (Wischgeste, Zurück), merken wir uns das
+      if (dialog.open && !fsActive()) fsRemember('off');
+    });
+  }
 
   const preload = (i: number) => {
     const l = links[(i + links.length) % links.length];
@@ -111,6 +165,8 @@ export function initLightbox(doc: Document = document) {
     show(i);
     doc.documentElement.classList.add('has-lightbox');
     dialog!.showModal();
+    // Muss im Klick selbst geschehen (Nutzergeste); der Browser verlangt sie
+    if (fsSupported && fsTouch() && fsPreference() === 'on') fsEnter();
     fit();
     close.focus();
   }
@@ -128,6 +184,7 @@ export function initLightbox(doc: Document = document) {
   close.addEventListener('click', () => dialog.close());
   dialog.addEventListener('close', () => {
     doc.documentElement.classList.remove('has-lightbox');
+    fsExit();
     img.src = EMPTY_IMAGE;
     opener?.focus();
   });

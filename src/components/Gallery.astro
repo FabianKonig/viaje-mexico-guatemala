@@ -79,10 +79,25 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
 <dialog class="lightbox" aria-label="Foto in Großansicht" data-lightbox>
   <div class="lightbox__bar">
     <p class="lightbox__count" aria-live="polite" data-count></p>
-    <button class="lightbox__btn lightbox__close" type="button" data-close autofocus>
-      <span aria-hidden="true">✕</span>
-      <span class="visually-hidden">Schließen</span>
-    </button>
+    <div class="lightbox__actions">
+      <button
+        class="lightbox__btn lightbox__fs"
+        type="button"
+        data-fullscreen
+        aria-pressed="false"
+        hidden
+      >
+        <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
+          <path class="lightbox__fs-enter" d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"></path>
+          <path class="lightbox__fs-exit" d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"></path>
+        </svg>
+        <span class="visually-hidden">Vollbild</span>
+      </button>
+      <button class="lightbox__btn lightbox__close" type="button" data-close autofocus>
+        <span aria-hidden="true">✕</span>
+        <span class="visually-hidden">Schließen</span>
+      </button>
+    </div>
   </div>
   <figure class="lightbox__stage" data-stage>
     <div class="lightbox__photo">
@@ -326,6 +341,28 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
   .lightbox__btn:focus-visible {
     outline: 3px solid var(--marigold);
     outline-offset: 3px;
+  }
+  .lightbox__actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .lightbox__fs svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .lightbox__fs[hidden] {
+    display: none;
+  }
+  .lightbox__fs-exit,
+  .lightbox__fs[aria-pressed='true'] .lightbox__fs-enter {
+    display: none;
+  }
+  .lightbox__fs[aria-pressed='true'] .lightbox__fs-exit {
+    display: inline;
   }
   .lightbox__nav {
     position: absolute;

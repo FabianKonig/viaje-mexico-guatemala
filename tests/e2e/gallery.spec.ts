@@ -626,3 +626,147 @@ test('Lightbox: Handy quer – Foto nutzt fast die ganze Höhe, Bildunterschrift
   const captionUpright = (await dialog.locator('[data-caption]').boundingBox())!;
   expect(captionUpright.y).toBeGreaterThanOrEqual(wideUpright.y + wideUpright.height);
 });
+
+/** Vollbild-API und Zeigergerät nachgebildet: unabhängig vom Browser (WebKit kennt sie am iPhone nicht). */
+async function fakeFullscreen(
+  page: import('@playwright/test').Page,
+  { coarse, supported = true }: { coarse: boolean; supported?: boolean },
+) {
+  await page.addInitScript(
+    ({ coarse, supported }) => {
+      const w = window as unknown as { __fs: { el: Element | null; calls: number } };
+      w.__fs = { el: null, calls: 0 };
+      Object.defineProperty(document, 'fullscreenEnabled', {
+        value: supported,
+        configurable: true,
+      });
+      Object.defineProperty(document, 'fullscreenElement', {
+        get: () => w.__fs.el,
+        configurable: true,
+      });
+      if (supported) {
+        Element.prototype.requestFullscreen = function () {
+          w.__fs.el = this;
+          w.__fs.calls++;
+          document.dispatchEvent(new Event('fullscreenchange'));
+          return Promise.resolve();
+        };
+        document.exitFullscreen = () => {
+          w.__fs.el = null;
+          document.dispatchEvent(new Event('fullscreenchange'));
+          return Promise.resolve();
+        };
+      }
+      const real = window.matchMedia.bind(window);
+      window.matchMedia = (q: string) =>
+        q.includes('pointer: coarse')
+          ? ({
+              matches: coarse,
+              media: q,
+              addEventListener() {},
+              removeEventListener() {},
+            } as never)
+          : real(q);
+    },
+    { coarse, supported },
+  );
+}
+const fsState = (page: import('@playwright/test').Page) =>
+  page.evaluate(() => {
+    const w = window as unknown as { __fs: { el: Element | null; calls: number } };
+    return { active: w.__fs.el != null, calls: w.__fs.calls };
+  });
+
+test.describe('Vollbild (nachgebildete API)', () => {
+  // WebKit mit iPhone-Emulation hat die Vollbild-API für Elemente nicht (wie ein echtes iPhone) und entfernt
+  // auch die nachgebildete wieder; dort gilt nur der Test „ohne Vollbild-Unterstützung“ unten.
+  test.beforeEach(({}, testInfo) => {
+    test.skip(testInfo.project.name === 'mobile-safari', 'iPhone-WebKit: keine Vollbild-API');
+  });
+
+  test('Lightbox: am Touchgerät startet das Vollbild automatisch und endet mit dem Schließen', async ({
+    page,
+  }) => {
+    await fakeFullscreen(page, { coarse: true });
+    await page.goto(EXAMPLE);
+    const dialog = page.locator('dialog[data-lightbox]');
+    const button = dialog.locator('[data-fullscreen]');
+    await page.locator('.gallery__link').first().click();
+    expect(await fsState(page)).toEqual({ active: true, calls: 1 });
+    await expect(button).toBeVisible();
+    await expect(button).toHaveAttribute('aria-pressed', 'true');
+    // Blättern startet es nicht erneut
+    await dialog.locator('[data-next]').click();
+    expect((await fsState(page)).calls).toBe(1);
+    await dialog.locator('[data-close]').click();
+    await expect.poll(async () => (await fsState(page)).active).toBe(false);
+    // nächstes Öffnen: wieder Vollbild
+    await page.locator('.gallery__link').first().click();
+    expect(await fsState(page)).toEqual({ active: true, calls: 2 });
+  });
+
+  test('Lightbox: Vollbild per Knopf beenden gilt für die Sitzung, per Knopf wieder einschalten', async ({
+    page,
+  }) => {
+    await fakeFullscreen(page, { coarse: true });
+    await page.goto(EXAMPLE);
+    const dialog = page.locator('dialog[data-lightbox]');
+    const button = dialog.locator('[data-fullscreen]');
+    await page.locator('.gallery__link').first().click();
+    await button.click();
+    await expect(button).toHaveAttribute('aria-pressed', 'false');
+    expect((await fsState(page)).active).toBe(false);
+    await dialog.locator('[data-close]').click();
+    // Wahl bleibt: kein Vollbild beim nächsten Öffnen
+    await page.locator('.gallery__link').first().click();
+    expect((await fsState(page)).active).toBe(false);
+    // und auch nach dem Neuladen derselben Sitzung
+    await page.reload();
+    await page.locator('.gallery__link').first().click();
+    expect((await fsState(page)).active).toBe(false);
+    // wieder einschalten: gilt ab jetzt wieder automatisch
+    await button.click();
+    expect((await fsState(page)).active).toBe(true);
+    await dialog.locator('[data-close]').click();
+    await page.locator('.gallery__link').first().click();
+    expect((await fsState(page)).active).toBe(true);
+  });
+
+  test('Lightbox: Vollbild vom Browser beendet (Wischgeste) wird gemerkt, Großansicht bleibt offen', async ({
+    page,
+  }) => {
+    await fakeFullscreen(page, { coarse: true });
+    await page.goto(EXAMPLE);
+    const dialog = page.locator('dialog[data-lightbox]');
+    await page.locator('.gallery__link').first().click();
+    expect((await fsState(page)).active).toBe(true);
+    await page.evaluate(() => document.exitFullscreen());
+    await expect(dialog).toBeVisible();
+    await expect(dialog.locator('[data-fullscreen]')).toHaveAttribute('aria-pressed', 'false');
+    await dialog.locator('[data-close]').click();
+    await page.locator('.gallery__link').first().click();
+    expect((await fsState(page)).active).toBe(false);
+  });
+
+  test('Lightbox: am Computer kein automatisches Vollbild, aber der Knopf geht', async ({
+    page,
+  }) => {
+    await fakeFullscreen(page, { coarse: false });
+    await page.goto(EXAMPLE);
+    const dialog = page.locator('dialog[data-lightbox]');
+    await page.locator('.gallery__link').first().click();
+    expect((await fsState(page)).active).toBe(false);
+    await dialog.locator('[data-fullscreen]').click();
+    expect((await fsState(page)).active).toBe(true);
+  });
+});
+
+test('Lightbox: ohne Vollbild-Unterstützung (z. B. iPhone) gibt es den Knopf nicht', async ({
+  page,
+}) => {
+  await fakeFullscreen(page, { coarse: true, supported: false });
+  await page.goto(EXAMPLE);
+  await page.locator('.gallery__link').first().click();
+  await expect(page.locator('dialog[data-lightbox]')).toBeVisible();
+  await expect(page.locator('dialog[data-lightbox] [data-fullscreen]')).toBeHidden();
+});
