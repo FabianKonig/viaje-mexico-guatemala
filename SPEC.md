@@ -129,7 +129,7 @@ Ein Beitrag ist ein Ordner `content/posts/JJJJ-MM-TT-slug/` mit `index.md` (nur 
 | `titleDe` | nein | deutsche Übersetzung des Titels |
 | `date` | ja | `JJJJ-MM-TT` |
 | `place` | nein | `id` aus `places.yaml`; fehlt der Ort, zeigt der Beitrag nur den Tag |
-| `cover` | nein | Titelbild: `file` eines Fotos aus `photos` (Beitragskarte, Vorschau, WhatsApp-Bild). Fehlt es, gilt das erste Foto. Die Reihenfolge der Fotos bleibt chronologisch, das Titelbild muss nicht das erste sein |
+| `cover` | nein | Titelbild: `file` eines Fotos aus `photos` (Beitragskarte, Vorschau, WhatsApp-Bild). Fehlt es, gilt das erste Foto. Die Reihenfolge der Fotos bleibt chronologisch, das Titelbild muss nicht das erste sein. Es darf auch eine Datei in `photos/` sein, die **nicht** in `photos[]` steht (Nur-Titelbild, erscheint nicht in der Galerie), z. B. ein Platzhalter aus `scripts/make-cover-placeholder.mjs` |
 | `photos[]` | nein | `file` (in `photos/`), `alt` (Pflicht; Standard `Foto N von M`, siehe 7.6), `caption` (optional), `motion` (optional: stumme Schleife eines Bewegtfotos, `.mp4` in `photos/`); höchstens 30 |
 | `clips[]` | nein | eigenes Video: `file` (`.mp4` in `clips/`, dazu `clips/<name>.jpg` als Standbild), `title` (Pflicht; Standard `Video N`), `width`, `height`, `duration` (trägt der Import ein); höchstens 10 |
 | `translation.source_sha256` | ja | SHA-256 von `original.md` |

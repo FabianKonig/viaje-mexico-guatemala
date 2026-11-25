@@ -155,6 +155,28 @@ describe('Titelbild (cover)', () => {
     expect([og('2026-11-24-mit/a.jpg'), og('2026-11-24-mit/b.jpg')]).toEqual([false, true]);
     expect([og('2026-11-25-ohne/a.jpg'), og('2026-11-25-ohne/b.jpg')]).toEqual([true, false]);
   });
+
+  it('Nur-Titelbild (nicht in photos) wird verarbeitet und bekommt das OG-Bild', async () => {
+    const content = tmp('content-');
+    const post = path.join(content, 'posts', '2026-11-24-titel');
+    fs.mkdirSync(path.join(post, 'photos'), { recursive: true });
+    for (const f of ['a.jpg', 'titel.jpg'])
+      fs.writeFileSync(path.join(post, 'photos', f), await gpsJpeg(900, 700));
+    fs.writeFileSync(
+      path.join(post, 'index.md'),
+      '---\ntitle: T\ncover: titel.jpg\nphotos:\n  - file: a.jpg\n    alt: A\n---\n',
+    );
+    const cache = tmp('cache-');
+    const m = await processAll({
+      contentDir: content,
+      outDir: tmp('out-'),
+      cacheDir: cache,
+      manifestFile: path.join(cache, 'm.json'),
+      log: () => {},
+    });
+    expect(Boolean(m.photos['2026-11-24-titel/titel.jpg']?.og)).toBe(true);
+    expect(Boolean(m.photos['2026-11-24-titel/a.jpg'].og)).toBe(false);
+  });
 });
 
 describe('Videos im Bildskript', () => {

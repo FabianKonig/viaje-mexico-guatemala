@@ -104,7 +104,7 @@ title: '¡Hola, México!'            # Titel, wie der Autor ihn schreibt (nicht 
 titleDe: 'Hallo, Mexiko!'          # optional: Übersetzung des Titels
 date: 2026-11-23                   # Datum des Beitrags (JJJJ-MM-TT)
 place: ciudad-de-mexico            # id aus content/places.yaml (optional, siehe Kartenregeln)
-cover: 01.jpg                      # optional: Titelbild (Datei aus photos/), sonst das erste Foto
+cover: 01.jpg                      # optional: Titelbild (Datei aus photos/, auch eine, die nicht in `photos:` steht), sonst das erste Foto
 photos:                            # optional, höchstens 30, chronologisch (älteste zuerst)
   - file: 01.jpg                   # Datei in photos/
     alt: 'Foto 1 von 18'           # Pflicht: kurzer deutscher Alt-Text, Standard „Foto N von M“ (kein Bildinhalt)
@@ -384,7 +384,7 @@ Der Import nummeriert nach **Aufnahmezeit** (Zeitpunkt des Auslösens; erst alle
 je Gruppe älteste zuerst). Die Reihenfolge in `photos:` und `clips:` ist **streng chronologisch**, ohne
 Ausnahme. Das **Titelbild** (Vorschaubild, WhatsApp-Bild) wählt der Autor (Dateiname im Google Doc oder
 im Chat) und wird mit `cover: <datei>` (Name der Datei in `photos/`) oben im Frontmatter eingetragen; es
-verschiebt nichts. Nennt er keines, gilt das erste (älteste) Foto. Bei späteren
+verschiebt nichts. Nennt er keines, gilt das erste (älteste) Foto. Will er stattdessen einen Platzhalter (oder fehlt das genannte Bild), `PW_CHROMIUM_PATH=/opt/pw-browsers/chromium node scripts/make-cover-placeholder.mjs content/posts/<slug>/photos/titelbild.jpg "<Überschrift>" "<Unterzeile>"` ausführen und `cover: titelbild.jpg` eintragen (Datei liegt in `photos/`, steht aber nicht in `photos:`). Bei späteren
 Ergänzungen die neuen Einträge nach Aufnahmezeit einsortieren: Zeiten der Originale zeigt
 `node scripts/import-media.mjs --times <ordner>`.
 
@@ -431,6 +431,7 @@ npm run format           # Prettier anwenden (VOR den Tests ausführen)
 npm run lint             # Prettier-Prüfung + .gitignore-Prüfung
 npm run images           # nur Bildskript (Fotos verarbeiten und prüfen)
 node scripts/import-media.mjs <quellordner> <slug>   # Handy-Originale verkleinern, GPS entfernen
+node scripts/make-cover-placeholder.mjs <ausgabe.jpg> "<Überschrift>" ["<Unterzeile>"]   # Platzhalter-Titelbild „Ankunft“ (landendes Flugzeug, eigenes Motiv)
 npm run test:unit        # Vitest
 npm run build:e2e        # baut dist/ (echte Inhalte) und dist-preview/ (Testinhalte aus
                          # tests/fixtures/content unter /pr-preview/pr-1/)

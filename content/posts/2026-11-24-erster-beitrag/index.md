@@ -3,7 +3,7 @@ title: '¡Estoy en México!'
 titleDe: 'Ich bin in Mexiko!'
 date: 2026-11-24
 place: ciudad-de-mexico
-cover: 16.jpg
+cover: titelbild.jpg
 photos:
   - file: 01.jpg
     alt: 'Foto 1 von 17'

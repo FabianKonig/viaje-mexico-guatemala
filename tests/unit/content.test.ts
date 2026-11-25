@@ -180,6 +180,13 @@ describe('Inhalte: Frontmatter-Prüfung', () => {
     expect(r.post?.cover?.file).toBe('02.jpg');
     expect(r.post?.photos.map((p) => p.file)).toEqual(['01.jpg', '02.jpg']);
     expect(run('03.jpg').errors.join()).toMatch(/cover "03.jpg" ist kein Foto/);
+    // Nur-Titelbild: Datei liegt in photos/, steht aber nicht in der Galerie
+    fs.writeFileSync(path.join(dir, 'photos', 'titel.jpg'), 'x');
+    const only = run('titel.jpg');
+    expect(only.errors).toEqual([]);
+    expect(only.post?.cover?.file).toBe('titel.jpg');
+    expect(only.post?.photos.map((p) => p.file)).toEqual(['01.jpg', '02.jpg']);
+    expect(run('../x.jpg').errors.join()).toMatch(/cover "..\/x.jpg" ist kein Foto/);
     expect(run(5).errors.join()).toMatch(/cover muss ein Dateiname/);
   });
 

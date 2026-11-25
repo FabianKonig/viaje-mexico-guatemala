@@ -177,9 +177,11 @@ export async function processAll({
   let processed = 0;
   for (const slug of slugs) {
     const fm = readFrontmatter(path.join(postsDir, slug, 'index.md'));
-    const photos = Array.isArray(fm.photos) ? fm.photos : [];
+    const photos = [...(Array.isArray(fm.photos) ? fm.photos : [])];
     // Titelbild: `cover` im Frontmatter, sonst das erste Foto (nur dafür entsteht das OG-Bild)
     const coverFile = typeof fm.cover === 'string' ? fm.cover : photos[0]?.file;
+    // Nur-Titelbild: liegt in photos/, steht aber nicht in der Galerie
+    if (coverFile && !photos.some((p) => p?.file === coverFile)) photos.push({ file: coverFile });
     for (const ph of photos) {
       if (!ph?.file || typeof ph.file !== 'string') continue;
       const src = path.join(postsDir, slug, 'photos', ph.file);

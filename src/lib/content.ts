@@ -52,7 +52,7 @@ export interface Post {
   date: string;
   place?: Place;
   photos: PhotoRef[];
-  /** Titelbild (Vorschau, WhatsApp): `cover` im Frontmatter, sonst das erste Foto. */
+  /** Titelbild (Vorschau, WhatsApp): `cover` im Frontmatter (auch eine Datei in photos/, die nicht in der Galerie steht), sonst das erste Foto. */
   cover?: PhotoRef;
   clips: ClipRef[];
   /** Originaltext, byte-genau aus original.md. */
@@ -186,7 +186,16 @@ export function validatePost(
       at('cover muss ein Dateiname aus photos sein');
     else {
       cover = photos.find((p) => p.file === data.cover);
-      if (!cover) at(`cover "${data.cover}" ist kein Foto aus photos`);
+      // Nur-Titelbild: Datei in photos/, die nicht in der Galerie (photos) steht
+      if (
+        !cover &&
+        !data.cover.includes('/') &&
+        !data.cover.includes('\\') &&
+        PHOTO_EXTENSIONS.includes(path.extname(data.cover).toLowerCase()) &&
+        fs.existsSync(path.join(dir, 'photos', data.cover))
+      )
+        cover = { file: data.cover, alt: 'Titelbild' };
+      if (!cover) at(`cover "${data.cover}" ist kein Foto aus photos und liegt nicht in photos/`);
     }
   }
   if (data.videos !== undefined)
