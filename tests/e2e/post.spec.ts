@@ -127,23 +127,28 @@ test('Leerzeilen im Original ergeben nur einen kleinen Absatzabstand (Text bleib
   );
 });
 
-test('Lange Texte sind gekürzt und lassen sich je Kachel einzeln aufklappen', async ({ page }) => {
-  await page.goto(PREVIEW_URL + 'entradas/2026-11-25-texto-largo/');
+const LONG = PREVIEW_URL + 'entradas/2026-11-25-texto-largo/';
+
+test('Handy: lange Texte gekürzt, Original und Übersetzung klappen einzeln auf', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(LONG);
   const orig = page.locator('[data-clamp]').first();
   const trans = page.locator('[data-clamp]').nth(1);
   const origBtn = page.getByRole('button', { name: /Weiterlesen.*Original/ });
   const transBtn = page.getByRole('button', { name: /Weiterlesen.*Übersetzung/ });
-  const fullOrig = (await orig.boundingBox())!.height;
+  const collapsed = (await orig.boundingBox())!.height;
   await expect(orig).toHaveAttribute('data-state', 'collapsed');
   await expect(trans).toHaveAttribute('data-state', 'collapsed');
-  expect(fullOrig).toBeLessThan(300); // 10 Zeilen à ca. 28 px
-  expect(fullOrig).toBeGreaterThan(240);
+  expect(collapsed).toBeLessThan(300); // 10 Zeilen à ca. 28 px
+  expect(collapsed).toBeGreaterThan(240);
   // Der ganze Text bleibt im DOM
   expect((await page.locator('[data-original]').textContent())!.length).toBeGreaterThan(2000);
   await origBtn.click();
   await expect(orig).toHaveAttribute('data-state', 'open');
   await expect(trans).toHaveAttribute('data-state', 'collapsed'); // unabhängig
-  expect((await orig.boundingBox())!.height).toBeGreaterThan(fullOrig * 2);
+  expect((await orig.boundingBox())!.height).toBeGreaterThan(collapsed * 2);
   await expect(page.getByRole('button', { name: /Weniger anzeigen.*Original/ })).toHaveAttribute(
     'aria-expanded',
     'true',
@@ -152,9 +157,62 @@ test('Lange Texte sind gekürzt und lassen sich je Kachel einzeln aufklappen', a
   await expect(trans).toHaveAttribute('data-state', 'open');
   await page.getByRole('button', { name: /Weniger anzeigen.*Original/ }).click();
   await expect(orig).toHaveAttribute('data-state', 'collapsed');
+  await expect(trans).toHaveAttribute('data-state', 'open');
   // Auch ein Klick auf den gekürzten Text klappt auf
   await orig.click({ position: { x: 20, y: 20 } });
   await expect(orig).toHaveAttribute('data-state', 'open');
+});
+
+test('Computer: nebeneinander klappen Original und Übersetzung immer gemeinsam', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(LONG);
+  const orig = page.locator('[data-clamp]').first();
+  const trans = page.locator('[data-clamp]').nth(1);
+  const [b1, b2] = [page.locator('[data-more]').first(), page.locator('[data-more]').nth(1)];
+  await expect(orig).toHaveAttribute('data-state', 'collapsed');
+  await expect(trans).toHaveAttribute('data-state', 'collapsed');
+  // Knopf der Übersetzung schaltet beide
+  await b2.click();
+  await expect(orig).toHaveAttribute('data-state', 'open');
+  await expect(trans).toHaveAttribute('data-state', 'open');
+  await expect(b1).toHaveAttribute('aria-expanded', 'true');
+  await expect(b2).toHaveAttribute('aria-expanded', 'true');
+  await expect(b1).toContainText('Weniger anzeigen');
+  // Knopf des Originals schaltet beide wieder zu
+  await b1.click();
+  await expect(orig).toHaveAttribute('data-state', 'collapsed');
+  await expect(trans).toHaveAttribute('data-state', 'collapsed');
+  await expect(b2).toContainText('Weiterlesen');
+  // Auch ein Klick auf den gekürzten Text schaltet beide
+  await trans.click({ position: { x: 20, y: 20 } });
+  await expect(orig).toHaveAttribute('data-state', 'open');
+  await expect(trans).toHaveAttribute('data-state', 'open');
+  // Weg vom Computer-Layout: wieder einzeln (Handybreite), Zustand bleibt erhalten
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(b1).toBeVisible();
+  await b1.click();
+  await expect(orig).toHaveAttribute('data-state', 'collapsed');
+  await expect(trans).toHaveAttribute('data-state', 'open');
+});
+
+test('Computer: gekürzt wird nur, wenn beide Texte lang sind', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(LONG);
+  const orig = page.locator('[data-clamp]').first();
+  await expect(orig).toHaveAttribute('data-state', 'collapsed');
+  // Übersetzung künstlich kurz machen und neu berechnen lassen
+  await page.locator('[data-translation] [data-clamp]').evaluate((el) => {
+    el.innerHTML = '<p>Kurz.</p>';
+    window.dispatchEvent(new Event('resize'));
+  });
+  await expect(orig).toHaveAttribute('data-state', 'off');
+  await expect(page.locator('[data-more]:visible')).toHaveCount(0);
+  // Am Handy (untereinander) ist das Original dagegen allein lang genug zum Kürzen
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(orig).toHaveAttribute('data-state', 'collapsed');
+  await expect(page.locator('[data-more]:visible')).toHaveCount(1);
 });
 
 test('Kurze Texte haben keinen „Weiterlesen“-Knopf', async ({ page }) => {

@@ -112,77 +112,118 @@ const id = `uebersetzung-${post.slug}`;
 </div>
 
 <script>
-  for (const root of document.querySelectorAll<HTMLElement>('[data-bilingual]')) {
-    const btn = root.querySelector<HTMLButtonElement>('[data-toggle]');
-    const panel = root.querySelector<HTMLElement>('[data-translation]');
-    const tiles = root.querySelector<HTMLElement>('.tiles');
-    const label = btn?.querySelector<HTMLElement>('[data-label]');
-    if (!btn || !panel || !tiles || !label) continue;
-    btn.hidden = false;
-    btn.addEventListener('click', () => {
-      const show = btn.getAttribute('aria-expanded') !== 'true';
-      btn.setAttribute('aria-expanded', String(show));
-      panel.hidden = !show;
-      tiles.classList.toggle('tiles--single', !show);
-      label.textContent = show ? 'Übersetzung ausblenden' : 'Übersetzung einblenden';
-      if (show) updateClamps();
-    });
-  }
-
-  // Lange Texte kürzen: je Kachel einzeln auf- und zuklappbar.
-  // Gekürzt wird nur, wenn mindestens 3 Zeilen mehr kämen als die Kurzfassung zeigt.
-  // Die Zahl der sichtbaren Zeilen steht nur im Stylesheet (--shown-lines).
+  // Lange Texte kürzen. Gekürzt wird nur, wenn mindestens 3 Zeilen mehr kämen als die Kurzfassung
+  // zeigt; die Zahl der sichtbaren Zeilen steht nur im Stylesheet (--shown-lines).
+  // Untereinander (Handy) klappt jede Kachel für sich auf. Stehen Original und Übersetzung
+  // nebeneinander (Computer), klappen sie immer gemeinsam auf und zu, und zwar nur, wenn beide
+  // lang sind; jeder der beiden Knöpfe schaltet beide.
   const MIN_HIDDEN_LINES = 3;
   const LINE_HEIGHT = 1.65; // em, wie im Stylesheet
-  const clamps = [...document.querySelectorAll<HTMLElement>('[data-clamp]')];
+  const updates: (() => void)[] = [];
 
-  function updateClamps() {
-    for (const el of clamps) {
-      const btn = el.parentElement?.querySelector<HTMLButtonElement>('[data-more]');
-      if (!btn || el.offsetParent === null) continue; // verborgene Kachel nicht messen
-      const style = getComputedStyle(el);
-      const shown = Number(style.getPropertyValue('--shown-lines'));
-      const lines = el.scrollHeight / (parseFloat(style.fontSize) * LINE_HEIGHT);
-      if (lines <= shown + MIN_HIDDEN_LINES) {
-        el.dataset.state = 'off'; // kurz genug: nichts kürzen
-        btn.hidden = true;
-      } else {
-        // Nur zuklappen, wenn der Leser nicht schon aufgeklappt hat.
-        if (el.dataset.state !== 'open') setOpen(el, btn, false);
-        btn.hidden = false;
-      }
-    }
+  interface Part {
+    clamp: HTMLElement;
+    btn: HTMLButtonElement;
+    tile: HTMLElement;
   }
 
-  function setOpen(el: HTMLElement, btn: HTMLButtonElement, open: boolean) {
-    el.dataset.state = open ? 'open' : 'collapsed';
-    btn.setAttribute('aria-expanded', String(open));
-    const label = btn.querySelector<HTMLElement>('[data-more-label]');
+  function setOpen(p: Part, open: boolean) {
+    p.clamp.dataset.state = open ? 'open' : 'collapsed';
+    p.btn.hidden = false;
+    p.btn.setAttribute('aria-expanded', String(open));
+    const label = p.btn.querySelector<HTMLElement>('[data-more-label]');
     if (label) label.textContent = open ? 'Weniger anzeigen' : 'Weiterlesen';
   }
 
-  for (const el of clamps) {
-    const btn = el.parentElement?.querySelector<HTMLButtonElement>('[data-more]');
-    if (!btn) continue;
-    // Auch ein Tipp auf den gekürzten Text klappt auf (außer beim Markieren von Text).
-    el.addEventListener('click', () => {
-      if (el.dataset.state === 'collapsed' && !window.getSelection()?.toString()) btn.click();
-    });
-    btn.addEventListener('click', () => {
-      const open = el.dataset.state !== 'open';
-      setOpen(el, btn, open);
-      // Beim Zuklappen die Kachel wieder ins Bild holen, falls ihr Kopf oben herausgerutscht ist.
-      const tile = el.closest<HTMLElement>('.tile');
-      if (!open && tile && tile.getBoundingClientRect().top < 0) tile.scrollIntoView();
-    });
+  function setOff(p: Part) {
+    p.clamp.dataset.state = 'off'; // kurz genug (oder nicht gemeinsam lang): nichts kürzen
+    p.btn.hidden = true;
   }
 
-  updateClamps();
-  void document.fonts?.ready.then(updateClamps);
+  function isLong(p: Part) {
+    const style = getComputedStyle(p.clamp);
+    const shown = Number(style.getPropertyValue('--shown-lines'));
+    const lines = p.clamp.scrollHeight / (parseFloat(style.fontSize) * LINE_HEIGHT);
+    return lines > shown + MIN_HIDDEN_LINES;
+  }
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-bilingual]')) {
+    const tiles = root.querySelector<HTMLElement>('.tiles');
+    const panel = root.querySelector<HTMLElement>('[data-translation]');
+    const parts: Part[] = [];
+    for (const clamp of root.querySelectorAll<HTMLElement>('[data-clamp]')) {
+      const tile = clamp.closest<HTMLElement>('.tile');
+      const btn = tile?.querySelector<HTMLButtonElement>('[data-more]');
+      if (tile && btn) parts.push({ clamp, btn, tile });
+    }
+    if (!tiles || parts.length === 0) continue;
+
+    // Nebeneinander = beide Kacheln sichtbar und auf gleicher Höhe.
+    const isSynced = () =>
+      parts.length === 2 &&
+      parts.every((p) => p.clamp.offsetParent !== null) &&
+      Math.abs(parts[0].tile.offsetTop - parts[1].tile.offsetTop) < 8;
+
+    const update = () => {
+      const visible = parts.filter((p) => p.clamp.offsetParent !== null); // Verborgenes nicht messen
+      if (isSynced()) {
+        if (!visible.every(isLong)) {
+          visible.forEach(setOff);
+        } else {
+          const open = visible.some((p) => p.clamp.dataset.state === 'open');
+          visible.forEach((p) => setOpen(p, open));
+        }
+        return;
+      }
+      for (const p of visible) {
+        if (!isLong(p)) setOff(p);
+        // Nur zuklappen, wenn der Leser nicht schon aufgeklappt hat.
+        else setOpen(p, p.clamp.dataset.state === 'open');
+      }
+    };
+    updates.push(update);
+
+    const toggle = (p: Part) => {
+      const open = p.clamp.dataset.state !== 'open';
+      const synced = isSynced();
+      for (const t of synced ? parts : [p]) setOpen(t, open);
+      // Beim Zuklappen wieder ins Bild holen, falls der Kachelkopf oben herausgerutscht ist.
+      const anchor = synced ? tiles : p.tile;
+      if (!open && anchor.getBoundingClientRect().top < 0) anchor.scrollIntoView();
+    };
+    for (const p of parts) {
+      p.btn.addEventListener('click', () => toggle(p));
+      // Auch ein Tipp auf den gekürzten Text klappt auf (außer beim Markieren von Text).
+      p.clamp.addEventListener('click', () => {
+        if (p.clamp.dataset.state === 'collapsed' && !window.getSelection()?.toString()) {
+          toggle(p);
+        }
+      });
+    }
+
+    // Schalter „Übersetzung ausblenden / einblenden“
+    const btn = root.querySelector<HTMLButtonElement>('[data-toggle]');
+    const label = btn?.querySelector<HTMLElement>('[data-label]');
+    if (btn && panel && label) {
+      btn.hidden = false;
+      btn.addEventListener('click', () => {
+        const show = btn.getAttribute('aria-expanded') !== 'true';
+        btn.setAttribute('aria-expanded', String(show));
+        panel.hidden = !show;
+        tiles.classList.toggle('tiles--single', !show);
+        label.textContent = show ? 'Übersetzung ausblenden' : 'Übersetzung einblenden';
+        update();
+      });
+    }
+  }
+
+  const updateAll = () => updates.forEach((u) => u());
+  updateAll();
+  void document.fonts?.ready.then(updateAll);
   let frame = 0;
   window.addEventListener('resize', () => {
     cancelAnimationFrame(frame);
-    frame = requestAnimationFrame(updateClamps);
+    frame = requestAnimationFrame(updateAll);
   });
 </script>
 
