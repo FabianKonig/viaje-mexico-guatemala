@@ -55,16 +55,15 @@ export function initLightbox(doc: Document = document) {
 
   /** Platz für Kamera-Kasten (samt Abstand) und Bildunterschrift, damit das Foto in die Höhe passt (siehe Gallery.astro). */
   const photo = dialog.querySelector<HTMLElement>('.lightbox__photo')!;
+  const infoRow = dialog.querySelector<HTMLElement>('[data-info-row]')!;
   function fit() {
     if (!dialog!.open) return;
     // Von der vollen Foto-Größe aus messen: Ein altes --reserve könnte das Foto (und damit den Kasten) schmal halten
     photo.style.removeProperty('--reserve');
     for (let pass = 0; pass < 3; pass++) {
       const gap = caption.hidden ? 0 : caption.offsetHeight + 10;
-      const box = info.hidden
-        ? 0
-        : info.offsetHeight + (parseFloat(getComputedStyle(info).marginTop) || 0);
-      photo.style.setProperty('--reserve', `${box + gap}px`);
+      // die Zeile enthält Kasten und Abstand darüber (leer, wenn das Foto keine Kameraangaben hat)
+      photo.style.setProperty('--reserve', `${infoRow.offsetHeight + gap}px`);
     }
   }
   window.addEventListener('resize', fit);

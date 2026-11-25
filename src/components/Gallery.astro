@@ -90,7 +90,9 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
       <div class="lightbox__frame">
         <img class="lightbox__img" src={EMPTY_IMAGE} alt="" data-img />
       </div>
-      <p class="lightbox__info" data-info hidden></p>
+      <div class="lightbox__info-row" data-info-row>
+        <p class="lightbox__info" data-info hidden></p>
+      </div>
     </div>
     <figcaption class="lightbox__caption" lang="es" data-caption hidden></figcaption>
   </figure>
@@ -244,17 +246,23 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
     object-fit: contain;
     -webkit-user-drag: none;
   }
-  /* Kameraangaben: eigener schwarzer Kasten mit weißer Schrift und weißem Rand, mit kleinem Abstand
-     unter dem Rahmen des Fotos und so breit wie das Foto (width: 0 + min-width: 100%: der Text
-     macht den Kasten nie breiter als das Foto) */
-  .lightbox__info {
-    flex: none;
+  /* Kameraangaben: eigener schwarzer Kasten mit weißem Rand, kleinem Abstand unter dem Rahmen des Fotos,
+     zentriert und nur so breit wie sein Text, aber nie breiter als das Foto (längerer Text bricht um).
+     Die Zeile ist so breit wie das Foto (width: 0 + min-width: 100%: der Text macht das Foto nie breiter). */
+  .lightbox__info-row {
+    display: flex;
+    justify-content: center;
     box-sizing: border-box;
     width: 0;
     min-width: 100%;
+  }
+  .lightbox__info {
+    flex: none;
+    box-sizing: border-box;
+    max-width: 100%;
     margin: var(--info-gap) 0 0;
     padding: 8px 12px;
-    border: 2px solid var(--card);
+    border: 1px solid var(--card);
     border-radius: 6px;
     background: #000;
     color: #fff;
