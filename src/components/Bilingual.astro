@@ -1,6 +1,6 @@
 ---
 /**
- * Original (byte-genau) und Übersetzung untereinander (erst Original, dann Übersetzung).
+ * Original (byte-genau) und Übersetzung nebeneinander, am Handy untereinander.
  * Ohne JavaScript sind beide sichtbar; der Schalter erscheint erst mit JavaScript.
  * Lange Texte werden mit JavaScript je Kachel auf 10 Zeilen gekürzt („Weiterlesen“), der
  * ganze Text bleibt im DOM (Original byte-genau, durchsuchbar, vorlesbar).
@@ -23,11 +23,16 @@ for (const seg of translationData.segments) {
   cursor = idx + seg.text.length;
 }
 const tail = original.slice(cursor);
+// Leerzeilen (im Google-Doc-Export zwei hintereinander, mit Windows-Zeilenenden \r\n) sollen nur einen kleinen Absatzabstand
+// ergeben. Der Text bleibt dabei byte-genau: die Zeilenumbrüche stehen weiter im DOM,
+// stecken aber in einem Block ohne Zeilenhöhe, dessen Höhe das Stylesheet festlegt.
+const paraGaps = (text: string) =>
+  escapeHtml(text).replace(/(?:[ \t]*\r?\n){2,}/g, (m) => `<span class="para-gap">${m}</span>`);
 // Als fertiges HTML erzeugen (set:html), damit Formatierer keinen Leerraum einfügen können.
 const span = (lang: string, text: string, attrLang = true) =>
-  `<span${attrLang ? ` lang="${lang}"` : ''} data-lang="${lang}">${escapeHtml(text)}</span>`;
+  `<span${attrLang ? ` lang="${lang}"` : ''} data-lang="${lang}">${paraGaps(text)}</span>`;
 const originalHtml =
-  originalParts.map((p) => escapeHtml(p.gap) + span(p.lang, p.text)).join('') + escapeHtml(tail);
+  originalParts.map((p) => paraGaps(p.gap) + span(p.lang, p.text)).join('') + paraGaps(tail);
 const translationHtml = translation.paragraphs.map((para) =>
   para.map((piece) => escapeHtml(piece.sep) + span(piece.lang, piece.text, false)).join(''),
 );
@@ -48,7 +53,7 @@ const id = `uebersetzung-${post.slug}`;
       <span data-label>Übersetzung ausblenden</span>
     </button>
   )}
-  <div class="tiles">
+  <div class:list={['tiles', { 'tiles--single': !showTranslation }]}>
     <section class="tile card" aria-labelledby={`${id}-orig`}>
       <header class="tile__head">
         <h2 id={`${id}-orig`} class="tile__title">
@@ -110,13 +115,15 @@ const id = `uebersetzung-${post.slug}`;
   for (const root of document.querySelectorAll<HTMLElement>('[data-bilingual]')) {
     const btn = root.querySelector<HTMLButtonElement>('[data-toggle]');
     const panel = root.querySelector<HTMLElement>('[data-translation]');
+    const tiles = root.querySelector<HTMLElement>('.tiles');
     const label = btn?.querySelector<HTMLElement>('[data-label]');
-    if (!btn || !panel || !label) continue;
+    if (!btn || !panel || !tiles || !label) continue;
     btn.hidden = false;
     btn.addEventListener('click', () => {
       const show = btn.getAttribute('aria-expanded') !== 'true';
       btn.setAttribute('aria-expanded', String(show));
       panel.hidden = !show;
+      tiles.classList.toggle('tiles--single', !show);
       label.textContent = show ? 'Übersetzung ausblenden' : 'Übersetzung einblenden';
       if (show) updateClamps();
     });
@@ -183,11 +190,14 @@ const id = `uebersetzung-${post.slug}`;
   .toggle {
     margin-bottom: 20px;
   }
-  /* Immer untereinander (erst Original, dann Übersetzung), in Lesebreite und linksbündig */
   .tiles {
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
     gap: 28px;
+    align-items: start;
+  }
+  .tiles--single {
+    grid-template-columns: minmax(0, 1fr);
     max-width: 760px;
   }
   .tile {
@@ -217,6 +227,7 @@ const id = `uebersetzung-${post.slug}`;
   }
   .clamp {
     --shown-lines: 10;
+    --para-gap: calc(var(--fs-text) * 0.6); /* Abstand für Leerzeilen und Absätze */
     position: relative;
     font-size: var(--fs-text);
     line-height: 1.65;
@@ -225,6 +236,17 @@ const id = `uebersetzung-${post.slug}`;
   .translation-p {
     white-space: pre-wrap;
     overflow-wrap: anywhere;
+  }
+  .translation-p {
+    margin: 0 0 var(--para-gap);
+  }
+  /* Leerzeilen im Original: nur ein kleiner Abstand (Zeilenumbrüche bleiben im Text, aber unsichtbar) */
+  .original :global(.para-gap) {
+    display: block;
+    font-size: 0;
+    line-height: 0;
+    height: var(--para-gap);
+    overflow: hidden;
   }
   /* Gekürzt (nur mit JavaScript): 10 Zeilen und ein Verlauf zur Kachelfarbe. Die Kürzung gilt
      schon vor dem Skript (scripting: enabled), damit der Text beim Laden nicht aufblitzt. */

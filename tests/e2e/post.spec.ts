@@ -88,21 +88,43 @@ test('Übersetzungsschalter blendet aus und ein (Maus und Tastatur)', async ({ p
   await expect(panel).toBeHidden();
 });
 
-test('Original und Übersetzung stehen untereinander (Computer und Handy), in Lesebreite', async ({
+test('Original links, Übersetzung rechts am Computer; untereinander am Handy', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(ALL[0].url);
+  let o = (await page.locator('.tile').first().boundingBox())!;
+  let t = (await page.locator('[data-translation]').boundingBox())!;
+  expect(o.x).toBeLessThan(t.x);
+  await page.setViewportSize({ width: 390, height: 844 });
+  o = (await page.locator('.tile').first().boundingBox())!;
+  t = (await page.locator('[data-translation]').boundingBox())!;
+  expect(t.y).toBeGreaterThan(o.y + o.height - 1);
+});
+
+test('Leerzeilen im Original ergeben nur einen kleinen Absatzabstand (Text bleibt byte-gleich)', async ({
   page,
 }) => {
-  await page.goto(ALL[0].url);
-  for (const size of [
-    { width: 1280, height: 900 },
-    { width: 390, height: 844 },
-  ]) {
-    await page.setViewportSize(size);
-    const o = (await page.locator('.tile').first().boundingBox())!;
-    const t = (await page.locator('[data-translation]').boundingBox())!;
-    expect(t.y).toBeGreaterThan(o.y + o.height - 1); // erst Original, dann Übersetzung
-    expect(Math.abs(t.x - o.x)).toBeLessThan(2);
-    expect(t.width).toBeLessThanOrEqual(760);
+  await page.goto(PREVIEW_URL + 'entradas/2026-11-28-leerzeilen/');
+  const gaps = page.locator('[data-original] .para-gap');
+  expect(await gaps.count()).toBeGreaterThanOrEqual(2);
+  const lineHeight = await page
+    .locator('[data-original]')
+    .evaluate((el) => parseFloat(getComputedStyle(el).fontSize) * 1.65);
+  for (const box of await gaps.evaluateAll((els) =>
+    els.map((e) => e.getBoundingClientRect().height),
+  )) {
+    expect(box).toBeGreaterThan(4);
+    expect(box).toBeLessThan(lineHeight * 0.6); // deutlich kleiner als eine ganze Leerzeile
   }
+  // Gesamthöhe: 4 Textzeilen plus 2 kleine Abstände, keine zusätzlichen Leerzeilen
+  const total = (await page.locator('[data-original]').boundingBox())!.height;
+  expect(total).toBeLessThan(4 * lineHeight + 2 * lineHeight * 0.6 + 4);
+  const expected = fs.readFileSync(
+    path.join('tests', 'fixtures', 'content', 'posts', '2026-11-28-leerzeilen', 'original.md'),
+    'utf8',
+  );
+  expect(await page.locator('[data-original]').evaluate((el) => el.textContent)).toBe(
+    expected.replace(/\r\n?/g, '\n'),
+  );
 });
 
 test('Lange Texte sind gekürzt und lassen sich je Kachel einzeln aufklappen', async ({ page }) => {

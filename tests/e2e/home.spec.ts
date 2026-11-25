@@ -129,16 +129,16 @@ test.describe('Startseite', () => {
 });
 
 test.describe('Ältere Beiträge', () => {
-  test('nur 6 Karten, der Rest in eingeklapptem Feld (Testbeiträge: 9 → 3 ältere)', async ({
+  test('nur 6 Karten, der Rest in eingeklapptem Feld (Testbeiträge: 10 → 4 ältere)', async ({
     page,
   }) => {
     await page.goto(PREVIEW_URL);
     await expect(page.locator('.post-grid > li')).toHaveCount(6);
     const details = page.locator('#aeltere-beitraege');
     await expect(details).toHaveCount(1);
-    await expect(details.locator('summary')).toContainText('Ältere Beiträge (3)');
+    await expect(details.locator('summary')).toContainText('Ältere Beiträge (4)');
     expect(await details.evaluate((el: HTMLDetailsElement) => el.open), 'zunächst zu').toBe(false);
-    await expect(details.locator('.older__link')).toHaveCount(3);
+    await expect(details.locator('.older__link')).toHaveCount(4);
     await expect(details.locator('.older__link').first()).toBeHidden();
     await details.locator('summary').click();
     await expect(details.locator('.older__link').first()).toBeVisible();

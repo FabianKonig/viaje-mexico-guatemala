@@ -282,8 +282,13 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   aufblitzt; das Skript hebt sie bei kurzen Texten auf (`data-state="off"`). Der ganze Text bleibt im
   DOM (`textContent` unverändert). Kürzere Texte haben keinen Knopf; ohne JavaScript ist nichts
   gekürzt. Der Zustand wird nicht gespeichert.
-- Anordnung: **immer untereinander**, erst Original, dann Übersetzung (Computer und Handy), in
-  Lesebreite (höchstens 760px) und linksbündig. Nur Deutsch: nur die Original-Kachel, kein Schalter.
+- Anordnung: Raster `repeat(auto-fit, minmax(min(100%, 340px), 1fr))`, also nebeneinander (Original
+  links) bei genug Platz, sonst untereinander (Handy). Nur Deutsch oder Übersetzung ausgeblendet: eine
+  Kachel in Lesebreite (höchstens 760px). Nur Deutsch: nur die Original-Kachel, kein Schalter.
+- **Leerzeilen als kleine Absätze:** Der Google-Doc-Export liefert zwischen Absätzen oft zwei
+  Leerzeilen. Sie ergeben im Original nur einen kleinen Absatzabstand (0,6 × `--fs-text`, wie zwischen
+  den Absätzen der Übersetzung), egal wie viele Leerzeilen es sind. Die Zeilenumbrüche bleiben im Text
+  (`textContent` byte-gleich); die überzähligen stecken in `<span class="para-gap">` ohne Zeilenhöhe.
 - Darunter die Fotogalerie, Videos und der Link „← Alle Beiträge“ (zur Startseite `#entradas`).
 
 ### 7.6 Fotos und Lightbox
