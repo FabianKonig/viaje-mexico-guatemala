@@ -356,7 +356,7 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   waagerecht), Klick auf den Hintergrund schließt. Große Version wird erst beim Öffnen geladen,
   Nachbarbilder vorgeladen. Fokus startet auf „Schließen“ und kehrt zum Foto zurück.
   **Kamerafeld:** Unter dem Foto steht die Kamera-Textzeile (`data-info` am Link, Text vom Build) in
-  einem schwarzen Feld mit weißer Schrift (zentriert, `0.9rem`, bricht am Handy um), im selben
+  einem schwarzen Feld mit weißer Schrift (zentriert, `0.9rem`; unter 700 px Breite `0.7rem` mit weniger Innenabstand, bricht am Handy um), im selben
   Rahmen wie das Foto und genau so breit wie das Foto (die Foto-Höhe ist Bühne minus Kamerafeld
   minus Bildunterschrift; `lightbox.ts` misst das Feld und setzt `--reserve`). Ohne Kameraangaben
   entfällt das Feld; eine Bildunterschrift steht darunter.
