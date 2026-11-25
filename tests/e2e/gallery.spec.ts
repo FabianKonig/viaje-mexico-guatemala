@@ -235,6 +235,38 @@ test('Lightbox: langer Kamera-Text bricht nur zwischen den Angaben um, Kasten ni
   );
 });
 
+test('Bildunterschrift: nicht in der Fotoliste, in der Großansicht bei langem Text scrollbar', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(EXAMPLE);
+  // die Fotoliste zeigt keine Bildunterschriften
+  await expect(page.locator('.gallery figcaption')).toHaveCount(0);
+  const long = Array.from({ length: 200 }, (_, i) => `palabra${i}`).join(' ');
+  await page.evaluate((t) => {
+    document.querySelectorAll<HTMLElement>('.gallery__link')[0].dataset.caption = t;
+  }, long);
+  await page.locator('.gallery__link').first().click();
+  const dialog = page.locator('dialog[data-lightbox]');
+  const caption = dialog.locator('[data-caption]');
+  await expect(caption).toBeVisible();
+  const stage = (await dialog.locator('[data-stage]').boundingBox())!;
+  const m = await caption.evaluate((el) => ({ client: el.clientHeight, scroll: el.scrollHeight }));
+  expect(m.scroll).toBeGreaterThan(m.client); // scrollbar
+  expect(m.client).toBeLessThanOrEqual(stage.height * 0.3 + 1); // höchstens 30 % der Bühne
+  // das Foto bleibt groß genug und die Kamera-Angaben bleiben sichtbar
+  const frame = (await dialog.locator('.lightbox__frame').boundingBox())!;
+  expect(frame.height).toBeGreaterThan(200);
+  await expect(dialog.locator('[data-info]')).toBeVisible();
+  // kurzer Text: kein Scrollen
+  await dialog.getByRole('button', { name: 'Nächstes Foto' }).click();
+  const short = await caption.evaluate((el) => ({
+    client: el.clientHeight,
+    scroll: el.scrollHeight,
+  }));
+  expect(short.scroll).toBeLessThanOrEqual(short.client + 1);
+});
+
 test.describe('ohne JavaScript', () => {
   test.use({ javaScriptEnabled: false });
   test('Fotos sind sichtbar und verlinken auf die große Version', async ({ page }) => {

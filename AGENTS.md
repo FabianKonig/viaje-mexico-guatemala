@@ -110,7 +110,7 @@ cover: 01.jpg                      # optional: Titelbild (Datei aus photos/), so
 photos:                            # optional, höchstens 30, chronologisch (älteste zuerst)
   - file: 01.jpg                   # Datei in photos/
     alt: 'Foto 1 von 18'           # Pflicht: kurzer deutscher Alt-Text, Standard „Foto N von M“ (kein Bildinhalt)
-    caption: 'El Zócalo'           # optional: Bildunterschrift
+    caption: 'El Zócalo'           # optional: Bildunterschrift (nur in der Großansicht)
     motion: 02.mp4                 # optional: Bewegtfoto, stumme Schleife in photos/ (trägt der Import ein)
 clips:                             # optional, höchstens 10: eigene Videos (Standard für Handyclips)
   - file: 01.mp4                   # Datei in clips/ (der Import erzeugt sie samt Standbild 01.jpg)
