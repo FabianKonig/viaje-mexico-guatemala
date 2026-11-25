@@ -86,9 +86,13 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
     </button>
   </div>
   <figure class="lightbox__stage" data-stage>
-    <div class="lightbox__frame">
-      <img class="lightbox__img" src={EMPTY_IMAGE} alt="" data-img />
-      <p class="lightbox__info" data-info hidden></p>
+    <div class="lightbox__photo">
+      <div class="lightbox__frame">
+        <img class="lightbox__img" src={EMPTY_IMAGE} alt="" data-img />
+      </div>
+      <div class="lightbox__info-row" data-info-row>
+        <p class="lightbox__info" data-info hidden></p>
+      </div>
     </div>
     <figcaption class="lightbox__caption" lang="es" data-caption hidden></figcaption>
   </figure>
@@ -213,6 +217,14 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
     user-select: none;
     -webkit-user-select: none;
   }
+  /* Foto mit weißem Rahmen; darunter (außerhalb des Rahmens) der Kamera-Kasten, beide gleich breit */
+  .lightbox__photo {
+    --info-gap: 10px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    max-width: 100%;
+  }
   .lightbox__frame {
     display: flex;
     flex-direction: column;
@@ -222,8 +234,8 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
     border-radius: 6px;
     overflow: hidden;
   }
-  /* Höhe: Platz der Bühne minus Kamerafeld und Bildunterschrift (--reserve, misst lightbox.ts), damit
-     das Foto – und damit das Kamerafeld darunter – nie breiter als das Foto selbst wird */
+  /* Höhe: Platz der Bühne minus Kamera-Kasten und Bildunterschrift (--reserve, misst lightbox.ts), damit
+     das Foto – und damit der Kamera-Kasten darunter – nie breiter als das Foto selbst wird */
   .lightbox__img {
     display: block;
     min-height: 0;
@@ -234,11 +246,24 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
     object-fit: contain;
     -webkit-user-drag: none;
   }
-  /* Kameraangaben: schwarzes Feld mit weißer Schrift direkt unter dem Foto, so breit wie das Foto */
+  /* Kameraangaben: eigener schwarzer Kasten mit weißem Rand, kleinem Abstand unter dem Rahmen des Fotos,
+     zentriert und nur so breit wie sein Text, aber nie breiter als das Foto (längerer Text bricht um).
+     Die Zeile ist so breit wie das Foto (width: 0 + min-width: 100%: der Text macht das Foto nie breiter). */
+  .lightbox__info-row {
+    display: flex;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 0;
+    min-width: 100%;
+  }
   .lightbox__info {
     flex: none;
-    margin: 0;
+    box-sizing: border-box;
+    max-width: 100%;
+    margin: var(--info-gap) 0 0;
     padding: 8px 12px;
+    border: 1px solid var(--card);
+    border-radius: 6px;
     background: #000;
     color: #fff;
     font-size: 0.9rem;
@@ -249,11 +274,17 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
   .lightbox__info[hidden] {
     display: none;
   }
-  /* Handy: kleinere Schrift, damit das Feld im Verhältnis zum Foto nicht zu groß wirkt */
+  /* Eine Angabe (z. B. „6,8 mm (24 mm KB)“) bleibt in einer Zeile; nur wenn sie allein breiter ist
+     als der Kasten, bricht sie um. Die Stücke erzeugt lightbox.ts, daher :global. */
+  .lightbox__info :global(.lightbox__info-part) {
+    display: inline-block;
+    max-width: 100%;
+  }
+  /* Handy: kleinere Schrift, damit der Kasten im Verhältnis zum Foto nicht zu groß wirkt */
   @media (max-width: 699px) {
     .lightbox__info {
-      padding: 5px 8px;
-      font-size: 0.7rem;
+      padding: 4px 8px;
+      font-size: 0.65rem;
       line-height: 1.35;
     }
   }

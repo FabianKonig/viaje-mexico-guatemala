@@ -355,11 +355,18 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   Knöpfe Schließen/Vor/Zurück (48px), Tastatur Esc/←/→, Wischen (Pointer-Events, mind. 50px
   waagerecht), Klick auf den Hintergrund schließt. Große Version wird erst beim Öffnen geladen,
   Nachbarbilder vorgeladen. Fokus startet auf „Schließen“ und kehrt zum Foto zurück.
-  **Kamerafeld:** Unter dem Foto steht die Kamera-Textzeile (`data-info` am Link, Text vom Build) in
-  einem schwarzen Feld mit weißer Schrift (zentriert, `0.9rem`; unter 700 px Breite `0.7rem` mit weniger Innenabstand, bricht am Handy um), im selben
-  Rahmen wie das Foto und genau so breit wie das Foto (die Foto-Höhe ist Bühne minus Kamerafeld
-  minus Bildunterschrift; `lightbox.ts` misst das Feld und setzt `--reserve`). Ohne Kameraangaben
-  entfällt das Feld; eine Bildunterschrift steht darunter.
+  **Kamera-Kasten:** Unter dem weiß umrandeten Foto (außerhalb des Rahmens, Abstand `10px`) steht die
+  Kamera-Textzeile (`data-info` am Link, Text vom Build) in einem eigenen schwarzen Kasten mit weißer
+  Schrift, schmalem weißem Rand (`1px`) und abgerundeten Ecken. Er ist zentriert, nur so breit wie
+  sein Text und nie breiter als das Foto (zentriert, `0.9rem`; unter 700 px Breite `0.65rem` mit weniger
+  Innenabstand). Ist der Text länger, bricht er um, aber **nur zwischen den Angaben** (Kamera, Blende,
+  Verschlusszeit, ISO, Brennweite; `lightbox.ts` teilt die Zeile in `.lightbox__info-part` mit
+  `display: inline-block`, der Mittelpunkt bleibt am Ende des vorherigen Stücks, der Text ändert sich
+  nicht); eine Angabe wie „6,8 mm (24 mm KB)“ wird nie getrennt, außer sie ist allein breiter als der
+  Kasten. Die Foto-Höhe ist Bühne minus Kasten (samt Abstand) minus Bildunterschrift; `lightbox.ts`
+  misst die Zeile `[data-info-row]` und setzt `--reserve` (gemessen von der vollen Foto-Größe aus,
+  neu nach dem Laden des Fotos). Ohne Kameraangaben entfällt der Kasten; die Bildunterschrift steht
+  ganz unten, unter dem Kasten.
 - **Bewegtfotos** (`motion`, `src/scripts/motion.ts`): Über dem Standbild liegt ein `<video muted loop
   playsinline preload="none" aria-hidden tabindex="-1">`, zunächst durchsichtig (`opacity: 0`, nicht
   `hidden`, weil ein verstecktes Element nie „im Bild“ ist). Ein `IntersectionObserver` startet es,

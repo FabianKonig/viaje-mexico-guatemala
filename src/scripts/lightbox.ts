@@ -28,6 +28,24 @@ export function initLightbox(doc: Document = document) {
     if (l) new Image().src = l.href;
   };
 
+  /**
+   * Kameraangaben in Stücke teilen (Kamera, Blende, Verschlusszeit, ISO, Brennweite), damit ein
+   * Zeilenumbruch nur zwischen den Angaben fällt, nie mitten in einer (siehe Gallery.astro).
+   * Der Mittelpunkt bleibt am Ende des vorherigen Stücks; der Text ändert sich dadurch nicht.
+   */
+  function setInfo(text: string) {
+    const parts = text.split(' · ').filter(Boolean);
+    info.replaceChildren(
+      ...parts.flatMap((part, i) => {
+        const span = doc.createElement('span');
+        span.className = 'lightbox__info-part';
+        const last = i === parts.length - 1;
+        span.textContent = last ? part : `${part} ·`;
+        return last ? [span] : [span, doc.createTextNode(' ')];
+      }),
+    );
+  }
+
   function show(i: number) {
     index = (i + links.length) % links.length;
     const link = links[index];
@@ -40,7 +58,7 @@ export function initLightbox(doc: Document = document) {
     caption.textContent = text;
     caption.hidden = text === '';
     const camera = link.dataset.info ?? '';
-    info.textContent = camera;
+    setInfo(camera);
     info.hidden = camera === '';
     count.textContent = `${index + 1} / ${links.length}`;
     const single = links.length < 2;
@@ -53,16 +71,22 @@ export function initLightbox(doc: Document = document) {
     }
   }
 
-  /** Platz für Kamerafeld und Bildunterschrift, damit das Foto in die Höhe passt (siehe Gallery.astro). */
-  const frame = dialog.querySelector<HTMLElement>('.lightbox__frame')!;
+  /** Platz für Kamera-Kasten (samt Abstand) und Bildunterschrift, damit das Foto in die Höhe passt (siehe Gallery.astro). */
+  const photo = dialog.querySelector<HTMLElement>('.lightbox__photo')!;
+  const infoRow = dialog.querySelector<HTMLElement>('[data-info-row]')!;
   function fit() {
     if (!dialog!.open) return;
-    for (let pass = 0; pass < 2; pass++) {
+    // Von der vollen Foto-Größe aus messen: Ein altes --reserve könnte das Foto (und damit den Kasten) schmal halten
+    photo.style.removeProperty('--reserve');
+    for (let pass = 0; pass < 3; pass++) {
       const gap = caption.hidden ? 0 : caption.offsetHeight + 10;
-      frame.style.setProperty('--reserve', `${info.offsetHeight + gap}px`);
+      // die Zeile enthält Kasten und Abstand darüber (leer, wenn das Foto keine Kameraangaben hat)
+      photo.style.setProperty('--reserve', `${infoRow.offsetHeight + gap}px`);
     }
   }
   window.addEventListener('resize', fit);
+  // Solange das Foto lädt, hat es keine Breite; erst danach stimmt die Höhe des Kamera-Kastens
+  img.addEventListener('load', fit);
 
   function open(i: number, from: HTMLElement) {
     opener = from;
