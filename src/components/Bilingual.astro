@@ -1,8 +1,8 @@
 ---
 /**
- * Original (byte-genau) und Übersetzung nebeneinander, am Handy untereinander.
+ * Original (byte-genau) und Übersetzung untereinander (erst Original, dann Übersetzung).
  * Ohne JavaScript sind beide sichtbar; der Schalter erscheint erst mit JavaScript.
- * Lange Texte werden mit JavaScript je Kachel auf einige Zeilen gekürzt („Mehr anzeigen“), der
+ * Lange Texte werden mit JavaScript je Kachel auf 10 Zeilen gekürzt („Weiterlesen“), der
  * ganze Text bleibt im DOM (Original byte-genau, durchsuchbar, vorlesbar).
  */
 import type { Post } from '../lib/content';
@@ -48,7 +48,7 @@ const id = `uebersetzung-${post.slug}`;
       <span data-label>Übersetzung ausblenden</span>
     </button>
   )}
-  <div class:list={['tiles', { 'tiles--single': !showTranslation }]}>
+  <div class="tiles">
     <section class="tile card" aria-labelledby={`${id}-orig`}>
       <header class="tile__head">
         <h2 id={`${id}-orig`} class="tile__title">
@@ -74,7 +74,7 @@ const id = `uebersetzung-${post.slug}`;
         hidden
         data-more
       >
-        <span data-more-label>Mehr anzeigen</span>
+        <span data-more-label>Weiterlesen</span>
         <span class="visually-hidden"> (Original)</span>
       </button>
     </section>
@@ -98,7 +98,7 @@ const id = `uebersetzung-${post.slug}`;
           hidden
           data-more
         >
-          <span data-more-label>Mehr anzeigen</span>
+          <span data-more-label>Weiterlesen</span>
           <span class="visually-hidden"> (Übersetzung)</span>
         </button>
       </section>
@@ -110,15 +110,13 @@ const id = `uebersetzung-${post.slug}`;
   for (const root of document.querySelectorAll<HTMLElement>('[data-bilingual]')) {
     const btn = root.querySelector<HTMLButtonElement>('[data-toggle]');
     const panel = root.querySelector<HTMLElement>('[data-translation]');
-    const tiles = root.querySelector<HTMLElement>('.tiles');
     const label = btn?.querySelector<HTMLElement>('[data-label]');
-    if (!btn || !panel || !tiles || !label) continue;
+    if (!btn || !panel || !label) continue;
     btn.hidden = false;
     btn.addEventListener('click', () => {
       const show = btn.getAttribute('aria-expanded') !== 'true';
       btn.setAttribute('aria-expanded', String(show));
       panel.hidden = !show;
-      tiles.classList.toggle('tiles--single', !show);
       label.textContent = show ? 'Übersetzung ausblenden' : 'Übersetzung einblenden';
       if (show) updateClamps();
     });
@@ -126,7 +124,7 @@ const id = `uebersetzung-${post.slug}`;
 
   // Lange Texte kürzen: je Kachel einzeln auf- und zuklappbar.
   // Gekürzt wird nur, wenn mindestens 3 Zeilen mehr kämen als die Kurzfassung zeigt.
-  const SHOWN_LINES = 7;
+  // Die Zahl der sichtbaren Zeilen steht nur im Stylesheet (--shown-lines).
   const MIN_HIDDEN_LINES = 3;
   const LINE_HEIGHT = 1.65; // em, wie im Stylesheet
   const clamps = [...document.querySelectorAll<HTMLElement>('[data-clamp]')];
@@ -135,10 +133,11 @@ const id = `uebersetzung-${post.slug}`;
     for (const el of clamps) {
       const btn = el.parentElement?.querySelector<HTMLButtonElement>('[data-more]');
       if (!btn || el.offsetParent === null) continue; // verborgene Kachel nicht messen
-      const lineHeight = parseFloat(getComputedStyle(el).fontSize) * LINE_HEIGHT;
-      const lines = el.scrollHeight / lineHeight;
-      if (lines <= SHOWN_LINES + MIN_HIDDEN_LINES) {
-        el.removeAttribute('data-state');
+      const style = getComputedStyle(el);
+      const shown = Number(style.getPropertyValue('--shown-lines'));
+      const lines = el.scrollHeight / (parseFloat(style.fontSize) * LINE_HEIGHT);
+      if (lines <= shown + MIN_HIDDEN_LINES) {
+        el.dataset.state = 'off'; // kurz genug: nichts kürzen
         btn.hidden = true;
       } else {
         // Nur zuklappen, wenn der Leser nicht schon aufgeklappt hat.
@@ -152,12 +151,16 @@ const id = `uebersetzung-${post.slug}`;
     el.dataset.state = open ? 'open' : 'collapsed';
     btn.setAttribute('aria-expanded', String(open));
     const label = btn.querySelector<HTMLElement>('[data-more-label]');
-    if (label) label.textContent = open ? 'Weniger anzeigen' : 'Mehr anzeigen';
+    if (label) label.textContent = open ? 'Weniger anzeigen' : 'Weiterlesen';
   }
 
   for (const el of clamps) {
     const btn = el.parentElement?.querySelector<HTMLButtonElement>('[data-more]');
     if (!btn) continue;
+    // Auch ein Tipp auf den gekürzten Text klappt auf (außer beim Markieren von Text).
+    el.addEventListener('click', () => {
+      if (el.dataset.state === 'collapsed' && !window.getSelection()?.toString()) btn.click();
+    });
     btn.addEventListener('click', () => {
       const open = el.dataset.state !== 'open';
       setOpen(el, btn, open);
@@ -180,14 +183,11 @@ const id = `uebersetzung-${post.slug}`;
   .toggle {
     margin-bottom: 20px;
   }
+  /* Immer untereinander (erst Original, dann Übersetzung), in Lesebreite und linksbündig */
   .tiles {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
-    gap: 28px;
-    align-items: start;
-  }
-  .tiles--single {
     grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
     max-width: 760px;
   }
   .tile {
@@ -216,6 +216,7 @@ const id = `uebersetzung-${post.slug}`;
     font-size: var(--fs-text);
   }
   .clamp {
+    --shown-lines: 10;
     position: relative;
     font-size: var(--fs-text);
     line-height: 1.65;
@@ -225,10 +226,19 @@ const id = `uebersetzung-${post.slug}`;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
   }
-  /* Gekürzt (nur mit JavaScript): 7 Zeilen und ein Verlauf zur Kachelfarbe */
+  /* Gekürzt (nur mit JavaScript): 10 Zeilen und ein Verlauf zur Kachelfarbe. Die Kürzung gilt
+     schon vor dem Skript (scripting: enabled), damit der Text beim Laden nicht aufblitzt. */
   .clamp[data-state='collapsed'] {
-    max-height: calc(7 * 1.65em);
-    overflow: hidden;
+    cursor: pointer;
+  }
+  .clamp[data-state='open'] {
+    cursor: auto;
+  }
+  @media (scripting: enabled) {
+    .clamp:not([data-state='open'], [data-state='off']) {
+      max-height: calc(var(--shown-lines) * 1.65em);
+      overflow: hidden;
+    }
   }
   .clamp[data-state='collapsed']::after {
     content: '';

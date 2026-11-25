@@ -88,28 +88,34 @@ test('Übersetzungsschalter blendet aus und ein (Maus und Tastatur)', async ({ p
   await expect(panel).toBeHidden();
 });
 
-test('Original links, Übersetzung rechts am Computer; untereinander am Handy', async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 900 });
+test('Original und Übersetzung stehen untereinander (Computer und Handy), in Lesebreite', async ({
+  page,
+}) => {
   await page.goto(ALL[0].url);
-  let o = (await page.locator('[data-original]').boundingBox())!;
-  let t = (await page.locator('[data-translation]').boundingBox())!;
-  expect(o.x).toBeLessThan(t.x);
-  await page.setViewportSize({ width: 390, height: 844 });
-  o = (await page.locator('[data-original]').boundingBox())!;
-  t = (await page.locator('[data-translation]').boundingBox())!;
-  expect(t.y).toBeGreaterThan(o.y);
+  for (const size of [
+    { width: 1280, height: 900 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(size);
+    const o = (await page.locator('.tile').first().boundingBox())!;
+    const t = (await page.locator('[data-translation]').boundingBox())!;
+    expect(t.y).toBeGreaterThan(o.y + o.height - 1); // erst Original, dann Übersetzung
+    expect(Math.abs(t.x - o.x)).toBeLessThan(2);
+    expect(t.width).toBeLessThanOrEqual(760);
+  }
 });
 
 test('Lange Texte sind gekürzt und lassen sich je Kachel einzeln aufklappen', async ({ page }) => {
   await page.goto(PREVIEW_URL + 'entradas/2026-11-25-texto-largo/');
   const orig = page.locator('[data-clamp]').first();
   const trans = page.locator('[data-clamp]').nth(1);
-  const origBtn = page.getByRole('button', { name: /Mehr anzeigen.*Original/ });
-  const transBtn = page.getByRole('button', { name: /Mehr anzeigen.*Übersetzung/ });
+  const origBtn = page.getByRole('button', { name: /Weiterlesen.*Original/ });
+  const transBtn = page.getByRole('button', { name: /Weiterlesen.*Übersetzung/ });
   const fullOrig = (await orig.boundingBox())!.height;
   await expect(orig).toHaveAttribute('data-state', 'collapsed');
   await expect(trans).toHaveAttribute('data-state', 'collapsed');
-  expect(fullOrig).toBeLessThan(260);
+  expect(fullOrig).toBeLessThan(300); // 10 Zeilen à ca. 28 px
+  expect(fullOrig).toBeGreaterThan(240);
   // Der ganze Text bleibt im DOM
   expect((await page.locator('[data-original]').textContent())!.length).toBeGreaterThan(2000);
   await origBtn.click();
@@ -124,12 +130,15 @@ test('Lange Texte sind gekürzt und lassen sich je Kachel einzeln aufklappen', a
   await expect(trans).toHaveAttribute('data-state', 'open');
   await page.getByRole('button', { name: /Weniger anzeigen.*Original/ }).click();
   await expect(orig).toHaveAttribute('data-state', 'collapsed');
+  // Auch ein Klick auf den gekürzten Text klappt auf
+  await orig.click({ position: { x: 20, y: 20 } });
+  await expect(orig).toHaveAttribute('data-state', 'open');
 });
 
-test('Kurze Texte haben keinen „Mehr anzeigen“-Knopf', async ({ page }) => {
+test('Kurze Texte haben keinen „Weiterlesen“-Knopf', async ({ page }) => {
   await page.goto(PREVIEW_URL + 'entradas/2026-11-23-entrada-de-ejemplo/');
   await expect(page.locator('[data-more]:visible')).toHaveCount(0);
-  await expect(page.locator('[data-clamp][data-state]')).toHaveCount(0);
+  await expect(page.locator('[data-clamp][data-state="collapsed"]')).toHaveCount(0);
 });
 
 test.describe('ohne JavaScript', () => {
