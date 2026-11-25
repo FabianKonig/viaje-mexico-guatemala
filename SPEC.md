@@ -352,7 +352,7 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   blättert auch zu ihnen; sie laden erst, wenn sie sichtbar werden (Lazy Loading, `display: none`).
 - **Lightbox:** `<dialog>` mit `showModal()` (Seite dahinter inaktiv), füllt den Bildschirm
   (`position: fixed; inset: 0`, kein `100vh`), Safe-Area-Abstände für iPhone. Zähler „3 / 12“,
-  Knöpfe Schließen/Vor/Zurück (48px), Tastatur Esc/←/→, Wischen (Pointer-Events, mind. 50px
+  Knöpfe Schließen/Vor/Zurück (48px; die Pfeile Vor/Zurück unter 700 px Breite nur 36px, damit sie weniger vom Foto verdecken), Tastatur Esc/←/→, Wischen (Pointer-Events, mind. 50px
   waagerecht), Klick auf den Hintergrund schließt. Große Version wird erst beim Öffnen geladen,
   Nachbarbilder vorgeladen. Fokus startet auf „Schließen“ und kehrt zum Foto zurück.
   **Kamera-Kasten:** Unter dem weiß umrandeten Foto (außerhalb des Rahmens, Abstand `10px`) steht die
