@@ -49,18 +49,33 @@ export async function decodeInput(file) {
 }
 
 /**
+ * Kodiert ein bearbeitetes Bild und schreibt die erlaubten Kameraangaben hinein. Das Bild wird dafür
+ * zuerst ohne jede Metadaten als Rohpixel ausgegeben und dann neu kodiert: So kann nichts aus dem
+ * EXIF des Originals durchrutschen (Fotos aus Kameras tragen ein eingebettetes Vorschaubild, das
+ * sharp beim bloßen Ersetzen einzelner Tags mitnimmt). `encode` wählt Format und Qualität.
+ */
+export async function encodeWithCamera(pipeline, camera, encode) {
+  const exif = cameraToSharpExif(camera);
+  if (!Object.keys(exif).length) return encode(pipeline).toBuffer({ resolveWithObject: true });
+  const { data, info } = await pipeline.raw().toBuffer({ resolveWithObject: true });
+  const fresh = sharp(data, {
+    raw: { width: info.width, height: info.height, channels: info.channels },
+  });
+  return encode(fresh).withExif(exif).toBuffer({ resolveWithObject: true });
+}
+
+/**
  * Verarbeitet ein Foto in alle Größen. Liefert Puffer und Maße. Nur das große Bild behält die
  * erlaubten Kameraangaben (`camera`, Textzeile in `info`), alles andere bleibt ohne Metadaten.
  */
 export async function renderPhoto(input, { og = false } = {}) {
   const base = () => sharp(input, { failOn: 'error' }).rotate();
   const camera = readCamera((await sharp(input, { failOn: 'error' }).metadata()).exif);
-  const exif = cameraToSharpExif(camera);
-  let largePipeline = base()
-    .resize({ width: LARGE, height: LARGE, fit: 'inside', withoutEnlargement: true })
-    .webp({ quality: QUALITY });
-  if (Object.keys(exif).length) largePipeline = largePipeline.withExif(exif);
-  const large = await largePipeline.toBuffer({ resolveWithObject: true });
+  const large = await encodeWithCamera(
+    base().resize({ width: LARGE, height: LARGE, fit: 'inside', withoutEnlargement: true }),
+    camera,
+    (p) => p.webp({ quality: QUALITY }),
+  );
   const thumbs = {};
   for (const w of THUMBS) {
     thumbs[w] = await base()

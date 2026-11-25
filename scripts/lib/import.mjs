@@ -12,8 +12,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import sharp from 'sharp';
-import { decodeInput, inspectImage, IMAGE_EXT, LARGE } from '../images.mjs';
-import { cameraToSharpExif, readCamera } from './camera.mjs';
+import { decodeInput, encodeWithCamera, inspectImage, IMAGE_EXT, LARGE } from '../images.mjs';
+import { readCamera } from './camera.mjs';
 import {
   containerCaptureTime,
   exifCaptureTime,
@@ -98,14 +98,14 @@ export async function listByCaptureTime(source) {
  */
 export async function shrinkPhoto(input) {
   const camera = readCamera((await sharp(input, { failOn: 'none' }).metadata()).exif);
-  const exif = cameraToSharpExif(camera);
-  let pipeline = sharp(input, { failOn: 'error' })
-    .rotate()
-    .resize({ width: LARGE, height: LARGE, fit: 'inside', withoutEnlargement: true })
-    .flatten({ background: '#ffffff' })
-    .jpeg({ quality: PHOTO_JPEG_QUALITY, mozjpeg: true });
-  if (Object.keys(exif).length) pipeline = pipeline.withExif(exif);
-  return pipeline.toBuffer({ resolveWithObject: true });
+  return encodeWithCamera(
+    sharp(input, { failOn: 'error' })
+      .rotate()
+      .resize({ width: LARGE, height: LARGE, fit: 'inside', withoutEnlargement: true })
+      .flatten({ background: '#ffffff' }),
+    camera,
+    (p) => p.jpeg({ quality: PHOTO_JPEG_QUALITY, mozjpeg: true }),
+  );
 }
 
 /**

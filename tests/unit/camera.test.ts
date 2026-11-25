@@ -57,7 +57,59 @@ async function phoneJpeg(width = 3000, height = 2000) {
     .toBuffer();
 }
 
+/**
+ * Kamerafoto mit eingebettetem EXIF-Vorschaubild (zweites Verzeichnis, IFD1) und GPS: baut den
+ * EXIF-Block von Hand, weil Kameras so speichern, sharp es aber nicht erzeugen kann.
+ */
+async function jpegWithThumbnail() {
+  const plain = await sharp({
+    create: { width: 1200, height: 800, channels: 3, background: '#0e7c86' },
+  })
+    .jpeg()
+    .toBuffer();
+  const thumb = Buffer.from([0xff, 0xd8, 0xff, 0xdb, 0x00, 0x04, 0x01, 0x02, 0xff, 0xd9]);
+  const make = Buffer.from('FUJIFILM\0', 'latin1');
+  const tiff = Buffer.alloc(8 + 2 + 12 * 2 + 4 + 2 + 12 * 2 + 4 + make.length + thumb.length);
+  let o = 0;
+  const w16 = (v: number) => ((o += 2), tiff.writeUInt16LE(v, o - 2));
+  const w32 = (v: number) => ((o += 4), tiff.writeUInt32LE(v, o - 4));
+  tiff.write('II', 0, 'latin1');
+  o = 2;
+  w16(42);
+  w32(8);
+  const ifd1At = 8 + 2 + 24 + 4;
+  const makeAt = ifd1At + 2 + 24 + 4;
+  const thumbAt = makeAt + make.length;
+  w16(2); // IFD0: Make und GPS-Verweis
+  (w16(0x010f), w16(2), w32(make.length), w32(makeAt));
+  (w16(0x8825), w16(4), w32(1), w32(0)); // GPS-Verweis (Testwert)
+  w32(ifd1At);
+  w16(2); // IFD1: Vorschaubild
+  (w16(0x0201), w16(4), w32(1), w32(thumbAt));
+  (w16(0x0202), w16(4), w32(1), w32(thumb.length));
+  w32(0);
+  make.copy(tiff, makeAt);
+  thumb.copy(tiff, thumbAt);
+  const payload = Buffer.concat([Buffer.from('Exif\0\0', 'latin1'), tiff]);
+  const app1 = Buffer.alloc(4);
+  app1.writeUInt16BE(0xffe1, 0);
+  app1.writeUInt16BE(payload.length + 2, 2);
+  return Buffer.concat([plain.subarray(0, 2), app1, payload, plain.subarray(2)]);
+}
+
 describe('Kameraangaben lesen und schreiben', () => {
+  it('Vorschaubild und GPS aus dem Original kommen nie ins Ergebnis', async () => {
+    const src = await jpegWithThumbnail();
+    const srcExif = (await sharp(src).metadata()).exif!;
+    expect(exifProblems(srcExif).join()).toMatch(/Vorschaubild/); // Gegenprobe
+    for (const out of [(await shrinkPhoto(src)).data, (await renderPhoto(src)).large.data]) {
+      const exif = (await sharp(out).metadata()).exif!;
+      expect(exifProblems(exif)).toEqual([]);
+      expect(readCamera(exif)).toMatchObject({ make: 'FUJIFILM' });
+      expect(exif.includes(Buffer.from([0xff, 0xd8]))).toBe(false); // kein Mini-JPEG darin
+    }
+  });
+
   it('Testfoto enthält wirklich GPS, Seriennummer und Besitzer (Gegenprobe)', async () => {
     const exif = (await sharp(await phoneJpeg()).metadata()).exif!;
     expect(exifHasGps(exif)).toBe(true);
