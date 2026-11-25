@@ -271,8 +271,29 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   in einem `<span lang data-lang>`, ohne sichtbare Hervorhebung.
 - Kachel **„Übersetzung“** (`lang="de"`): ein Absatz pro Absatz des Originals, spanische Segmente
   übersetzt, deutsche 1:1 (`data-lang="de"`). Keine farbliche Hervorhebung.
+- **Lange Texte kürzen** (nur mit JavaScript): Ist ein Text länger als 13 Zeilen (`--fs-text`,
+  Zeilenhöhe 1,65), zeigt die Kachel zunächst 10 Zeilen (`--shown-lines`) mit einem Verlauf zur
+  Kachelfarbe und darunter den Knopf „Weiterlesen“ (`<button>` mit `aria-expanded` und
+  `aria-controls`, für Screenreader mit Zusatz „(Original)“ bzw. „(Übersetzung)“). Aufgeklappt heißt er
+  „Weniger anzeigen“; beim Zuklappen springt die Seite zum Kachelanfang, falls dieser aus dem Bild
+  gerutscht ist. Auch ein Tipp auf den gekürzten Text klappt auf (nicht beim Markieren von Text).
+  Beim Laden sind die Kacheln gekürzt. Der ganze Text bleibt im DOM (`textContent` unverändert).
+  Kürzere Texte haben keinen Knopf; ohne JavaScript ist nichts gekürzt. Der Zustand wird nicht
+  gespeichert. Die Kürzung gilt per CSS (`@media (scripting: enabled)`) schon vor dem Skript, damit
+  nichts aufblitzt; das Skript hebt sie bei kurzen Texten auf (`data-state="off"`).
+  - **Untereinander (Handy, oder nur eine Kachel):** Jede Kachel klappt für sich auf und zu.
+  - **Nebeneinander (Computer):** Original und Übersetzung klappen immer **gemeinsam** auf und zu;
+    jede Kachel hat ihren Knopf, aber jeder schaltet beide. Gekürzt wird nur, wenn **beide** Texte lang
+    sind, sonst bleibt alles offen und es gibt keinen Knopf. „Nebeneinander“ wird gemessen (beide
+    Kacheln sichtbar und auf gleicher Höhe), nicht an einer festen Breite; beim Ändern der Fensterbreite
+    wird neu entschieden.
 - Anordnung: Raster `repeat(auto-fit, minmax(min(100%, 340px), 1fr))`, also nebeneinander (Original
-  links) bei genug Platz, sonst untereinander. Nur Deutsch: nur die Original-Kachel, kein Schalter.
+  links) bei genug Platz, sonst untereinander (Handy). Nur Deutsch oder Übersetzung ausgeblendet: eine
+  Kachel in Lesebreite (höchstens 760px). Nur Deutsch: nur die Original-Kachel, kein Schalter.
+- **Leerzeilen als kleine Absätze:** Der Google-Doc-Export liefert zwischen Absätzen oft zwei
+  Leerzeilen. Sie ergeben im Original nur einen kleinen Absatzabstand (0,6 × `--fs-text`, wie zwischen
+  den Absätzen der Übersetzung), egal wie viele Leerzeilen es sind. Die Zeilenumbrüche bleiben im Text
+  (`textContent` byte-gleich); die überzähligen stecken in `<span class="para-gap">` ohne Zeilenhöhe.
 - Darunter die Fotogalerie, Videos und der Link „← Alle Beiträge“ (zur Startseite `#entradas`).
 
 ### 7.6 Fotos und Lightbox

@@ -2,6 +2,8 @@
 /**
  * Original (byte-genau) und Übersetzung nebeneinander, am Handy untereinander.
  * Ohne JavaScript sind beide sichtbar; der Schalter erscheint erst mit JavaScript.
+ * Lange Texte werden mit JavaScript je Kachel auf 10 Zeilen gekürzt („Weiterlesen“), der
+ * ganze Text bleibt im DOM (Original byte-genau, durchsuchbar, vorlesbar).
  */
 import type { Post } from '../lib/content';
 import { escapeHtml } from '../lib/html';
@@ -21,11 +23,16 @@ for (const seg of translationData.segments) {
   cursor = idx + seg.text.length;
 }
 const tail = original.slice(cursor);
+// Leerzeilen (im Google-Doc-Export zwei hintereinander, mit Windows-Zeilenenden \r\n) sollen nur einen kleinen Absatzabstand
+// ergeben. Der Text bleibt dabei byte-genau: die Zeilenumbrüche stehen weiter im DOM,
+// stecken aber in einem Block ohne Zeilenhöhe, dessen Höhe das Stylesheet festlegt.
+const paraGaps = (text: string) =>
+  escapeHtml(text).replace(/(?:[ \t]*\r?\n){2,}/g, (m) => `<span class="para-gap">${m}</span>`);
 // Als fertiges HTML erzeugen (set:html), damit Formatierer keinen Leerraum einfügen können.
 const span = (lang: string, text: string, attrLang = true) =>
-  `<span${attrLang ? ` lang="${lang}"` : ''} data-lang="${lang}">${escapeHtml(text)}</span>`;
+  `<span${attrLang ? ` lang="${lang}"` : ''} data-lang="${lang}">${paraGaps(text)}</span>`;
 const originalHtml =
-  originalParts.map((p) => escapeHtml(p.gap) + span(p.lang, p.text)).join('') + escapeHtml(tail);
+  originalParts.map((p) => paraGaps(p.gap) + span(p.lang, p.text)).join('') + paraGaps(tail);
 const translationHtml = translation.paragraphs.map((para) =>
   para.map((piece) => escapeHtml(piece.sep) + span(piece.lang, piece.text, false)).join(''),
 );
@@ -56,12 +63,25 @@ const id = `uebersetzung-${post.slug}`;
           Mi español, sin corregir
         </span>
       </header>
-      <div
-        class="original"
-        data-original
-        data-source-sha256={translationData.source_sha256}
-        set:html={originalHtml}
-      />
+      <div class="clamp" id={`${id}-orig-text`} data-clamp>
+        <div
+          class="original"
+          data-original
+          data-source-sha256={translationData.source_sha256}
+          set:html={originalHtml}
+        />
+      </div>
+      <button
+        class="btn btn--light more"
+        type="button"
+        aria-expanded="true"
+        aria-controls={`${id}-orig-text`}
+        hidden
+        data-more
+      >
+        <span data-more-label>Weiterlesen</span>
+        <span class="visually-hidden"> (Original)</span>
+      </button>
     </section>
     {showTranslation && (
       <section id={id} class="tile card" aria-labelledby={`${id}-de`} lang="de" data-translation>
@@ -70,30 +90,141 @@ const id = `uebersetzung-${post.slug}`;
             Übersetzung
           </h2>
         </header>
-        {translationHtml.map((html) => (
-          <p class="translation-p" set:html={html} />
-        ))}
+        <div class="clamp" id={`${id}-de-text`} data-clamp>
+          {translationHtml.map((html) => (
+            <p class="translation-p" set:html={html} />
+          ))}
+        </div>
+        <button
+          class="btn btn--light more"
+          type="button"
+          aria-expanded="true"
+          aria-controls={`${id}-de-text`}
+          hidden
+          data-more
+        >
+          <span data-more-label>Weiterlesen</span>
+          <span class="visually-hidden"> (Übersetzung)</span>
+        </button>
       </section>
     )}
   </div>
 </div>
 
 <script>
-  for (const root of document.querySelectorAll<HTMLElement>('[data-bilingual]')) {
-    const btn = root.querySelector<HTMLButtonElement>('[data-toggle]');
-    const panel = root.querySelector<HTMLElement>('[data-translation]');
-    const tiles = root.querySelector<HTMLElement>('.tiles');
-    const label = btn?.querySelector<HTMLElement>('[data-label]');
-    if (!btn || !panel || !tiles || !label) continue;
-    btn.hidden = false;
-    btn.addEventListener('click', () => {
-      const show = btn.getAttribute('aria-expanded') !== 'true';
-      btn.setAttribute('aria-expanded', String(show));
-      panel.hidden = !show;
-      tiles.classList.toggle('tiles--single', !show);
-      label.textContent = show ? 'Übersetzung ausblenden' : 'Übersetzung einblenden';
-    });
+  // Lange Texte kürzen. Gekürzt wird nur, wenn mindestens 3 Zeilen mehr kämen als die Kurzfassung
+  // zeigt; die Zahl der sichtbaren Zeilen steht nur im Stylesheet (--shown-lines).
+  // Untereinander (Handy) klappt jede Kachel für sich auf. Stehen Original und Übersetzung
+  // nebeneinander (Computer), klappen sie immer gemeinsam auf und zu, und zwar nur, wenn beide
+  // lang sind; jeder der beiden Knöpfe schaltet beide.
+  const MIN_HIDDEN_LINES = 3;
+  const LINE_HEIGHT = 1.65; // em, wie im Stylesheet
+  const updates: (() => void)[] = [];
+
+  interface Part {
+    clamp: HTMLElement;
+    btn: HTMLButtonElement;
+    tile: HTMLElement;
   }
+
+  function setOpen(p: Part, open: boolean) {
+    p.clamp.dataset.state = open ? 'open' : 'collapsed';
+    p.btn.hidden = false;
+    p.btn.setAttribute('aria-expanded', String(open));
+    const label = p.btn.querySelector<HTMLElement>('[data-more-label]');
+    if (label) label.textContent = open ? 'Weniger anzeigen' : 'Weiterlesen';
+  }
+
+  function setOff(p: Part) {
+    p.clamp.dataset.state = 'off'; // kurz genug (oder nicht gemeinsam lang): nichts kürzen
+    p.btn.hidden = true;
+  }
+
+  function isLong(p: Part) {
+    const style = getComputedStyle(p.clamp);
+    const shown = Number(style.getPropertyValue('--shown-lines'));
+    const lines = p.clamp.scrollHeight / (parseFloat(style.fontSize) * LINE_HEIGHT);
+    return lines > shown + MIN_HIDDEN_LINES;
+  }
+
+  for (const root of document.querySelectorAll<HTMLElement>('[data-bilingual]')) {
+    const tiles = root.querySelector<HTMLElement>('.tiles');
+    const panel = root.querySelector<HTMLElement>('[data-translation]');
+    const parts: Part[] = [];
+    for (const clamp of root.querySelectorAll<HTMLElement>('[data-clamp]')) {
+      const tile = clamp.closest<HTMLElement>('.tile');
+      const btn = tile?.querySelector<HTMLButtonElement>('[data-more]');
+      if (tile && btn) parts.push({ clamp, btn, tile });
+    }
+    if (!tiles || parts.length === 0) continue;
+
+    // Nebeneinander = beide Kacheln sichtbar und auf gleicher Höhe.
+    const isSynced = () =>
+      parts.length === 2 &&
+      parts.every((p) => p.clamp.offsetParent !== null) &&
+      Math.abs(parts[0].tile.offsetTop - parts[1].tile.offsetTop) < 8;
+
+    const update = () => {
+      const visible = parts.filter((p) => p.clamp.offsetParent !== null); // Verborgenes nicht messen
+      if (isSynced()) {
+        if (!visible.every(isLong)) {
+          visible.forEach(setOff);
+        } else {
+          const open = visible.some((p) => p.clamp.dataset.state === 'open');
+          visible.forEach((p) => setOpen(p, open));
+        }
+        return;
+      }
+      for (const p of visible) {
+        if (!isLong(p)) setOff(p);
+        // Nur zuklappen, wenn der Leser nicht schon aufgeklappt hat.
+        else setOpen(p, p.clamp.dataset.state === 'open');
+      }
+    };
+    updates.push(update);
+
+    const toggle = (p: Part) => {
+      const open = p.clamp.dataset.state !== 'open';
+      const synced = isSynced();
+      for (const t of synced ? parts : [p]) setOpen(t, open);
+      // Beim Zuklappen wieder ins Bild holen, falls der Kachelkopf oben herausgerutscht ist.
+      const anchor = synced ? tiles : p.tile;
+      if (!open && anchor.getBoundingClientRect().top < 0) anchor.scrollIntoView();
+    };
+    for (const p of parts) {
+      p.btn.addEventListener('click', () => toggle(p));
+      // Auch ein Tipp auf den gekürzten Text klappt auf (außer beim Markieren von Text).
+      p.clamp.addEventListener('click', () => {
+        if (p.clamp.dataset.state === 'collapsed' && !window.getSelection()?.toString()) {
+          toggle(p);
+        }
+      });
+    }
+
+    // Schalter „Übersetzung ausblenden / einblenden“
+    const btn = root.querySelector<HTMLButtonElement>('[data-toggle]');
+    const label = btn?.querySelector<HTMLElement>('[data-label]');
+    if (btn && panel && label) {
+      btn.hidden = false;
+      btn.addEventListener('click', () => {
+        const show = btn.getAttribute('aria-expanded') !== 'true';
+        btn.setAttribute('aria-expanded', String(show));
+        panel.hidden = !show;
+        tiles.classList.toggle('tiles--single', !show);
+        label.textContent = show ? 'Übersetzung ausblenden' : 'Übersetzung einblenden';
+        update();
+      });
+    }
+  }
+
+  const updateAll = () => updates.forEach((u) => u());
+  updateAll();
+  void document.fonts?.ready.then(updateAll);
+  let frame = 0;
+  window.addEventListener('resize', () => {
+    cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(updateAll);
+  });
 </script>
 
 <style>
@@ -135,12 +266,71 @@ const id = `uebersetzung-${post.slug}`;
     letter-spacing: 0;
     font-size: var(--fs-text);
   }
+  .clamp {
+    --shown-lines: 10;
+    --para-gap: calc(var(--fs-text) * 0.6); /* Abstand für Leerzeilen und Absätze */
+    position: relative;
+    font-size: var(--fs-text);
+    line-height: 1.65;
+  }
   .original,
   .translation-p {
     white-space: pre-wrap;
     overflow-wrap: anywhere;
-    font-size: var(--fs-text);
-    line-height: 1.65;
+  }
+  .translation-p {
+    margin: 0 0 var(--para-gap);
+  }
+  /* Leerzeilen im Original: nur ein kleiner Abstand (Zeilenumbrüche bleiben im Text, aber unsichtbar) */
+  .original :global(.para-gap) {
+    display: block;
+    font-size: 0;
+    line-height: 0;
+    height: var(--para-gap);
+    overflow: hidden;
+  }
+  /* Gekürzt (nur mit JavaScript): 10 Zeilen und ein Verlauf zur Kachelfarbe. Die Kürzung gilt
+     schon vor dem Skript (scripting: enabled), damit der Text beim Laden nicht aufblitzt. */
+  .clamp[data-state='collapsed'] {
+    cursor: pointer;
+  }
+  .clamp[data-state='open'] {
+    cursor: auto;
+  }
+  @media (scripting: enabled) {
+    .clamp:not([data-state='open'], [data-state='off']) {
+      max-height: calc(var(--shown-lines) * 1.65em);
+      overflow: hidden;
+    }
+  }
+  .clamp[data-state='collapsed']::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
+    height: 3.5em;
+    background: linear-gradient(to bottom, transparent, var(--card));
+    pointer-events: none;
+  }
+  .more {
+    margin-top: 14px;
+    min-height: 44px;
+    padding: 8px 18px;
+  }
+  .more[hidden] {
+    display: none;
+  }
+  .more::after {
+    content: '';
+    width: 0.55em;
+    height: 0.55em;
+    margin-top: -0.2em;
+    border: solid currentColor;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  .more[aria-expanded='true']::after {
+    margin-top: 0.2em;
+    transform: rotate(-135deg);
   }
   .original {
     margin: 0;

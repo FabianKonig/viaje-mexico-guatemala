@@ -91,13 +91,134 @@ test('Übersetzungsschalter blendet aus und ein (Maus und Tastatur)', async ({ p
 test('Original links, Übersetzung rechts am Computer; untereinander am Handy', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto(ALL[0].url);
-  let o = (await page.locator('[data-original]').boundingBox())!;
+  let o = (await page.locator('.tile').first().boundingBox())!;
   let t = (await page.locator('[data-translation]').boundingBox())!;
   expect(o.x).toBeLessThan(t.x);
   await page.setViewportSize({ width: 390, height: 844 });
-  o = (await page.locator('[data-original]').boundingBox())!;
+  o = (await page.locator('.tile').first().boundingBox())!;
   t = (await page.locator('[data-translation]').boundingBox())!;
-  expect(t.y).toBeGreaterThan(o.y);
+  expect(t.y).toBeGreaterThan(o.y + o.height - 1);
+});
+
+test('Leerzeilen im Original ergeben nur einen kleinen Absatzabstand (Text bleibt byte-gleich)', async ({
+  page,
+}) => {
+  await page.goto(PREVIEW_URL + 'entradas/2026-11-28-leerzeilen/');
+  const gaps = page.locator('[data-original] .para-gap');
+  expect(await gaps.count()).toBeGreaterThanOrEqual(2);
+  const lineHeight = await page
+    .locator('[data-original]')
+    .evaluate((el) => parseFloat(getComputedStyle(el).fontSize) * 1.65);
+  for (const box of await gaps.evaluateAll((els) =>
+    els.map((e) => e.getBoundingClientRect().height),
+  )) {
+    expect(box).toBeGreaterThan(4);
+    expect(box).toBeLessThan(lineHeight * 0.6); // deutlich kleiner als eine ganze Leerzeile
+  }
+  // Gesamthöhe: 4 Textzeilen plus 2 kleine Abstände, keine zusätzlichen Leerzeilen
+  const total = (await page.locator('[data-original]').boundingBox())!.height;
+  expect(total).toBeLessThan(4 * lineHeight + 2 * lineHeight * 0.6 + 4);
+  const expected = fs.readFileSync(
+    path.join('tests', 'fixtures', 'content', 'posts', '2026-11-28-leerzeilen', 'original.md'),
+    'utf8',
+  );
+  expect(await page.locator('[data-original]').evaluate((el) => el.textContent)).toBe(
+    expected.replace(/\r\n?/g, '\n'),
+  );
+});
+
+const LONG = PREVIEW_URL + 'entradas/2026-11-25-texto-largo/';
+
+test('Handy: lange Texte gekürzt, Original und Übersetzung klappen einzeln auf', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(LONG);
+  const orig = page.locator('[data-clamp]').first();
+  const trans = page.locator('[data-clamp]').nth(1);
+  const origBtn = page.getByRole('button', { name: /Weiterlesen.*Original/ });
+  const transBtn = page.getByRole('button', { name: /Weiterlesen.*Übersetzung/ });
+  const collapsed = (await orig.boundingBox())!.height;
+  await expect(orig).toHaveAttribute('data-state', 'collapsed');
+  await expect(trans).toHaveAttribute('data-state', 'collapsed');
+  expect(collapsed).toBeLessThan(300); // 10 Zeilen à ca. 28 px
+  expect(collapsed).toBeGreaterThan(240);
+  // Der ganze Text bleibt im DOM
+  expect((await page.locator('[data-original]').textContent())!.length).toBeGreaterThan(2000);
+  await origBtn.click();
+  await expect(orig).toHaveAttribute('data-state', 'open');
+  await expect(trans).toHaveAttribute('data-state', 'collapsed'); // unabhängig
+  expect((await orig.boundingBox())!.height).toBeGreaterThan(collapsed * 2);
+  await expect(page.getByRole('button', { name: /Weniger anzeigen.*Original/ })).toHaveAttribute(
+    'aria-expanded',
+    'true',
+  );
+  await transBtn.click();
+  await expect(trans).toHaveAttribute('data-state', 'open');
+  await page.getByRole('button', { name: /Weniger anzeigen.*Original/ }).click();
+  await expect(orig).toHaveAttribute('data-state', 'collapsed');
+  await expect(trans).toHaveAttribute('data-state', 'open');
+  // Auch ein Klick auf den gekürzten Text klappt auf
+  await orig.click({ position: { x: 20, y: 20 } });
+  await expect(orig).toHaveAttribute('data-state', 'open');
+});
+
+test('Computer: nebeneinander klappen Original und Übersetzung immer gemeinsam', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(LONG);
+  const orig = page.locator('[data-clamp]').first();
+  const trans = page.locator('[data-clamp]').nth(1);
+  const [b1, b2] = [page.locator('[data-more]').first(), page.locator('[data-more]').nth(1)];
+  await expect(orig).toHaveAttribute('data-state', 'collapsed');
+  await expect(trans).toHaveAttribute('data-state', 'collapsed');
+  // Knopf der Übersetzung schaltet beide
+  await b2.click();
+  await expect(orig).toHaveAttribute('data-state', 'open');
+  await expect(trans).toHaveAttribute('data-state', 'open');
+  await expect(b1).toHaveAttribute('aria-expanded', 'true');
+  await expect(b2).toHaveAttribute('aria-expanded', 'true');
+  await expect(b1).toContainText('Weniger anzeigen');
+  // Knopf des Originals schaltet beide wieder zu
+  await b1.click();
+  await expect(orig).toHaveAttribute('data-state', 'collapsed');
+  await expect(trans).toHaveAttribute('data-state', 'collapsed');
+  await expect(b2).toContainText('Weiterlesen');
+  // Auch ein Klick auf den gekürzten Text schaltet beide
+  await trans.click({ position: { x: 20, y: 20 } });
+  await expect(orig).toHaveAttribute('data-state', 'open');
+  await expect(trans).toHaveAttribute('data-state', 'open');
+  // Weg vom Computer-Layout: wieder einzeln (Handybreite), Zustand bleibt erhalten
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(b1).toBeVisible();
+  await b1.click();
+  await expect(orig).toHaveAttribute('data-state', 'collapsed');
+  await expect(trans).toHaveAttribute('data-state', 'open');
+});
+
+test('Computer: gekürzt wird nur, wenn beide Texte lang sind', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto(LONG);
+  const orig = page.locator('[data-clamp]').first();
+  await expect(orig).toHaveAttribute('data-state', 'collapsed');
+  // Übersetzung künstlich kurz machen und neu berechnen lassen
+  await page.locator('[data-translation] [data-clamp]').evaluate((el) => {
+    el.innerHTML = '<p>Kurz.</p>';
+    window.dispatchEvent(new Event('resize'));
+  });
+  await expect(orig).toHaveAttribute('data-state', 'off');
+  await expect(page.locator('[data-more]:visible')).toHaveCount(0);
+  // Am Handy (untereinander) ist das Original dagegen allein lang genug zum Kürzen
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(orig).toHaveAttribute('data-state', 'collapsed');
+  await expect(page.locator('[data-more]:visible')).toHaveCount(1);
+});
+
+test('Kurze Texte haben keinen „Weiterlesen“-Knopf', async ({ page }) => {
+  await page.goto(PREVIEW_URL + 'entradas/2026-11-23-entrada-de-ejemplo/');
+  await expect(page.locator('[data-more]:visible')).toHaveCount(0);
+  await expect(page.locator('[data-clamp][data-state="collapsed"]')).toHaveCount(0);
 });
 
 test.describe('ohne JavaScript', () => {
@@ -107,6 +228,7 @@ test.describe('ohne JavaScript', () => {
     await expect(page.locator('[data-original]')).toBeVisible();
     await expect(page.locator('[data-translation]')).toBeVisible();
     await expect(page.getByRole('button', { name: /Übersetzung/ })).toBeHidden();
+    await expect(page.locator('[data-more]:visible')).toHaveCount(0); // ohne JS nichts gekürzt
   });
 });
 

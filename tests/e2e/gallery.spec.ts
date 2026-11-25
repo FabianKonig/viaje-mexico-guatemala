@@ -150,7 +150,10 @@ test.describe('Videos (Clips)', () => {
     // (Status 0, ohne Header), die den Server nie erreichen.
     const mp4: string[] = [];
     page.on('response', (r) => {
-      if (/\.mp4(\?|$)/.test(r.url()) && r.status() >= 200) mp4.push(r.url());
+      // Bewegtfotos (-motion.mp4) laden bei Sichtbarkeit von selbst; nur eigene Clips zählen.
+      if (/\.mp4(\?|$)/.test(r.url()) && !/-motion\.mp4/.test(r.url()) && r.status() >= 200) {
+        mp4.push(r.url());
+      }
     });
     await page.goto(URL);
     await page.waitForLoadState('networkidle');
