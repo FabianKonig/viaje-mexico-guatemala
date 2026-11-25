@@ -2,7 +2,6 @@
 title: '¡Estoy en México!'
 titleDe: 'Ich bin in Mexiko!'
 date: 2026-11-23
-coverGenerated: cover.jpg
 place: ciudad-de-mexico
 photos:
   - file: 01.jpg
