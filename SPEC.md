@@ -378,6 +378,15 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   nutzt so fast die ganze Bildschirmhöhe. **Untergrenze:** Das Foto wird nie niedriger als 40 % der
   Bühnenhöhe (`max-height: max(40cqh, …)`); sonst schrumpfte ein schmales Foto in einer Spirale (schmaleres Foto,
   mehr Zeilen im Kasten, weniger Höhe, noch schmaleres Foto) auf wenige Pixel.
+  **Vollbild:** Am Handy bleibt sonst die Adresszeile des Browsers stehen (die Seite hinter der Großansicht
+  ist gesperrt und kann nicht scrollen, also klappt sie nicht ein). Darum startet `lightbox.ts` beim Öffnen
+  **automatisch** `document.documentElement.requestFullscreen()` (im Klick, als Nutzergeste), aber nur auf
+  Touchgeräten (`(pointer: coarse)`; am Computer wäre es störend) und nur, wo `document.fullscreenEnabled`
+  gilt (iPhone: nein, dort ändert sich nichts). Der Knopf „Vollbild“ links neben „Schließen“ (48 px,
+  Umschalter mit `aria-pressed`, Symbol: Ecken nach außen/innen) erscheint nur, wo der Browser Vollbild kann,
+  also auch am Computer (dort nur auf Knopfdruck). Beendet der Leser das Vollbild (Knopf, Wischgeste, Zurück),
+  merkt sich `sessionStorage` (`lightbox-fullscreen` = `off`) das für den Rest der Sitzung; der Knopf schaltet
+  es wieder ein. Das Schließen der Großansicht beendet das Vollbild. Das Layout folgt über `resize`.
 - **Bewegtfotos** (`motion`, `src/scripts/motion.ts`): Über dem Standbild liegt ein `<video muted loop
   playsinline preload="none" aria-hidden tabindex="-1">`, zunächst durchsichtig (`opacity: 0`, nicht
   `hidden`, weil ein verstecktes Element nie „im Bild“ ist). Ein `IntersectionObserver` startet es,
