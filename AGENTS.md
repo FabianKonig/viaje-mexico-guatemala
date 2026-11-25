@@ -201,8 +201,10 @@ verschiedene Titelbilder: ebenfalls nachfragen.
 - **Beschreibung** (ein Bild soll gezeichnet werden): Ich zeichne eine **flache Illustration als SVG**
   (im Scratchpad zeichnen; das Skript legt sie als Quelle ab) in den Seitenfarben (`--sand #f6ebd9`, `--terracotta #c4552d`,
   `--turquoise #0e7c86`, `--turquoise-dark #0b5d66`, `--marigold #f2a900`, `--pink #d4457a`,
-  `--ink #2b1d16`), **ohne Schrift** (kein `<text>`, keine `<image>`, keine Skripte oder externen
-  Verweise; das Skript lehnt sie ab), Seitenverhältnis 4:3 (viewBox `0 0 1600 1200`) und mit dem
+  `--ink #2b1d16`; auf Wunsch des Autors auch die Flaggenfarben Grün `#006847`, Weiß `#fbf5e9`, Rot
+  `#ce1126`), **ohne `<text>`** (keine `<image>`, keine Skripte oder externen Verweise; das Skript
+  lehnt sie ab). Ein Schriftzug im Bild (z. B. „MÉXICO“) nur auf ausdrücklichen Wunsch des Autors und
+  dann aus **gezeichneten Formen** (Pfade, Polygone), nie als `<text>`, Seitenverhältnis 4:3 (viewBox `0 0 1600 1200`) und mit dem
   Wichtigen in der **mittleren Bildhälfte** (die WhatsApp-Vorschau 1200×630 beschneidet oben und
   unten). Dann `node scripts/make-cover.mjs <slug> <zeichnung.svg>`: kopiert die Zeichnung nach
   `content/posts/<slug>/cover.svg` (Quelle, eingecheckt, nie veröffentlicht), schreibt daraus

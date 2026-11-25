@@ -1,8 +1,8 @@
 /**
  * Gezeichnetes Titelbild: macht aus einer SVG-Zeichnung ein JPEG (1600×1200, ohne Metadaten).
- * Die SVG darf nur selbst Gezeichnetes enthalten: keine Schrift (`<text>`), keine eingebetteten
- * oder externen Bilder, keine Skripte. So hängt das Ergebnis nicht von installierten Schriften ab
- * und es kann nichts von außen nachgeladen werden.
+ * Die SVG darf nur selbst Gezeichnetes enthalten: kein `<text>` (ein Schriftzug muss aus Formen
+ * gezeichnet sein), keine eingebetteten oder externen Bilder, keine Skripte. So hängt das Ergebnis
+ * nicht von installierten Schriften ab und es kann nichts von außen nachgeladen werden.
  */
 import sharp from 'sharp';
 
