@@ -58,7 +58,6 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
                 />
               )}
             </a>
-            {p.caption && <figcaption lang="es">{p.caption}</figcaption>}
           </figure>
         </li>
       ))}
@@ -162,10 +161,6 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
   }
   .gallery__motion[data-playing] {
     opacity: 1;
-  }
-  .gallery__item figcaption {
-    margin-top: 8px;
-    font-size: var(--fs-text);
   }
 
   .lightbox {
@@ -288,10 +283,32 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
       line-height: 1.35;
     }
   }
+  /* Bildunterschrift (nur in der Großansicht): höchstens 30 % der Bühnenhöhe, längere Texte scrollen,
+     damit das Foto nicht immer kleiner wird. Am Handy Abstand zu den Pfeilen (je 48 px + 8 px Rand). */
   .lightbox__caption {
+    flex: none;
+    box-sizing: border-box;
     margin: 0;
-    text-align: center;
     max-width: 60ch;
+    max-height: 30cqh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--card) transparent;
+    text-align: center;
+    /* weicher Verlauf oben/unten, wo noch Text verborgen ist (--fade-top/-bottom setzt lightbox.ts) */
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      #000 var(--fade-top, 0px),
+      #000 calc(100% - var(--fade-bottom, 0px)),
+      transparent 100%
+    );
+  }
+  @media (max-width: 699px) {
+    .lightbox__caption {
+      padding-inline: 44px;
+    }
   }
   .lightbox__btn {
     display: inline-grid;
@@ -312,7 +329,7 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
   }
   .lightbox__nav {
     position: absolute;
-    top: 50%;
+    top: var(--nav-top, 50%); /* Mitte des Fotos, setzt lightbox.ts */
     transform: translateY(-50%);
     font-size: 2rem;
   }

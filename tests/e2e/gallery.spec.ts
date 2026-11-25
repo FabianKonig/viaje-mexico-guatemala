@@ -235,6 +235,88 @@ test('Lightbox: langer Kamera-Text bricht nur zwischen den Angaben um, Kasten ni
   );
 });
 
+test('Bildunterschrift: nicht in der Fotoliste, in der Großansicht bei langem Text scrollbar', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(EXAMPLE);
+  // die Fotoliste zeigt keine Bildunterschriften
+  await expect(page.locator('.gallery figcaption')).toHaveCount(0);
+  const long = Array.from({ length: 200 }, (_, i) => `palabra${i}`).join(' ');
+  await page.evaluate((t) => {
+    document.querySelectorAll<HTMLElement>('.gallery__link')[0].dataset.caption = t;
+  }, long);
+  await page.locator('.gallery__link').first().click();
+  const dialog = page.locator('dialog[data-lightbox]');
+  const caption = dialog.locator('[data-caption]');
+  await expect(caption).toBeVisible();
+  const stage = (await dialog.locator('[data-stage]').boundingBox())!;
+  const m = await caption.evaluate((el) => ({ client: el.clientHeight, scroll: el.scrollHeight }));
+  expect(m.scroll).toBeGreaterThan(m.client); // scrollbar
+  expect(m.client).toBeLessThanOrEqual(stage.height * 0.3 + 1); // höchstens 30 % der Bühne
+  // Scroll-Hinweis: Verlauf unten am Anfang, oben und unten in der Mitte, nur oben am Ende
+  const fade = () =>
+    caption.evaluate((el) => ({
+      top: el.style.getPropertyValue('--fade-top'),
+      bottom: el.style.getPropertyValue('--fade-bottom'),
+    }));
+  expect(await fade()).toEqual({ top: '0px', bottom: '28px' });
+  await caption.evaluate((el) => (el.scrollTop = (el.scrollHeight - el.clientHeight) / 2));
+  await expect.poll(fade).toEqual({ top: '28px', bottom: '28px' });
+  await caption.evaluate((el) => (el.scrollTop = el.scrollHeight));
+  await expect.poll(fade).toEqual({ top: '28px', bottom: '0px' });
+  await caption.evaluate((el) => (el.scrollTop = 0));
+  // das Foto bleibt groß genug und die Kamera-Angaben bleiben sichtbar
+  const frame = (await dialog.locator('.lightbox__frame').boundingBox())!;
+  expect(frame.height).toBeGreaterThan(200);
+  await expect(dialog.locator('[data-info]')).toBeVisible();
+  // kurzer Text: kein Scrollen
+  await dialog.getByRole('button', { name: 'Nächstes Foto' }).click();
+  const short = await caption.evaluate((el) => ({
+    client: el.clientHeight,
+    scroll: el.scrollHeight,
+  }));
+  expect(short.scroll).toBeLessThanOrEqual(short.client + 1);
+  expect(await fade()).toEqual({ top: '0px', bottom: '0px' }); // kurzer Text: kein Verlauf
+});
+
+test('Lightbox: Vor-/Zurück-Pfeile stehen auf halber Höhe des Fotos, auch mit langer Bildunterschrift', async ({
+  page,
+}) => {
+  await page.goto(EXAMPLE);
+  const long = Array.from({ length: 200 }, (_, i) => `palabra${i}`).join(' ');
+  await page.evaluate((t) => {
+    document.querySelectorAll<HTMLElement>('.gallery__link')[1].dataset.caption = t;
+  }, long);
+  const dialog = page.locator('dialog[data-lightbox]');
+  for (const size of [
+    { width: 390, height: 844 },
+    { width: 1280, height: 800 },
+  ]) {
+    await page.setViewportSize(size);
+    await page.locator('.gallery__link').first().click();
+    // Querformat (kurze Bildunterschrift), dann Hochformat (lange Bildunterschrift), dann ohne Kamera
+    for (let i = 0; i < 3; i++) {
+      await expect(dialog.locator('[data-count]')).toHaveText(`${i + 1} / 3`);
+      await page.waitForTimeout(300);
+      const frame = (await dialog.locator('.lightbox__frame').boundingBox())!;
+      const prev = (await dialog.locator('[data-prev]').boundingBox())!;
+      const next = (await dialog.locator('[data-next]').boundingBox())!;
+      const mid = frame.y + frame.height / 2;
+      expect(
+        Math.abs(prev.y + prev.height / 2 - mid),
+        `${size.width} Foto ${i + 1} zurück`,
+      ).toBeLessThanOrEqual(2);
+      expect(
+        Math.abs(next.y + next.height / 2 - mid),
+        `${size.width} Foto ${i + 1} weiter`,
+      ).toBeLessThanOrEqual(2);
+      if (i < 2) await dialog.locator('[data-next]').click();
+    }
+    await dialog.locator('[data-close]').click();
+  }
+});
+
 test.describe('ohne JavaScript', () => {
   test.use({ javaScriptEnabled: false });
   test('Fotos sind sichtbar und verlinken auf die große Version', async ({ page }) => {
