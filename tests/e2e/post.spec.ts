@@ -100,6 +100,38 @@ test('Original links, Übersetzung rechts am Computer; untereinander am Handy', 
   expect(t.y).toBeGreaterThan(o.y);
 });
 
+test('Lange Texte sind gekürzt und lassen sich je Kachel einzeln aufklappen', async ({ page }) => {
+  await page.goto(PREVIEW_URL + 'entradas/2026-11-25-texto-largo/');
+  const orig = page.locator('[data-clamp]').first();
+  const trans = page.locator('[data-clamp]').nth(1);
+  const origBtn = page.getByRole('button', { name: /Mehr anzeigen.*Original/ });
+  const transBtn = page.getByRole('button', { name: /Mehr anzeigen.*Übersetzung/ });
+  const fullOrig = (await orig.boundingBox())!.height;
+  await expect(orig).toHaveAttribute('data-state', 'collapsed');
+  await expect(trans).toHaveAttribute('data-state', 'collapsed');
+  expect(fullOrig).toBeLessThan(260);
+  // Der ganze Text bleibt im DOM
+  expect((await page.locator('[data-original]').textContent())!.length).toBeGreaterThan(2000);
+  await origBtn.click();
+  await expect(orig).toHaveAttribute('data-state', 'open');
+  await expect(trans).toHaveAttribute('data-state', 'collapsed'); // unabhängig
+  expect((await orig.boundingBox())!.height).toBeGreaterThan(fullOrig * 2);
+  await expect(page.getByRole('button', { name: /Weniger anzeigen.*Original/ })).toHaveAttribute(
+    'aria-expanded',
+    'true',
+  );
+  await transBtn.click();
+  await expect(trans).toHaveAttribute('data-state', 'open');
+  await page.getByRole('button', { name: /Weniger anzeigen.*Original/ }).click();
+  await expect(orig).toHaveAttribute('data-state', 'collapsed');
+});
+
+test('Kurze Texte haben keinen „Mehr anzeigen“-Knopf', async ({ page }) => {
+  await page.goto(PREVIEW_URL + 'entradas/2026-11-23-entrada-de-ejemplo/');
+  await expect(page.locator('[data-more]:visible')).toHaveCount(0);
+  await expect(page.locator('[data-clamp][data-state]')).toHaveCount(0);
+});
+
 test.describe('ohne JavaScript', () => {
   test.use({ javaScriptEnabled: false });
   test('Beitrag mit Original und Übersetzung lesbar, Schalter verborgen', async ({ page }) => {
@@ -107,6 +139,7 @@ test.describe('ohne JavaScript', () => {
     await expect(page.locator('[data-original]')).toBeVisible();
     await expect(page.locator('[data-translation]')).toBeVisible();
     await expect(page.getByRole('button', { name: /Übersetzung/ })).toBeHidden();
+    await expect(page.locator('[data-more]:visible')).toHaveCount(0); // ohne JS nichts gekürzt
   });
 });
 

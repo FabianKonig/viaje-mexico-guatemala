@@ -2,6 +2,8 @@
 /**
  * Original (byte-genau) und Übersetzung nebeneinander, am Handy untereinander.
  * Ohne JavaScript sind beide sichtbar; der Schalter erscheint erst mit JavaScript.
+ * Lange Texte werden mit JavaScript je Kachel auf einige Zeilen gekürzt („Mehr anzeigen“), der
+ * ganze Text bleibt im DOM (Original byte-genau, durchsuchbar, vorlesbar).
  */
 import type { Post } from '../lib/content';
 import { escapeHtml } from '../lib/html';
@@ -56,12 +58,25 @@ const id = `uebersetzung-${post.slug}`;
           Mi español, sin corregir
         </span>
       </header>
-      <div
-        class="original"
-        data-original
-        data-source-sha256={translationData.source_sha256}
-        set:html={originalHtml}
-      />
+      <div class="clamp" id={`${id}-orig-text`} data-clamp>
+        <div
+          class="original"
+          data-original
+          data-source-sha256={translationData.source_sha256}
+          set:html={originalHtml}
+        />
+      </div>
+      <button
+        class="btn btn--light more"
+        type="button"
+        aria-expanded="true"
+        aria-controls={`${id}-orig-text`}
+        hidden
+        data-more
+      >
+        <span data-more-label>Mehr anzeigen</span>
+        <span class="visually-hidden"> (Original)</span>
+      </button>
     </section>
     {showTranslation && (
       <section id={id} class="tile card" aria-labelledby={`${id}-de`} lang="de" data-translation>
@@ -70,9 +85,22 @@ const id = `uebersetzung-${post.slug}`;
             Übersetzung
           </h2>
         </header>
-        {translationHtml.map((html) => (
-          <p class="translation-p" set:html={html} />
-        ))}
+        <div class="clamp" id={`${id}-de-text`} data-clamp>
+          {translationHtml.map((html) => (
+            <p class="translation-p" set:html={html} />
+          ))}
+        </div>
+        <button
+          class="btn btn--light more"
+          type="button"
+          aria-expanded="true"
+          aria-controls={`${id}-de-text`}
+          hidden
+          data-more
+        >
+          <span data-more-label>Mehr anzeigen</span>
+          <span class="visually-hidden"> (Übersetzung)</span>
+        </button>
       </section>
     )}
   </div>
@@ -92,8 +120,60 @@ const id = `uebersetzung-${post.slug}`;
       panel.hidden = !show;
       tiles.classList.toggle('tiles--single', !show);
       label.textContent = show ? 'Übersetzung ausblenden' : 'Übersetzung einblenden';
+      if (show) updateClamps();
     });
   }
+
+  // Lange Texte kürzen: je Kachel einzeln auf- und zuklappbar.
+  // Gekürzt wird nur, wenn mindestens 3 Zeilen mehr kämen als die Kurzfassung zeigt.
+  const SHOWN_LINES = 7;
+  const MIN_HIDDEN_LINES = 3;
+  const LINE_HEIGHT = 1.65; // em, wie im Stylesheet
+  const clamps = [...document.querySelectorAll<HTMLElement>('[data-clamp]')];
+
+  function updateClamps() {
+    for (const el of clamps) {
+      const btn = el.parentElement?.querySelector<HTMLButtonElement>('[data-more]');
+      if (!btn || el.offsetParent === null) continue; // verborgene Kachel nicht messen
+      const lineHeight = parseFloat(getComputedStyle(el).fontSize) * LINE_HEIGHT;
+      const lines = el.scrollHeight / lineHeight;
+      if (lines <= SHOWN_LINES + MIN_HIDDEN_LINES) {
+        el.removeAttribute('data-state');
+        btn.hidden = true;
+      } else {
+        // Nur zuklappen, wenn der Leser nicht schon aufgeklappt hat.
+        if (el.dataset.state !== 'open') setOpen(el, btn, false);
+        btn.hidden = false;
+      }
+    }
+  }
+
+  function setOpen(el: HTMLElement, btn: HTMLButtonElement, open: boolean) {
+    el.dataset.state = open ? 'open' : 'collapsed';
+    btn.setAttribute('aria-expanded', String(open));
+    const label = btn.querySelector<HTMLElement>('[data-more-label]');
+    if (label) label.textContent = open ? 'Weniger anzeigen' : 'Mehr anzeigen';
+  }
+
+  for (const el of clamps) {
+    const btn = el.parentElement?.querySelector<HTMLButtonElement>('[data-more]');
+    if (!btn) continue;
+    btn.addEventListener('click', () => {
+      const open = el.dataset.state !== 'open';
+      setOpen(el, btn, open);
+      // Beim Zuklappen die Kachel wieder ins Bild holen, falls ihr Kopf oben herausgerutscht ist.
+      const tile = el.closest<HTMLElement>('.tile');
+      if (!open && tile && tile.getBoundingClientRect().top < 0) tile.scrollIntoView();
+    });
+  }
+
+  updateClamps();
+  void document.fonts?.ready.then(updateClamps);
+  let frame = 0;
+  window.addEventListener('resize', () => {
+    cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(updateClamps);
+  });
 </script>
 
 <style>
@@ -135,12 +215,49 @@ const id = `uebersetzung-${post.slug}`;
     letter-spacing: 0;
     font-size: var(--fs-text);
   }
+  .clamp {
+    position: relative;
+    font-size: var(--fs-text);
+    line-height: 1.65;
+  }
   .original,
   .translation-p {
     white-space: pre-wrap;
     overflow-wrap: anywhere;
-    font-size: var(--fs-text);
-    line-height: 1.65;
+  }
+  /* Gekürzt (nur mit JavaScript): 7 Zeilen und ein Verlauf zur Kachelfarbe */
+  .clamp[data-state='collapsed'] {
+    max-height: calc(7 * 1.65em);
+    overflow: hidden;
+  }
+  .clamp[data-state='collapsed']::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
+    height: 3.5em;
+    background: linear-gradient(to bottom, transparent, var(--card));
+    pointer-events: none;
+  }
+  .more {
+    margin-top: 14px;
+    min-height: 44px;
+    padding: 8px 18px;
+  }
+  .more[hidden] {
+    display: none;
+  }
+  .more::after {
+    content: '';
+    width: 0.55em;
+    height: 0.55em;
+    margin-top: -0.2em;
+    border: solid currentColor;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  .more[aria-expanded='true']::after {
+    margin-top: 0.2em;
+    transform: rotate(-135deg);
   }
   .original {
     margin: 0;

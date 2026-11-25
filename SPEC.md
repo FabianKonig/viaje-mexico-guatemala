@@ -271,6 +271,14 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   in einem `<span lang data-lang>`, ohne sichtbare Hervorhebung.
 - Kachel **„Übersetzung“** (`lang="de"`): ein Absatz pro Absatz des Originals, spanische Segmente
   übersetzt, deutsche 1:1 (`data-lang="de"`). Keine farbliche Hervorhebung.
+- **Lange Texte kürzen** (nur mit JavaScript, je Kachel getrennt): Ist ein Text länger als 10 Zeilen
+  (`--fs-text`, Zeilenhöhe 1,65), zeigt die Kachel zunächst 7 Zeilen mit einem Verlauf zur Kachelfarbe
+  und darunter den Knopf „Mehr anzeigen“ (`<button>` mit `aria-expanded` und `aria-controls`, für
+  Screenreader mit Zusatz „(Original)“ bzw. „(Übersetzung)“). Aufgeklappt heißt er „Weniger anzeigen“;
+  beim Zuklappen springt die Seite zum Kachelanfang, falls dieser aus dem Bild gerutscht ist. Original
+  und Übersetzung klappen unabhängig voneinander auf und zu. Der ganze Text bleibt im DOM
+  (`textContent` unverändert). Kürzere Texte haben keinen Knopf; ohne JavaScript ist nichts gekürzt.
+  Die Entscheidung fällt beim Laden und bei Größenänderung des Fensters; der Zustand wird nicht gespeichert.
 - Anordnung: Raster `repeat(auto-fit, minmax(min(100%, 340px), 1fr))`, also nebeneinander (Original
   links) bei genug Platz, sonst untereinander. Nur Deutsch: nur die Original-Kachel, kein Schalter.
 - Darunter die Fotogalerie, Videos und der Link „← Alle Beiträge“ (zur Startseite `#entradas`).
