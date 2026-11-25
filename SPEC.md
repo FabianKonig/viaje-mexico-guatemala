@@ -371,6 +371,13 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   Pfeil-Knöpfe nicht über dem Text liegen. Als Scroll-Hinweis (Handys zeigen keinen Scrollbalken) blendet ein weicher Verlauf (`mask-image`, 28 px,
   `--fade-top`/`--fade-bottom` setzt `lightbox.ts`) oben und unten den Text aus, solange dort noch Text verborgen ist; bei kurzem Text oder am Ende entfällt er. Die Pfeil-Knöpfe stehen immer auf halber Höhe des Fotos
   (nicht des Bildschirms; `lightbox.ts` setzt `--nav-top` nach jedem Layout).
+  **Handy quer** (`@media (orientation: landscape) and (max-height: 500px)`): Zähler und Schließen-Knopf
+  schweben über dem Foto (kein Platz für eine eigene Zeile), die Bühne ist eine Zeile und die
+  Bildunterschrift steht rechts neben dem Foto (höchstens 36 Zeichen oder 30 % der Breite, `lightbox.ts`
+  zählt ihre Höhe dann nicht zu `--reserve`), der Kamera-Kasten bleibt unter dem Foto in `0.65rem`. Das Foto
+  nutzt so fast die ganze Bildschirmhöhe. **Untergrenze:** Das Foto wird nie niedriger als 40 % der
+  Bühnenhöhe (`max-height: max(40cqh, …)`); sonst schrumpfte ein schmales Foto in einer Spirale (schmaleres Foto,
+  mehr Zeilen im Kasten, weniger Höhe, noch schmaleres Foto) auf wenige Pixel.
 - **Bewegtfotos** (`motion`, `src/scripts/motion.ts`): Über dem Standbild liegt ein `<video muted loop
   playsinline preload="none" aria-hidden tabindex="-1">`, zunächst durchsichtig (`opacity: 0`, nicht
   `hidden`, weil ein verstecktes Element nie „im Bild“ ist). Ein `IntersectionObserver` startet es,

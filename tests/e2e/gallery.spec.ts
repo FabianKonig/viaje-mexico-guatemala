@@ -561,3 +561,68 @@ test.describe('Bewegtfoto in der Galerie', () => {
     });
   });
 });
+
+test('Lightbox: Handy quer – Foto nutzt fast die ganze Höhe, Bildunterschrift steht daneben, kein Schrumpfen', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(EXAMPLE);
+  await page.evaluate(() => {
+    // langer Kamera-Text bei allen Fotos (der Fall, der das Hochformat-Foto früher auf ~120 px schrumpfen ließ)
+    document.querySelectorAll<HTMLElement>('.gallery__link').forEach((l) => {
+      l.dataset.info = 'Samsung Galaxy S24 Ultra · f/1,7 · 1/1000 s · ISO 1250 · 6,3 mm (23 mm KB)';
+    });
+  });
+  const dialog = page.locator('dialog[data-lightbox]');
+  const frame = dialog.locator('.lightbox__frame');
+  const info = dialog.locator('[data-info]');
+  await page.locator('.gallery__link').nth(1).click(); // Hochformat-Foto
+  await expect(dialog.locator('[data-count]')).toHaveText('2 / 3');
+  await page.waitForTimeout(300);
+  const portraitUpright = (await frame.boundingBox())!;
+
+  // Handy drehen, während die Großansicht offen ist
+  await page.setViewportSize({ width: 844, height: 390 });
+  await page.waitForTimeout(300);
+  const f = (await frame.boundingBox())!;
+  const i = (await info.boundingBox())!;
+  // Foto füllt fast die Höhe (Bildschirm 390 px) und ist nicht auf wenige Pixel geschrumpft
+  expect(f.height).toBeGreaterThanOrEqual(300);
+  expect(f.width).toBeGreaterThanOrEqual(220);
+  // Kasten bricht nicht in Buchstabenhäppchen (alle Angaben jeweils in einer Zeile, höchstens 3 Zeilen)
+  const lines = await info.evaluate((el) => {
+    const lineHeight = parseFloat(getComputedStyle(el).lineHeight);
+    return {
+      total: Math.round(el.getBoundingClientRect().height / lineHeight),
+      parts: [...el.querySelectorAll<HTMLElement>('.lightbox__info-part')].map((p) =>
+        Math.round(p.getBoundingClientRect().height / lineHeight),
+      ),
+    };
+  });
+  expect(lines.total).toBeLessThanOrEqual(3);
+  expect(lines.parts.every((n) => n === 1)).toBe(true);
+  expect(i.width).toBeLessThanOrEqual(f.width + 1);
+  // alles bleibt im Bildschirm
+  expect(f.y).toBeGreaterThanOrEqual(0);
+  expect(i.y + i.height).toBeLessThanOrEqual(390);
+  // Zähler und Schließen-Knopf schweben über dem Foto statt eine eigene Zeile zu belegen
+  expect(f.y).toBeLessThanOrEqual(12);
+  expect(portraitUpright.width).toBeGreaterThan(f.width); // hochkant ist das Hochformat-Foto breiter (Breite begrenzt)
+
+  // Querformat-Foto mit Bildunterschrift: Unterschrift rechts neben dem Foto, nicht darunter
+  await dialog.locator('[data-next]').click();
+  await expect(dialog.locator('[data-count]')).toHaveText('3 / 3');
+  await page.waitForTimeout(300);
+  const wide = (await frame.boundingBox())!;
+  const caption = (await dialog.locator('[data-caption]').boundingBox())!;
+  expect(wide.height).toBeGreaterThanOrEqual(300);
+  expect(caption.x).toBeGreaterThanOrEqual(wide.x + wide.width);
+  // größer als hochkant (dort ist das Querformat-Foto durch die Breite begrenzt)
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.waitForTimeout(300);
+  const wideUpright = (await frame.boundingBox())!;
+  expect(wide.width).toBeGreaterThan(wideUpright.width * 1.15);
+  // wieder hochkant: Bildunterschrift steht darunter
+  const captionUpright = (await dialog.locator('[data-caption]').boundingBox())!;
+  expect(captionUpright.y).toBeGreaterThanOrEqual(wideUpright.y + wideUpright.height);
+});
