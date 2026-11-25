@@ -254,6 +254,18 @@ test('Bildunterschrift: nicht in der Fotoliste, in der Großansicht bei langem T
   const m = await caption.evaluate((el) => ({ client: el.clientHeight, scroll: el.scrollHeight }));
   expect(m.scroll).toBeGreaterThan(m.client); // scrollbar
   expect(m.client).toBeLessThanOrEqual(stage.height * 0.3 + 1); // höchstens 30 % der Bühne
+  // Scroll-Hinweis: Verlauf unten am Anfang, oben und unten in der Mitte, nur oben am Ende
+  const fade = () =>
+    caption.evaluate((el) => ({
+      top: el.style.getPropertyValue('--fade-top'),
+      bottom: el.style.getPropertyValue('--fade-bottom'),
+    }));
+  expect(await fade()).toEqual({ top: '0px', bottom: '28px' });
+  await caption.evaluate((el) => (el.scrollTop = (el.scrollHeight - el.clientHeight) / 2));
+  await expect.poll(fade).toEqual({ top: '28px', bottom: '28px' });
+  await caption.evaluate((el) => (el.scrollTop = el.scrollHeight));
+  await expect.poll(fade).toEqual({ top: '28px', bottom: '0px' });
+  await caption.evaluate((el) => (el.scrollTop = 0));
   // das Foto bleibt groß genug und die Kamera-Angaben bleiben sichtbar
   const frame = (await dialog.locator('.lightbox__frame').boundingBox())!;
   expect(frame.height).toBeGreaterThan(200);
@@ -265,6 +277,7 @@ test('Bildunterschrift: nicht in der Fotoliste, in der Großansicht bei langem T
     scroll: el.scrollHeight,
   }));
   expect(short.scroll).toBeLessThanOrEqual(short.client + 1);
+  expect(await fade()).toEqual({ top: '0px', bottom: '0px' }); // kurzer Text: kein Verlauf
 });
 
 test('Lightbox: Vor-/Zurück-Pfeile stehen auf halber Höhe des Fotos, auch mit langer Bildunterschrift', async ({

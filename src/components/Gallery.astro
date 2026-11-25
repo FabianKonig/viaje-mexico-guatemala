@@ -296,6 +296,14 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
     scrollbar-width: thin;
     scrollbar-color: var(--card) transparent;
     text-align: center;
+    /* weicher Verlauf oben/unten, wo noch Text verborgen ist (--fade-top/-bottom setzt lightbox.ts) */
+    mask-image: linear-gradient(
+      to bottom,
+      transparent 0,
+      #000 var(--fade-top, 0px),
+      #000 calc(100% - var(--fade-bottom, 0px)),
+      transparent 100%
+    );
   }
   @media (max-width: 699px) {
     .lightbox__caption {

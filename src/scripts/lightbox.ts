@@ -57,6 +57,7 @@ export function initLightbox(doc: Document = document) {
     const text = link.dataset.caption ?? '';
     caption.textContent = text;
     caption.hidden = text === '';
+    caption.scrollTop = 0;
     const camera = link.dataset.info ?? '';
     setInfo(camera);
     info.hidden = camera === '';
@@ -84,11 +85,21 @@ export function initLightbox(doc: Document = document) {
       // die Zeile enthält Kasten und Abstand darüber (leer, wenn das Foto keine Kameraangaben hat)
       photo.style.setProperty('--reserve', `${infoRow.offsetHeight + gap}px`);
     }
+    fadeCaption();
     // Pfeile (Vor/Zurück) auf halber Höhe des Fotos, nicht des Bildschirms
     const f = frame.getBoundingClientRect();
     const d = dialog!.getBoundingClientRect();
     dialog!.style.setProperty('--nav-top', `${f.top - d.top + f.height / 2}px`);
   }
+  /** Weicher Verlauf oben/unten an der Bildunterschrift, solange dort noch Text verborgen ist (Hinweis: scrollbar). */
+  function fadeCaption() {
+    const more = caption.scrollHeight - caption.clientHeight > 1;
+    const top = more && caption.scrollTop > 1;
+    const bottom = more && caption.scrollTop + caption.clientHeight < caption.scrollHeight - 1;
+    caption.style.setProperty('--fade-top', top ? '28px' : '0px');
+    caption.style.setProperty('--fade-bottom', bottom ? '28px' : '0px');
+  }
+  caption.addEventListener('scroll', fadeCaption, { passive: true });
   window.addEventListener('resize', fit);
   // Solange das Foto lädt, hat es keine Breite; erst danach stimmt die Höhe des Kamera-Kastens
   img.addEventListener('load', fit);

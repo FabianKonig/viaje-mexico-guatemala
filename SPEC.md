@@ -368,7 +368,8 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   neu nach dem Laden des Fotos). Ohne Kameraangaben entfällt der Kasten; die Bildunterschrift steht
   ganz unten, unter dem Kasten. Sie ist höchstens 30 % der Bühnenhöhe hoch (`max-height: 30cqh`); längere Texte scrollen
   (`overflow-y: auto`), damit das Foto nicht kleiner wird. Am Handy hat sie seitlich 44 px Abstand, damit die
-  Pfeil-Knöpfe nicht über dem Text liegen. Die Pfeil-Knöpfe stehen immer auf halber Höhe des Fotos
+  Pfeil-Knöpfe nicht über dem Text liegen. Als Scroll-Hinweis (Handys zeigen keinen Scrollbalken) blendet ein weicher Verlauf (`mask-image`, 28 px,
+  `--fade-top`/`--fade-bottom` setzt `lightbox.ts`) oben und unten den Text aus, solange dort noch Text verborgen ist; bei kurzem Text oder am Ende entfällt er. Die Pfeil-Knöpfe stehen immer auf halber Höhe des Fotos
   (nicht des Bildschirms; `lightbox.ts` setzt `--nav-top` nach jedem Layout).
 - **Bewegtfotos** (`motion`, `src/scripts/motion.ts`): Über dem Standbild liegt ein `<video muted loop
   playsinline preload="none" aria-hidden tabindex="-1">`, zunächst durchsichtig (`opacity: 0`, nicht
