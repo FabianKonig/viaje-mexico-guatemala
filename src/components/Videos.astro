@@ -1,10 +1,12 @@
 ---
 /**
- * Videos eines Beitrags (`clips`): selbst ausgeliefertes MP4 mit Ton. Der Browser lädt erst nach dem
- * Antippen von „Play“ (preload="none"); vorher nur das kleine Standbild. Funktioniert ohne JavaScript.
+ * Videos eines Beitrags (`clips`): Vorschaukacheln im selben Raster und in derselben Größe wie die
+ * Fotos (4:3, zugeschnitten) mit Play-Symbol und Laufzeit. Mit JavaScript öffnet ein Tipp ein
+ * Vollbild-Fenster mit dem Player (die Datei wird erst dann geladen, `preload="none"`); ohne
+ * JavaScript verlinkt die Kachel direkt auf das MP4 (Player des Browsers).
  */
 import type { ClipRef } from '../lib/content';
-import { clipMedia } from '../lib/media';
+import { clipMedia, formatDuration } from '../lib/media';
 import { href } from '../lib/site';
 
 interface Props {
@@ -12,34 +14,75 @@ interface Props {
   clips: ClipRef[];
 }
 const { slug, clips } = Astro.props;
-const clipItems = clips.map((c) => ({ ...c, media: clipMedia(slug, c.file) }));
+const clipItems = clips.map((c) => ({
+  ...c,
+  media: clipMedia(slug, c.file),
+  time: formatDuration(c.duration),
+}));
 ---
 
 {clipItems.length > 0 && (
-  <section class="videos" aria-labelledby="videos-titel">
-    <h2 id="videos-titel">Videos</h2>
-    <ul class="videos__list" role="list">
-      {clipItems.map((c) => (
-        <li class="clip card">
-          <video
-            class="clip__video"
-            controls
-            playsinline
-            preload="none"
-            poster={href(c.media.poster)}
-            width={c.width}
-            height={c.height}
-            aria-label={c.title}
-          >
-            <source src={href(c.media.src)} type="video/mp4" />
-            <a href={href(c.media.src)}>Video herunterladen</a>
-          </video>
-          <p class="clip__title">{c.title}</p>
-        </li>
-      ))}
-    </ul>
-  </section>
+  <>
+    <section class="videos" aria-labelledby="videos-titel">
+      <h2 id="videos-titel">Videos</h2>
+      <ul id="videos-raster" class="videos__grid media-grid" role="list" data-more-grid>
+        {clipItems.map((c, i) => (
+          <li>
+            <a
+              class="clip"
+              href={href(c.media.src)}
+              data-clip-item
+              data-title={c.title}
+              data-poster={href(c.media.poster)}
+              aria-label={`${c.title} abspielen, Dauer ${c.time}`}
+            >
+              <img
+                src={href(c.media.poster)}
+                width={c.width}
+                height={c.height}
+                alt=""
+                loading={i < 4 ? 'eager' : 'lazy'}
+                decoding="async"
+              />
+              <span class="clip__play" aria-hidden="true" />
+              <span class="clip__time" aria-hidden="true">
+                {c.time}
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+      <button
+        class="btn btn--light more-btn"
+        type="button"
+        aria-expanded="false"
+        aria-controls="videos-raster"
+        hidden
+        data-more-btn
+      >
+        <span data-more-label>Mehr anzeigen</span>
+        <span class="visually-hidden"> (Videos)</span>
+      </button>
+    </section>
+    <dialog class="clipbox" aria-label="Video abspielen" data-clip-dialog>
+      <div class="clipbox__bar">
+        <p class="clipbox__title" data-clip-title></p>
+        <button class="clipbox__close" type="button" data-close autofocus>
+          <span aria-hidden="true">✕</span>
+          <span class="visually-hidden">Schließen</span>
+        </button>
+      </div>
+      <video class="clipbox__video" controls playsinline preload="none" data-clip-video></video>
+    </dialog>
+  </>
 )}
+
+<script>
+  import { initClips } from '../scripts/clips';
+  import { initMore } from '../scripts/more';
+  initClips();
+  initMore();
+</script>
 
 <style>
   .videos {
@@ -48,27 +91,120 @@ const clipItems = clips.map((c) => ({ ...c, media: clipMedia(slug, c.file) }));
   .videos h2 {
     font-size: var(--fs-text);
   }
-  .videos__list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
-    gap: 24px;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
+  /* Kachel wie ein Foto in der Galerie */
   .clip {
+    position: relative;
+    display: block;
+    border: var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow-sm);
     overflow: hidden;
+    background: var(--ink);
+    transition:
+      transform 0.12s ease,
+      box-shadow 0.12s ease;
   }
-  .clip__video {
+  .clip:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+  .clip img {
     display: block;
     width: 100%;
     height: auto;
-    max-height: 75vh;
-    background: var(--ink);
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
   }
-  .clip__title {
-    margin: 0;
-    padding: 12px 16px;
+  /* Play-Symbol: weißer Kreis mit Dreieck, mittig */
+  .clip__play {
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: rgb(43 29 22 / 0.7);
+    border: 2px solid var(--card);
+  }
+  .clip__play::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-35%, -50%);
+    border-style: solid;
+    border-width: 11px 0 11px 18px;
+    border-color: transparent transparent transparent var(--card);
+  }
+  .clip__time {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: rgb(43 29 22 / 0.8);
+    color: var(--card);
     font-size: var(--fs-text);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Vollbild-Fenster mit Player */
+  .clipbox {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: rgb(43 29 22 / 0.96);
+    color: var(--card);
+    overscroll-behavior: contain;
+  }
+  .clipbox[open] {
+    display: flex;
+    flex-direction: column;
+  }
+  .clipbox__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: max(12px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 8px
+      max(16px, env(safe-area-inset-left));
+  }
+  .clipbox__title {
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 700;
+  }
+  .clipbox__close {
+    flex: none;
+    width: 48px;
+    height: 48px;
+    border: 2px solid var(--card);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--card);
+    font: inherit;
+    font-size: 1.25rem;
+    cursor: pointer;
+  }
+  .clipbox__close:focus-visible {
+    outline-color: var(--card);
+  }
+  .clipbox__video {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    background: transparent;
+    padding: 0 max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom))
+      max(8px, env(safe-area-inset-left));
+    object-fit: contain;
   }
 </style>

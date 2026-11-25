@@ -145,7 +145,9 @@ test.describe('ohne JavaScript', () => {
 test.describe('Videos (Clips)', () => {
   const URL = PREVIEW_URL + 'entradas/2026-12-03-gps-y-heic/';
 
-  test('Standbild vorab, Video erst nach dem Abspielen, Ton nicht stumm', async ({ page }) => {
+  test('Vorschaukachel mit Laufzeit; Video erst nach dem Antippen, im Fenster, mit Ton', async ({
+    page,
+  }) => {
     // Nur echte Antworten zählen: Playwright-WebKit meldet für Videoelemente auch Scheinanfragen
     // (Status 0, ohne Header), die den Server nie erreichen.
     const mp4: string[] = [];
@@ -157,20 +159,38 @@ test.describe('Videos (Clips)', () => {
     });
     await page.goto(URL);
     await page.waitForLoadState('networkidle');
-    const video = page.locator('video.clip__video');
-    await expect(video).toHaveCount(1);
+    const tile = page.locator('a[data-clip-item]');
+    await expect(tile).toHaveCount(1);
+    await expect(tile).toHaveAttribute('href', /\.mp4$/);
+    await expect(tile).toHaveAttribute('aria-label', /Testclip.*abspielen, Dauer 0:02/);
+    await expect(tile.locator('img')).toHaveAttribute('src', /-poster\.jpg$/);
+    await expect(tile.locator('.clip__time')).toHaveText('0:02');
+    const dialog = page.locator('[data-clip-dialog]');
+    const video = dialog.locator('video');
+    await expect(dialog).toBeHidden();
     await expect(video).toHaveAttribute('preload', 'none');
-    await expect(video).toHaveAttribute('poster', /-poster\.jpg$/);
     await expect(video).toHaveAttribute('controls', '');
-    await expect(video).toHaveAttribute('aria-label', /Testclip/);
     expect(await video.evaluate((v: HTMLVideoElement) => v.muted)).toBe(false);
     expect(await video.evaluate((v: HTMLVideoElement) => v.autoplay)).toBe(false);
-    // Vor dem Abspielen wird die Videodatei nicht geladen.
+    // Vor dem Antippen wird die Videodatei nicht geladen.
     expect(mp4).toEqual([]);
-    await expect(page.locator('.clip__title')).toHaveText(/Testclip/);
-    // Nach dem Abspielen wird sie angefragt (Chromium ohne H.264 kann sie nicht dekodieren).
-    await video.evaluate((v: HTMLVideoElement) => v.play().catch(() => undefined));
+    // Nach dem Antippen öffnet sich das Fenster und die Datei wird angefragt
+    // (Chromium ohne H.264 kann sie nicht dekodieren, die Anfrage genügt).
+    await tile.click();
+    await expect(dialog).toBeVisible();
+    await expect(dialog.locator('[data-clip-title]')).toHaveText(/Testclip/);
+    await expect(video).toHaveAttribute('aria-label', /Testclip/);
+    await expect(video).toHaveAttribute('src', /\.mp4$/);
     await expect.poll(() => mp4.length).toBeGreaterThan(0);
+    // Schließen gibt die Datei frei und der Fokus kehrt zur Kachel zurück
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await expect(video).not.toHaveAttribute('src', /.*/);
+    await expect(tile).toBeFocused();
+    // Knopf „Schließen“ funktioniert ebenfalls
+    await tile.click();
+    await dialog.getByRole('button', { name: 'Schließen' }).click();
+    await expect(dialog).toBeHidden();
   });
 
   test('Videodatei hat keinen Standort und wird in Teilen abrufbar geliefert', async ({
@@ -178,7 +198,7 @@ test.describe('Videos (Clips)', () => {
     request,
   }) => {
     await page.goto(URL);
-    const src = await page.locator('video.clip__video source').getAttribute('src');
+    const src = await page.locator('a[data-clip-item]').getAttribute('href');
     const url = new globalThis.URL(src!, page.url()).toString();
     const part = await request.get(url, { headers: { Range: 'bytes=0-99' } });
     expect(part.status()).toBe(206);
@@ -190,10 +210,89 @@ test.describe('Videos (Clips)', () => {
 
   test.describe('ohne JavaScript', () => {
     test.use({ javaScriptEnabled: false });
-    test('Video mit Bedienelementen und Download-Link ist vorhanden', async ({ page }) => {
+    test('Kachel verlinkt direkt auf das Video, nichts ist gekürzt', async ({ page }) => {
       await page.goto(URL);
-      await expect(page.locator('video.clip__video[controls]')).toHaveCount(1);
+      await expect(page.locator('a[data-clip-item][href$=".mp4"]')).toHaveCount(1);
+      await page.goto(TWENTY);
+      await expect(page.locator('.gallery__grid > li:visible')).toHaveCount(20);
+      await expect(page.locator('.videos__grid > li:visible')).toHaveCount(10);
+      await expect(page.locator('[data-more-btn]:visible')).toHaveCount(0);
     });
+  });
+});
+
+test.describe('Videokacheln so groß wie Fotokacheln', () => {
+  for (const size of [
+    { width: 1280, height: 900 },
+    { width: 800, height: 900 },
+    { width: 390, height: 844 },
+  ]) {
+    test(`${size.width}px: gleiche Breite und Höhe`, async ({ page }) => {
+      await page.setViewportSize(size);
+      await page.goto(TWENTY);
+      const photo = (await page.locator('.gallery__link').first().boundingBox())!;
+      const clip = (await page.locator('a[data-clip-item]').first().boundingBox())!;
+      expect(Math.abs(photo.width - clip.width)).toBeLessThan(1.5);
+      expect(Math.abs(photo.height - clip.height)).toBeLessThan(1.5);
+    });
+  }
+});
+
+test.describe('Mehr anzeigen bei Fotos und Videos', () => {
+  const grids = [
+    { name: 'Fotos', grid: '.gallery__grid', total: 20, btn: /Mehr anzeigen \(Fotos\)/ },
+    { name: 'Videos', grid: '.videos__grid', total: 10, btn: /Mehr anzeigen \(Videos\)/ },
+  ];
+  // Computer 4 Spalten → 8, mittlere Breite 3 Spalten → 6, Handy 2 Spalten → 4 (immer 2 Reihen)
+  const sizes = [
+    { width: 1280, height: 900, shown: 8 },
+    { width: 800, height: 900, shown: 6 },
+    { width: 390, height: 844, shown: 4 },
+  ];
+  for (const g of grids) {
+    for (const size of sizes) {
+      test(`${g.name} ${size.width}px: zunächst ${size.shown} sichtbar, Knopf zeigt alle`, async ({
+        page,
+      }) => {
+        await page.setViewportSize({ width: size.width, height: size.height });
+        await page.goto(TWENTY);
+        const items = page.locator(`${g.grid} > li:visible`);
+        const btn = page.getByRole('button', { name: g.btn });
+        await expect(items).toHaveCount(size.shown);
+        await expect(btn).toHaveAttribute('aria-expanded', 'false');
+        await btn.click();
+        await expect(items).toHaveCount(g.total);
+        const less = page.getByRole('button', { name: /Weniger anzeigen/ }).filter({
+          hasText: g.name,
+        });
+        await expect(less).toHaveAttribute('aria-expanded', 'true');
+        await less.click();
+        await expect(items).toHaveCount(size.shown);
+      });
+    }
+  }
+
+  test('Fotos und Videos klappen unabhängig voneinander auf', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto(TWENTY);
+    await page.getByRole('button', { name: /Mehr anzeigen \(Fotos\)/ }).click();
+    await expect(page.locator('.gallery__grid > li:visible')).toHaveCount(20);
+    await expect(page.locator('.videos__grid > li:visible')).toHaveCount(8);
+  });
+
+  test('Kein Knopf, wenn nichts verborgen wäre', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto(PREVIEW_URL + 'entradas/2026-12-03-gps-y-heic/'); // 3 Fotos, 1 Video
+    await expect(page.locator('[data-more-btn]:visible')).toHaveCount(0);
+  });
+
+  test('Die Lightbox blättert auch zu verborgenen Fotos', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto(TWENTY);
+    await page.locator('.gallery__link').first().click();
+    await expect(page.locator('[data-count]')).toHaveText('1 / 20');
+    await page.keyboard.press('ArrowLeft'); // zurück = letztes (verborgenes) Foto
+    await expect(page.locator('[data-count]')).toHaveText('20 / 20');
   });
 });
 

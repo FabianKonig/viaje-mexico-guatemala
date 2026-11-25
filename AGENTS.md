@@ -375,7 +375,7 @@ Beitrag), Verlauf der Beiträge (Datum, Link zur Lern-Datei).
   Technische Prüfungen (Größe, Format, Metadaten, Laufzeit, Layout per Screenshot) bleiben erlaubt.
 - **Videos:** Eigene Videos kommen als `clips:` ins Repository, aber **nur nach dem Import** (720p,
   H.264/AAC, mit Ton, ohne Standort, höchstens 180 s und 40 MiB je Clip). Die Seite liefert sie
-  selbst aus und lädt sie erst nach dem Antippen von „Play“. YouTube wird nicht verwendet (der
+  selbst aus (Vorschaukachel wie ein Foto, Player im Fenster) und lädt sie erst nach dem Antippen. YouTube wird nicht verwendet (der
   Autor will seine Videos selbst über Google Drive liefern); `videos:` im Frontmatter ist ein Fehler.
 - **Platz:** GitHub Pages erlaubt 1 GB. Der Build warnt ab 700 MiB und bricht ab 900 MiB ab. Bei der
   Warnung dem Autor Bescheid geben (Optionen: weniger oder kürzere Clips, Videos in ein zweites

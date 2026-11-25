@@ -1,6 +1,6 @@
 ---
 /**
- * Fotogalerie: responsives Raster mit Vorschaubildern (400/800 px, Lazy Loading, feste Seitenverhältnisse).
+ * Fotogalerie: Raster (.media-grid, global.css) mit Vorschaubildern (400/800 px, Lazy Loading, feste Seitenverhältnisse).
  * Ohne JavaScript öffnet ein Klick die große Version direkt; mit JavaScript die Lightbox.
  */
 import type { PhotoRef } from '../lib/content';
@@ -19,7 +19,7 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
 {items.length > 0 && (
   <section class="gallery" aria-labelledby="fotos-titel">
     <h2 id="fotos-titel">Fotos</h2>
-    <ul class="gallery__grid" role="list" data-gallery>
+    <ul id="fotos-raster" class="gallery__grid media-grid" role="list" data-gallery data-more-grid>
       {items.map((p, i) => (
         <li>
           <figure class="gallery__item">
@@ -36,7 +36,7 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
               <img
                 src={href(p.media.thumb400)}
                 srcset={`${href(p.media.thumb400)} 400w, ${href(p.media.thumb800)} 800w`}
-                sizes="(min-width: 1240px) 280px, (min-width: 700px) 30vw, 50vw"
+                sizes="(min-width: 1240px) 280px, (min-width: 1000px) 24vw, (min-width: 700px) 32vw, 50vw"
                 width={p.media.thumbWidth}
                 height={p.media.thumbHeight}
                 alt={p.alt}
@@ -62,6 +62,17 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
         </li>
       ))}
     </ul>
+    <button
+      class="btn btn--light more-btn"
+      type="button"
+      aria-expanded="false"
+      aria-controls="fotos-raster"
+      hidden
+      data-more-btn
+    >
+      <span data-more-label>Mehr anzeigen</span>
+      <span class="visually-hidden"> (Fotos)</span>
+    </button>
   </section>
 )}
 
@@ -90,7 +101,9 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
 <script>
   import { initLightbox } from '../scripts/lightbox';
   import { initMotion } from '../scripts/motion';
+  import { initMore } from '../scripts/more';
   initLightbox();
+  initMore();
   initMotion();
 </script>
 
@@ -100,20 +113,6 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
   }
   .gallery h2 {
     font-size: var(--fs-text);
-  }
-  .gallery__grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr));
-    gap: 18px;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-  @media (min-width: 700px) {
-    .gallery__grid {
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 24px;
-    }
   }
   .gallery__item {
     margin: 0;
