@@ -219,7 +219,7 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
   }
   /* Foto mit weißem Rahmen; darunter (außerhalb des Rahmens) der Kamera-Kasten, beide gleich breit */
   .lightbox__photo {
-    --info-gap: 8px;
+    --info-gap: 10px;
     display: flex;
     flex-direction: column;
     min-height: 0;
@@ -273,6 +273,12 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
   }
   .lightbox__info[hidden] {
     display: none;
+  }
+  /* Eine Angabe (z. B. „6,8 mm (24 mm KB)“) bleibt in einer Zeile; nur wenn sie allein breiter ist
+     als der Kasten, bricht sie um. Die Stücke erzeugt lightbox.ts, daher :global. */
+  .lightbox__info :global(.lightbox__info-part) {
+    display: inline-block;
+    max-width: 100%;
   }
   /* Handy: kleinere Schrift, damit der Kasten im Verhältnis zum Foto nicht zu groß wirkt */
   @media (max-width: 699px) {

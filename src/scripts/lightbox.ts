@@ -28,6 +28,24 @@ export function initLightbox(doc: Document = document) {
     if (l) new Image().src = l.href;
   };
 
+  /**
+   * Kameraangaben in Stücke teilen (Kamera, Blende, Verschlusszeit, ISO, Brennweite), damit ein
+   * Zeilenumbruch nur zwischen den Angaben fällt, nie mitten in einer (siehe Gallery.astro).
+   * Der Mittelpunkt bleibt am Ende des vorherigen Stücks; der Text ändert sich dadurch nicht.
+   */
+  function setInfo(text: string) {
+    const parts = text.split(' · ').filter(Boolean);
+    info.replaceChildren(
+      ...parts.flatMap((part, i) => {
+        const span = doc.createElement('span');
+        span.className = 'lightbox__info-part';
+        const last = i === parts.length - 1;
+        span.textContent = last ? part : `${part} ·`;
+        return last ? [span] : [span, doc.createTextNode(' ')];
+      }),
+    );
+  }
+
   function show(i: number) {
     index = (i + links.length) % links.length;
     const link = links[index];
@@ -40,7 +58,7 @@ export function initLightbox(doc: Document = document) {
     caption.textContent = text;
     caption.hidden = text === '';
     const camera = link.dataset.info ?? '';
-    info.textContent = camera;
+    setInfo(camera);
     info.hidden = camera === '';
     count.textContent = `${index + 1} / ${links.length}`;
     const single = links.length < 2;

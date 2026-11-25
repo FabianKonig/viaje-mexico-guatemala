@@ -151,7 +151,7 @@ test('Lightbox: Kamerafeld hat am Handy eine kleinere Schrift als am Computer', 
   expect(await sizeAt(1280)).toBeGreaterThan(14);
 });
 
-test('Lightbox: Kamerafeld (schwarz, weiße Schrift, so breit wie das Foto), fehlt ohne Angaben', async ({
+test('Lightbox: Kamera-Kasten (schwarz, weiße Schrift, unter dem Foto, nie breiter), fehlt ohne Angaben', async ({
   page,
   request,
 }) => {
@@ -166,13 +166,19 @@ test('Lightbox: Kamerafeld (schwarz, weiße Schrift, so breit wie das Foto), feh
   );
   await expect(info).toHaveCSS('background-color', 'rgb(0, 0, 0)');
   await expect(info).toHaveCSS('color', 'rgb(255, 255, 255)');
-  // unter dem Foto und genau so breit wie das Foto
-  const [img, box] = await Promise.all([
-    dialog.locator('[data-img]').boundingBox(),
+  // eigener Kasten mit schmalem Rand (gleiche weiße Farbe wie der Fotorahmen), außerhalb des Fotorahmens, mit kleinem Abstand darunter,
+  // zentriert und nicht breiter als das Foto
+  await expect(info).toHaveCSS('border-top-width', '1px');
+  await expect(info).toHaveCSS('border-top-color', 'rgb(255, 249, 239)');
+  const [frame, box] = await Promise.all([
+    dialog.locator('.lightbox__frame').boundingBox(),
     info.boundingBox(),
   ]);
-  expect(box!.y).toBeGreaterThanOrEqual(img!.y + img!.height - 1);
-  expect(Math.abs(box!.width - img!.width)).toBeLessThanOrEqual(4);
+  const gap = box!.y - (frame!.y + frame!.height);
+  expect(gap).toBeGreaterThanOrEqual(8);
+  expect(gap).toBeLessThanOrEqual(14);
+  expect(box!.width).toBeLessThanOrEqual(frame!.width + 1);
+  expect(Math.abs(box!.x + box!.width / 2 - (frame!.x + frame!.width / 2))).toBeLessThanOrEqual(2);
   // fehlende Angaben entfallen, die Reihenfolge bleibt
   await dialog.getByRole('button', { name: 'Nächstes Foto' }).click();
   await expect(info).toHaveText('Google Pixel 8 · f/1,7 · 1/500 s · ISO 50 · 6,9 mm');
@@ -189,6 +195,44 @@ test('Lightbox: Kamerafeld (schwarz, weiße Schrift, so breit wie das Foto), feh
   const thumb = await page.locator('.gallery__link img').first().getAttribute('src');
   const thumbBody = await (await request.get(new URL(thumb!, page.url()).href)).body();
   expect(thumbBody.includes(Buffer.from('iPhone', 'latin1'))).toBe(false);
+});
+
+test('Lightbox: langer Kamera-Text bricht nur zwischen den Angaben um, Kasten nie breiter als das Foto', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto(EXAMPLE);
+  // zweites Foto (Hochformat) mit besonders langem Text
+  await page.evaluate(() => {
+    const link = document.querySelectorAll<HTMLElement>('.gallery__link')[1];
+    link.dataset.info =
+      'Samsung Galaxy S24 Ultra · f/1,7 · 1/1000 s · ISO 1250 · 6,3 mm (23 mm KB)';
+  });
+  await page.locator('.gallery__link').nth(1).click();
+  const dialog = page.locator('dialog[data-lightbox]');
+  const info = dialog.locator('[data-info]');
+  await expect(info).toBeVisible();
+  const [frame, box] = await Promise.all([
+    dialog.locator('.lightbox__frame').boundingBox(),
+    info.boundingBox(),
+  ]);
+  expect(box!.width).toBeLessThanOrEqual(frame!.width + 1);
+  // der Text bricht um (mehr als eine Zeile), aber jede Angabe steht ganz in einer Zeile
+  const lines = await info.evaluate((el) => {
+    const lineHeight = parseFloat(getComputedStyle(el).lineHeight);
+    const parts = [...el.querySelectorAll<HTMLElement>('.lightbox__info-part')];
+    return {
+      total: Math.round(el.getBoundingClientRect().height / lineHeight),
+      parts: parts.map((p) => Math.round(p.getBoundingClientRect().height / lineHeight)),
+    };
+  });
+  expect(lines.total).toBeGreaterThan(1);
+  expect(lines.parts).toHaveLength(5);
+  expect(lines.parts.every((n) => n === 1)).toBe(true);
+  // der Text selbst bleibt unverändert
+  await expect(info).toHaveText(
+    'Samsung Galaxy S24 Ultra · f/1,7 · 1/1000 s · ISO 1250 · 6,3 mm (23 mm KB)',
+  );
 });
 
 test.describe('ohne JavaScript', () => {
