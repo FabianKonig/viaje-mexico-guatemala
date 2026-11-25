@@ -1,0 +1,1 @@
+Las fotografías dicen más que unas mil palabras
