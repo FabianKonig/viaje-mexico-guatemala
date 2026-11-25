@@ -191,6 +191,81 @@ a:hover {
   color: var(--ink);
 }
 
+/*
+ * Raster für Fotos und Videos (Vorschaukacheln): feste Spaltenzahl, damit sich die Kürzung
+ * („Mehr anzeigen“) schon vor dem Skript per CSS anwenden lässt und nichts aufblitzt.
+ * Handy 2 Spalten (zeigt 4), ab 700px 3 Spalten (zeigt 6), ab 1000px 4 Spalten (zeigt 8):
+ * also immer 2 Reihen. `--limit` liest das Skript (src/scripts/more.ts); aufgeklappt = [data-open].
+ */
+.media-grid {
+  --limit: 4;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+@media (min-width: 700px) {
+  .media-grid {
+    --limit: 6;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+  }
+}
+
+@media (min-width: 1000px) {
+  .media-grid {
+    --limit: 8;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (scripting: enabled) and (max-width: 699px) {
+  .media-grid:not([data-open]) > li:nth-child(n + 5) {
+    display: none;
+  }
+}
+
+@media (scripting: enabled) and (min-width: 700px) and (max-width: 999px) {
+  .media-grid:not([data-open]) > li:nth-child(n + 7) {
+    display: none;
+  }
+}
+
+@media (scripting: enabled) and (min-width: 1000px) {
+  .media-grid:not([data-open]) > li:nth-child(n + 9) {
+    display: none;
+  }
+}
+
+/* Knopf „Mehr anzeigen“ / „Weniger anzeigen“ unter einem Raster (Pfeil zeigt nach unten/oben) */
+.more-btn {
+  margin-top: 20px;
+  min-height: 44px;
+  padding: 8px 18px;
+}
+
+.more-btn[hidden] {
+  display: none;
+}
+
+.more-btn::after {
+  content: '';
+  width: 0.55em;
+  height: 0.55em;
+  margin-top: -0.2em;
+  border: solid currentColor;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.more-btn[aria-expanded='true']::after {
+  margin-top: 0.2em;
+  transform: rotate(-135deg);
+}
+
 .tag {
   display: inline-block;
   font-weight: 700;

@@ -49,6 +49,57 @@ photos:
     alt: 'Testfoto Nummer 19'
   - file: 20.jpg
     alt: 'Testfoto Nummer 20'
+clips:
+  - file: 01.mp4
+    title: 'Testvideo 1 von 10'
+    width: 640
+    height: 360
+    duration: 9
+  - file: 02.mp4
+    title: 'Testvideo 2 von 10'
+    width: 640
+    height: 360
+    duration: 16
+  - file: 03.mp4
+    title: 'Testvideo 3 von 10'
+    width: 640
+    height: 360
+    duration: 23
+  - file: 04.mp4
+    title: 'Testvideo 4 von 10'
+    width: 640
+    height: 360
+    duration: 30
+  - file: 05.mp4
+    title: 'Testvideo 5 von 10'
+    width: 640
+    height: 360
+    duration: 37
+  - file: 06.mp4
+    title: 'Testvideo 6 von 10'
+    width: 640
+    height: 360
+    duration: 44
+  - file: 07.mp4
+    title: 'Testvideo 7 von 10'
+    width: 640
+    height: 360
+    duration: 51
+  - file: 08.mp4
+    title: 'Testvideo 8 von 10'
+    width: 640
+    height: 360
+    duration: 58
+  - file: 09.mp4
+    title: 'Testvideo 9 von 10'
+    width: 640
+    height: 360
+    duration: 65
+  - file: 10.mp4
+    title: 'Testvideo 10 von 10'
+    width: 640
+    height: 360
+    duration: 72
 translation:
   source_sha256: '52619796caeb4facbf46f4a543e53c10bb41974e7277ce6ba0ce85093bb95256'
   segments:

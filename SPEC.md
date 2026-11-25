@@ -312,9 +312,18 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   veröffentlicht werden. Jeder Fund bricht den Build ab.
 - **Profilfoto:** `content/profile.(jpg|png|webp|heic)` → quadratisch 240 und 132 px (3× für 76/44 px, WebP Qualität 92),
   sonst Platzhalter.
-- **Galerie:** Raster (Handy mind. 2 Spalten à 150px, ab 700px `minmax(220px, 1fr)`), Vorschaubilder
+- **Galerie:** Raster `.media-grid` (global.css, gemeinsam mit den Videos) mit fester Spaltenzahl:
+  Handy 2, ab 700px 3, ab 1000px 4 Spalten; Vorschaubilder
   mit `srcset` 400w/800w, `width`/`height`, `aspect-ratio: 4/3`, `object-fit: cover`, Lazy Loading ab
   dem 5. Bild, optionale Bildunterschrift. Ohne JavaScript verlinkt jedes Foto auf die große Version.
+- **Mehr anzeigen (Fotos und Videos, `src/scripts/more.ts`):** Gezeigt werden immer 2 Reihen: am Handy
+  4, bei 3 Spalten 6, bei 4 Spalten 8 Kacheln (`--limit` am Raster). Gibt es mehr, steht darunter der
+  Knopf „Mehr anzeigen“ (`aria-expanded`, `aria-controls`, für Screenreader mit Zusatz „(Fotos)“ bzw.
+  „(Videos)“); er zeigt **alle** übrigen auf einmal, danach heißt er „Weniger anzeigen“ (springt beim
+  Zuklappen zur Überschrift, falls sie oben herausgerutscht ist). Fotos und Videos schalten getrennt.
+  Gekürzt wird per CSS (`@media (scripting: enabled)`, `li:nth-child(n+5|7|9)`), damit nichts
+  aufblitzt; ohne JavaScript ist alles sichtbar. Verborgene Fotos bleiben im DOM, die Lightbox
+  blättert auch zu ihnen; sie laden erst, wenn sie sichtbar werden (Lazy Loading, `display: none`).
 - **Lightbox:** `<dialog>` mit `showModal()` (Seite dahinter inaktiv), füllt den Bildschirm
   (`position: fixed; inset: 0`, kein `100vh`), Safe-Area-Abstände für iPhone. Zähler „3 / 12“,
   Knöpfe Schließen/Vor/Zurück (48px), Tastatur Esc/←/→, Wischen (Pointer-Events, mind. 50px
@@ -344,11 +353,15 @@ Alle Videos sind eigene Clips (`clips:`, Komponente `Videos.astro`, Klasse `.cli
 - Das fertige MP4 liegt im Beitragsordner unter `clips/` und wird vom Bildskript (`images.mjs`) mit
   Inhalts-Hash nach `public/media/<slug>/` kopiert (`<name>-<hash>.mp4`, Standbild
   `<name>-<hash>-poster.jpg`). Beim Build wird nichts umgewandelt, ffmpeg ist dafür nicht nötig.
-- Anzeige: `<video controls playsinline preload="none" poster=…>`, **nicht stumm, kein Autoplay**.
-  Vor dem Antippen von „Play“ lädt der Browser nur das Standbild (etwa 15 bis 60 KB), nie das Video.
-  Darunter der `title`. Ohne JavaScript funktioniert das genauso (native Bedienelemente), ohne
-  Videounterstützung erscheint ein Link „Video herunterladen“. `max-height: 75vh`, damit
-  Hochformat-Clips auf dem Handy nicht höher als der Bildschirm werden.
+- Anzeige: **Vorschaukacheln im selben Raster und in derselben Größe wie die Fotos** (`.media-grid`,
+  4:3, zugeschnitten, Standbild als Bild) mit Play-Symbol und Laufzeit „m:ss“ (`formatDuration`).
+  Die Kachel ist ein Link auf das MP4 (`aria-label` „<title> abspielen, Dauer m:ss“). Mit JavaScript
+  (`src/scripts/clips.ts`) öffnet ein Tipp ein Vollbild-`<dialog>` mit `<video controls playsinline
+  preload="none">` und startet es (**nicht stumm**); erst dann wird die Datei geladen, vorher nur das
+  kleine Standbild (etwa 15 bis 60 KB). Schließen per Knopf, Esc oder Klick auf den Hintergrund
+  hält das Video an und gibt die Datei frei; der Fokus kehrt zur Kachel zurück. Ohne JavaScript öffnet
+  der Link das MP4 im Player des Browsers. Der `title` steht im Fenster und im `aria-label`, nicht
+  unter der Kachel. Mehr als 2 Reihen: Knopf „Mehr anzeigen“ wie bei den Fotos (siehe 7.6).
 - Der Service Worker fasst Videos und Range-Anfragen nie an (`shouldHandle` lehnt `.mp4` ab):
   Videos werden gestreamt und nie vorab zwischengespeichert. GitHub Pages liefert Teilabrufe
   (Range); der Testserver `scripts/serve.mjs` tut das ebenfalls.

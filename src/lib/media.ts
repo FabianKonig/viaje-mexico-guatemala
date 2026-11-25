@@ -70,3 +70,11 @@ export function postCover(post: Post): { media: PhotoMedia; alt: string } | unde
   if (post.cover) return { media: photoMedia(post.slug, post.cover.file), alt: post.cover.alt };
   return undefined;
 }
+
+/** Laufzeit als „m:ss“ (aufgerundet auf ganze Sekunden): 2 → „0:02“, 75.2 → „1:16“. */
+export function formatDuration(seconds: number): string {
+  const total = Math.max(0, Math.ceil(seconds));
+  const m = Math.floor(total / 60);
+  const sec = String(total % 60).padStart(2, '0');
+  return `${m}:${sec}`;
+}
