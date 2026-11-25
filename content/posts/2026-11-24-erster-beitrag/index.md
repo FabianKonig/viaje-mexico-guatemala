@@ -1,53 +1,12 @@
 ---
-title: '¡Estoy en México!'
-titleDe: 'Ich bin in Mexiko!'
-date: 2026-11-24
+title: 'En las calles de Ciudad de México'
+titleDe: 'Auf den Straßen von Mexiko-Stadt'
+date: 2026-11-23
 place: ciudad-de-mexico
 cover: titelbild.jpg
 photos:
   - file: 01.jpg
-    alt: 'Foto 1 von 17'
-  - file: 02.jpg
-    alt: 'Foto 2 von 17'
-  - file: 03.jpg
-    alt: 'Foto 3 von 17'
-  - file: 04.jpg
-    alt: 'Foto 4 von 17'
-  - file: 05.jpg
-    alt: 'Foto 5 von 17'
-  - file: 06.jpg
-    alt: 'Foto 6 von 17'
-  - file: 07.jpg
-    alt: 'Foto 7 von 17'
-  - file: 08.jpg
-    alt: 'Foto 8 von 17'
-  - file: 09.jpg
-    alt: 'Foto 9 von 17'
-  - file: 10.jpg
-    alt: 'Foto 10 von 17'
-  - file: 11.jpg
-    alt: 'Foto 11 von 17'
-    motion: 11.mp4
-  - file: 12.jpg
-    alt: 'Foto 12 von 17'
-    motion: 12.mp4
-  - file: 13.jpg
-    alt: 'Foto 13 von 17'
-  - file: 14.jpg
-    alt: 'Foto 14 von 17'
-    motion: 14.mp4
-  - file: 15.jpg
-    alt: 'Foto 15 von 17'
-  - file: 16.jpg
-    alt: 'Foto 16 von 17'
-  - file: 17.jpg
-    alt: 'Foto 17 von 17'
-clips:
-  - file: 01.mp4
-    title: 'Video 1'
-    width: 720
-    height: 1280
-    duration: 7
+    alt: 'Foto 1 von 1'
 translation:
   source_sha256: 'eab22a6d2ec1b31926933c1fcffcb0c4c4d505f4aff09bb6f2b37ecc6d857b45'
   segments:
