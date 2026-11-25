@@ -1,6 +1,6 @@
 /**
  * Import: nimmt einen Ordner mit Handy-Originalen (Fotos, Videos) und legt verkleinerte, von
- * Metadaten (GPS, EXIF) befreite Dateien im Beitragsordner ab. Die Originale werden nur gelesen,
+ * Metadaten (GPS usw.) befreite Dateien im Beitragsordner ab; nur die erlaubten Kameraangaben bleiben. Die Originale werden nur gelesen,
  * nie kopiert. Erst danach darf committet werden.
  *
  *   Fotos  → content/posts/<slug>/photos/NN.jpg  (lange Seite höchstens 1600 px, JPEG)
@@ -13,6 +13,7 @@ import os from 'node:os';
 import path from 'node:path';
 import sharp from 'sharp';
 import { decodeInput, inspectImage, IMAGE_EXT, LARGE } from '../images.mjs';
+import { cameraToSharpExif, readCamera } from './camera.mjs';
 import {
   containerCaptureTime,
   exifCaptureTime,
@@ -91,14 +92,20 @@ export async function listByCaptureTime(source) {
   );
 }
 
-/** Verkleinertes Foto ohne Metadaten (JPEG, lange Seite höchstens 1600 px). */
+/**
+ * Verkleinertes Foto (JPEG, lange Seite höchstens 1600 px) ohne Metadaten bis auf die erlaubten
+ * Kameraangaben (scripts/lib/camera.mjs). GPS, Seriennummer usw. werden nie übernommen.
+ */
 export async function shrinkPhoto(input) {
-  return sharp(input, { failOn: 'error' })
+  const camera = readCamera((await sharp(input, { failOn: 'none' }).metadata()).exif);
+  const exif = cameraToSharpExif(camera);
+  let pipeline = sharp(input, { failOn: 'error' })
     .rotate()
     .resize({ width: LARGE, height: LARGE, fit: 'inside', withoutEnlargement: true })
     .flatten({ background: '#ffffff' })
-    .jpeg({ quality: PHOTO_JPEG_QUALITY, mozjpeg: true })
-    .toBuffer({ resolveWithObject: true });
+    .jpeg({ quality: PHOTO_JPEG_QUALITY, mozjpeg: true });
+  if (Object.keys(exif).length) pipeline = pipeline.withExif(exif);
+  return pipeline.toBuffer({ resolveWithObject: true });
 }
 
 /**
@@ -126,7 +133,7 @@ export async function importMedia({ source, postDir, log = console.log }) {
       fs.mkdirSync(photosDir, { recursive: true });
       const dest = path.join(photosDir, file);
       fs.writeFileSync(dest, out.data);
-      const problems = await inspectImage(dest);
+      const problems = await inspectImage(dest, { camera: true });
       if (problems.length) {
         fs.rmSync(dest);
         throw new Error(`${name}: Metadaten im Ergebnis (${problems.join(', ')})`);

@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * Bildskript: verarbeitet die Fotos aller Beiträge und das Profilfoto.
- *  - entfernt ALLE Metadaten (EXIF/GPS, XMP, IPTC), dreht nach der EXIF-Ausrichtung
+ *  - entfernt ALLE Metadaten (EXIF/GPS, XMP, IPTC), dreht nach der EXIF-Ausrichtung; nur das große
+ *    Bild behält die erlaubten Kameraangaben (Positivliste, scripts/lib/camera.mjs), nie GPS
  *  - HEIC/HEIF → über heic-convert dekodiert
  *  - erzeugt 400 und 800 px breite Vorschaubilder, eine große Version (max. 1600 px lange Seite,
  *    WebP Qualität 80) und für das Titelbild jedes Beitrags (`coverGenerated`, sonst `cover`, sonst das
@@ -23,14 +24,17 @@ import sharp from 'sharp';
 import heicConvert from 'heic-convert';
 import YAML from 'yaml';
 import { exifHasGps, rawMetadataMarkers } from './lib/exif.mjs';
+import { cameraLine, cameraToSharpExif, exifProblems, readCamera } from './lib/camera.mjs';
 import { mp4Problems } from './lib/video.mjs';
 
-export const PIPELINE_VERSION = 1;
+export const PIPELINE_VERSION = 2;
 export const LARGE = 1600;
 export const THUMBS = [400, 800];
 export const QUALITY = 80;
 export const IMAGE_EXT = /\.(jpe?g|png|webp|avif|gif|heic|heif)$/i;
 const PUBLISHED_EXT = /\.(jpe?g|png|webp|avif|gif)$/i;
+/** Nur das große Bild eines Fotos darf die erlaubten Kameraangaben tragen (siehe scripts/lib/camera.mjs). */
+const KEEPS_CAMERA = /-1600\.webp$/i;
 
 sharp.cache(false);
 
@@ -44,13 +48,19 @@ export async function decodeInput(file) {
   return buf;
 }
 
-/** Verarbeitet ein Foto in alle Größen. Liefert Puffer und Maße (ohne Metadaten). */
+/**
+ * Verarbeitet ein Foto in alle Größen. Liefert Puffer und Maße. Nur das große Bild behält die
+ * erlaubten Kameraangaben (`camera`, Textzeile in `info`), alles andere bleibt ohne Metadaten.
+ */
 export async function renderPhoto(input, { og = false } = {}) {
   const base = () => sharp(input, { failOn: 'error' }).rotate();
-  const large = await base()
+  const camera = readCamera((await sharp(input, { failOn: 'error' }).metadata()).exif);
+  const exif = cameraToSharpExif(camera);
+  let largePipeline = base()
     .resize({ width: LARGE, height: LARGE, fit: 'inside', withoutEnlargement: true })
-    .webp({ quality: QUALITY })
-    .toBuffer({ resolveWithObject: true });
+    .webp({ quality: QUALITY });
+  if (Object.keys(exif).length) largePipeline = largePipeline.withExif(exif);
+  const large = await largePipeline.toBuffer({ resolveWithObject: true });
   const thumbs = {};
   for (const w of THUMBS) {
     thumbs[w] = await base()
@@ -64,7 +74,7 @@ export async function renderPhoto(input, { og = false } = {}) {
         .jpeg({ quality: QUALITY, mozjpeg: true })
         .toBuffer()
     : undefined;
-  return { large, thumbs, og: ogImg };
+  return { large, thumbs, og: ogImg, camera, info: cameraLine(camera) };
 }
 
 /** Quadratisches Profilbild (3× für 76 px und 44 px, scharf auf Handys). */
@@ -80,13 +90,18 @@ export async function renderProfile(input) {
   return out;
 }
 
-/** Prüft eine einzelne Bilddatei auf Metadaten. Liefert Probleme (leer = sauber). */
-export async function inspectImage(file) {
+/**
+ * Prüft eine einzelne Bilddatei auf Metadaten. Liefert Probleme (leer = sauber).
+ * Mit `camera: true` sind die erlaubten Kameraangaben (EXIF-Positivliste) in Ordnung, alles
+ * andere (GPS, Seriennummer, Vorschaubild, XMP, IPTC …) bleibt ein Problem.
+ */
+export async function inspectImage(file, { camera = false } = {}) {
   const buf = fs.readFileSync(file);
-  const problems = rawMetadataMarkers(buf);
+  const problems = rawMetadataMarkers(buf).filter((p) => !(camera && p === 'EXIF'));
   try {
     const m = await sharp(buf).metadata();
-    if (m.exif) problems.push(exifHasGps(m.exif) ? 'EXIF mit GPS' : 'EXIF');
+    if (m.exif && camera) problems.push(...exifProblems(m.exif));
+    else if (m.exif) problems.push(exifHasGps(m.exif) ? 'EXIF mit GPS' : 'EXIF');
     if (m.xmp) problems.push('XMP');
     if (m.iptc) problems.push('IPTC');
   } catch (e) {
@@ -105,7 +120,7 @@ export async function verifyDir(dir) {
       if (entry.isDirectory()) await walk(p);
       else if (PUBLISHED_EXT.test(entry.name)) {
         count++;
-        const problems = await inspectImage(p);
+        const problems = await inspectImage(p, { camera: KEEPS_CAMERA.test(entry.name) });
         if (problems.length) bad.push(`${p}: ${problems.join(', ')}`);
       } else if (/\.mp4$/i.test(entry.name)) {
         const problems = mp4Problems(fs.readFileSync(p));
@@ -151,7 +166,8 @@ function writeCached(cacheDir, name, producer) {
 
 /**
  * Verarbeitet alle Inhalte. Liefert das Manifest:
- * { photos: { "<slug>/<datei>": { width, height, thumb400, thumb800, large, og? } }, profile?: { 240, 132 } }
+ * { photos: { "<slug>/<datei>": { width, height, thumb400, thumb800, large, og?, info? } }, profile?: { 240, 132 } }
+ * (`info`: Kamera-Textzeile für die Großansicht, nur wenn das Foto Kameraangaben hat)
  * Pfade sind relativ zum Basispfad der Seite (z. B. "media/<slug>/01-ab12cd-400.webp").
  */
 export async function processAll({
@@ -211,6 +227,7 @@ export async function processAll({
           height: r.large.info.height,
           thumbHeights: Object.fromEntries(THUMBS.map((w) => [w, r.thumbs[w].info.height])),
           thumbWidths: Object.fromEntries(THUMBS.map((w) => [w, r.thumbs[w].info.width])),
+          info: r.info,
         };
         fs.writeFileSync(metaFile, JSON.stringify(meta));
         processed++;
@@ -225,6 +242,7 @@ export async function processAll({
         thumbWidth: meta.thumbWidths[400],
         thumbHeight: meta.thumbHeights[400],
       };
+      if (meta.info) entry.info = meta.info;
       if (wantOg) entry.og = emit(path.join(slug, `${stem}-${h}-og.jpg`), read('og.jpg'));
       return { entry, stem };
     };

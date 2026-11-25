@@ -114,7 +114,8 @@ describe.skipIf(!ffmpeg)('Import (mit ffmpeg)', () => {
     expect(r.skipped.map((s: { source: string }) => s.source)).toEqual(['notiz.txt']);
 
     const photo = path.join(postDir, 'photos', '01.jpg');
-    expect(await inspectImage(photo)).toEqual([]);
+    expect(await inspectImage(photo, { camera: true })).toEqual([]);
+    expect(exifHasGps((await sharp(photo).metadata()).exif)).toBe(false);
     const pm = await sharp(photo).metadata();
     expect(Math.max(pm.width!, pm.height!)).toBe(1600);
 
@@ -257,7 +258,9 @@ describe('Bewegtfotos (Motion Photo)', () => {
       expect(info.hasAudio).toBe(false);
       expect(info.duration).toBeGreaterThan(0.5);
       expect(fs.statSync(loop).size).toBeLessThan(mp4.length * 3);
-      expect(await inspectImage(path.join(postDir, 'photos', '01.jpg'))).toEqual([]);
+      expect(await inspectImage(path.join(postDir, 'photos', '01.jpg'), { camera: true })).toEqual(
+        [],
+      );
       expect(frontmatterSnippet(r)).toContain('motion: 01.mp4');
     },
   );
