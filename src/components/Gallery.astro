@@ -321,7 +321,7 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
   }
   .lightbox__nav {
     position: absolute;
-    top: 50%;
+    top: var(--nav-top, 50%); /* Mitte des Fotos, setzt lightbox.ts */
     transform: translateY(-50%);
     font-size: 2rem;
   }

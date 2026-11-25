@@ -74,6 +74,7 @@ export function initLightbox(doc: Document = document) {
   /** Platz für Kamera-Kasten (samt Abstand) und Bildunterschrift, damit das Foto in die Höhe passt (siehe Gallery.astro). */
   const photo = dialog.querySelector<HTMLElement>('.lightbox__photo')!;
   const infoRow = dialog.querySelector<HTMLElement>('[data-info-row]')!;
+  const frame = dialog.querySelector<HTMLElement>('.lightbox__frame')!;
   function fit() {
     if (!dialog!.open) return;
     // Von der vollen Foto-Größe aus messen: Ein altes --reserve könnte das Foto (und damit den Kasten) schmal halten
@@ -83,6 +84,10 @@ export function initLightbox(doc: Document = document) {
       // die Zeile enthält Kasten und Abstand darüber (leer, wenn das Foto keine Kameraangaben hat)
       photo.style.setProperty('--reserve', `${infoRow.offsetHeight + gap}px`);
     }
+    // Pfeile (Vor/Zurück) auf halber Höhe des Fotos, nicht des Bildschirms
+    const f = frame.getBoundingClientRect();
+    const d = dialog!.getBoundingClientRect();
+    dialog!.style.setProperty('--nav-top', `${f.top - d.top + f.height / 2}px`);
   }
   window.addEventListener('resize', fit);
   // Solange das Foto lädt, hat es keine Breite; erst danach stimmt die Höhe des Kamera-Kastens

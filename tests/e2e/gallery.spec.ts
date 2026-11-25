@@ -267,6 +267,43 @@ test('Bildunterschrift: nicht in der Fotoliste, in der Großansicht bei langem T
   expect(short.scroll).toBeLessThanOrEqual(short.client + 1);
 });
 
+test('Lightbox: Vor-/Zurück-Pfeile stehen auf halber Höhe des Fotos, auch mit langer Bildunterschrift', async ({
+  page,
+}) => {
+  await page.goto(EXAMPLE);
+  const long = Array.from({ length: 200 }, (_, i) => `palabra${i}`).join(' ');
+  await page.evaluate((t) => {
+    document.querySelectorAll<HTMLElement>('.gallery__link')[1].dataset.caption = t;
+  }, long);
+  const dialog = page.locator('dialog[data-lightbox]');
+  for (const size of [
+    { width: 390, height: 844 },
+    { width: 1280, height: 800 },
+  ]) {
+    await page.setViewportSize(size);
+    await page.locator('.gallery__link').first().click();
+    // Querformat (kurze Bildunterschrift), dann Hochformat (lange Bildunterschrift), dann ohne Kamera
+    for (let i = 0; i < 3; i++) {
+      await expect(dialog.locator('[data-count]')).toHaveText(`${i + 1} / 3`);
+      await page.waitForTimeout(300);
+      const frame = (await dialog.locator('.lightbox__frame').boundingBox())!;
+      const prev = (await dialog.locator('[data-prev]').boundingBox())!;
+      const next = (await dialog.locator('[data-next]').boundingBox())!;
+      const mid = frame.y + frame.height / 2;
+      expect(
+        Math.abs(prev.y + prev.height / 2 - mid),
+        `${size.width} Foto ${i + 1} zurück`,
+      ).toBeLessThanOrEqual(2);
+      expect(
+        Math.abs(next.y + next.height / 2 - mid),
+        `${size.width} Foto ${i + 1} weiter`,
+      ).toBeLessThanOrEqual(2);
+      if (i < 2) await dialog.locator('[data-next]').click();
+    }
+    await dialog.locator('[data-close]').click();
+  }
+});
+
 test.describe('ohne JavaScript', () => {
   test.use({ javaScriptEnabled: false });
   test('Fotos sind sichtbar und verlinken auf die große Version', async ({ page }) => {
