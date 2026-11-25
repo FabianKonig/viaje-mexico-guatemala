@@ -74,7 +74,7 @@ content/profile.jpg              Profilfoto (optional)
 content/posts/<JJJJ-MM-TT-slug>/
   index.md                       Frontmatter (Titel, Datum, Ort, Fotos, Übersetzung)
   original.md                    Originaltext, byte-genau
-  cover.jpg                      optional: selbst gezeichnetes Titelbild (scripts/make-cover.mjs)
+  cover.jpg, cover.svg           optional: selbst gezeichnetes Titelbild und seine Zeichnung (Quelle)
   photos/                        Fotos dieses Beitrags (vom Import verkleinert, ohne GPS)
   clips/                         eigene Videos: NN.mp4 + NN.jpg (Standbild), vom Import erzeugt
 src/config.ts                    Name, Adresse, Reisedaten, Links
@@ -199,12 +199,13 @@ verschiedene Titelbilder: ebenfalls nachfragen.
 - **Dateiname** (Foto im Drive-Ordner): `cover: <datei>` im Frontmatter (Datei aus `photos/` nach dem
   Import). Das Foto bleibt chronologisch auch in der Medienliste unten, wie bisher.
 - **Beschreibung** (ein Bild soll gezeichnet werden): Ich zeichne eine **flache Illustration als SVG**
-  (Scratchpad, nicht einchecken) in den Seitenfarben (`--sand #f6ebd9`, `--terracotta #c4552d`,
+  (im Scratchpad zeichnen; das Skript legt sie als Quelle ab) in den Seitenfarben (`--sand #f6ebd9`, `--terracotta #c4552d`,
   `--turquoise #0e7c86`, `--turquoise-dark #0b5d66`, `--marigold #f2a900`, `--pink #d4457a`,
   `--ink #2b1d16`), **ohne Schrift** (kein `<text>`, keine `<image>`, keine Skripte oder externen
   Verweise; das Skript lehnt sie ab), Seitenverhältnis 4:3 (viewBox `0 0 1600 1200`) und mit dem
   Wichtigen in der **mittleren Bildhälfte** (die WhatsApp-Vorschau 1200×630 beschneidet oben und
-  unten). Dann `node scripts/make-cover.mjs <slug> <zeichnung.svg>`: schreibt
+  unten). Dann `node scripts/make-cover.mjs <slug> <zeichnung.svg>`: kopiert die Zeichnung nach
+  `content/posts/<slug>/cover.svg` (Quelle, eingecheckt, nie veröffentlicht), schreibt daraus
   `content/posts/<slug>/cover.jpg` und trägt `coverGenerated: cover.jpg` ein (ersetzt `cover:`).
   Es gibt **kein** KI-Bildwerkzeug und keinen externen Dienst; das Bild ist immer eine gezeichnete
   Grafik. Dieses selbst gezeichnete Bild **darf ich ansehen** und nachbessern (Ausnahme zur Regel
@@ -213,7 +214,12 @@ verschiedene Titelbilder: ebenfalls nachfragen.
   `photos` und nicht in der Medienliste. **Alle anderen Medien im Ordner** erscheinen wie immer nur
   in der Liste unten auf der Beitragsseite; oben im Beitrag gibt es kein Titelbild.
 - Steht keine Anweisung im Doc, gilt wie bisher das erste Foto.
-- Ändert der Autor die Beschreibung später: neu zeichnen, `cover.jpg` wird überschrieben.
+- **Reproduzierbar:** Aus derselben `cover.svg` entsteht immer dasselbe `cover.jpg`
+  (`node scripts/make-cover.mjs <slug>` ohne SVG rendert neu aus der Quelle). Ändert der Autor
+  **Text, Fotos oder Videos**, bleibt das Titelbild **unberührt** (nicht neu zeichnen, auch nicht
+  beim Neuaufbau eines Beitrags: `cover.svg`, `cover.jpg` und `coverGenerated` bleiben stehen).
+  Neu gezeichnet wird nur, wenn der Autor die **Beschreibung im Doc ändert** (neue SVG, überschreibt
+  Quelle und Bild).
 
 ## Bestehenden Beitrag ändern (Medien oder Text)
 

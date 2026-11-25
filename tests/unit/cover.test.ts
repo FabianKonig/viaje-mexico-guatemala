@@ -14,8 +14,9 @@ const svg =
   '<rect width="1600" height="1200" fill="url(#g)"/><circle cx="800" cy="600" r="200" fill="#c4552d"/></svg>';
 
 describe('gezeichnetes Titelbild', () => {
-  it('erzeugt ein JPEG 1600×1200 ohne Metadaten', async () => {
+  it('erzeugt ein JPEG 1600×1200 ohne Metadaten, gleiche SVG gibt gleiche Bytes', async () => {
     const jpeg = await renderCoverJpeg(svg);
+    expect((await renderCoverJpeg(svg)).equals(jpeg)).toBe(true);
     const m = await sharp(jpeg).metadata();
     expect([m.format, m.width, m.height]).toEqual(['jpeg', 1600, 1200]);
     const f = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'cover-')), 'c.jpg');
@@ -57,6 +58,24 @@ describe('gezeichnetes Titelbild', () => {
     expect((await sharp(path.join(dir, 'cover.jpg')).metadata()).width).toBe(1600);
     expect(fs.readFileSync(path.join(dir, 'index.md'), 'utf8')).toContain(
       'coverGenerated: cover.jpg',
+    );
+    // die Zeichnung wird als Quelle mitgespeichert
+    expect(fs.readFileSync(path.join(dir, 'cover.svg'), 'utf8')).toBe(svg);
+    // ohne neue Zeichnung wird aus cover.svg identisch neu gerendert
+    const before = fs.readFileSync(path.join(dir, 'cover.jpg'));
+    fs.rmSync(path.join(dir, 'cover.jpg'));
+    await makeCover({ contentDir: content, slug: '2026-11-24-a' });
+    expect(fs.readFileSync(path.join(dir, 'cover.jpg')).equals(before)).toBe(true);
+    // eine andere Zeichnung ersetzt Quelle und Bild
+    const other = svg.replace('#c4552d', '#0e7c86');
+    fs.writeFileSync(svgFile, other);
+    await makeCover({ contentDir: content, slug: '2026-11-24-a', svgFile });
+    expect(fs.readFileSync(path.join(dir, 'cover.svg'), 'utf8')).toBe(other);
+    expect(fs.readFileSync(path.join(dir, 'cover.jpg')).equals(before)).toBe(false);
+    // ohne Quelle und ohne Zeichnung gibt es nichts zu rendern
+    fs.rmSync(path.join(dir, 'cover.svg'));
+    await expect(makeCover({ contentDir: content, slug: '2026-11-24-a' })).rejects.toThrow(
+      /cover\.svg fehlt/,
     );
     await expect(
       makeCover({ contentDir: content, slug: '2026-11-99-fehlt', svgFile }),
