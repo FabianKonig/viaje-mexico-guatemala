@@ -317,6 +317,28 @@ test('Lightbox: Vor-/Zurück-Pfeile stehen auf halber Höhe des Fotos, auch mit 
   }
 });
 
+test('Lightbox: Vor-/Zurück-Pfeile sind am Handy 32 px, am Computer 48 px (Schließen immer 48 px)', async ({
+  page,
+}) => {
+  await page.goto(EXAMPLE);
+  const dialog = page.locator('dialog[data-lightbox]');
+  for (const { width, height, nav } of [
+    { width: 390, height: 844, nav: 32 },
+    { width: 1280, height: 800, nav: 48 },
+  ]) {
+    await page.setViewportSize({ width, height });
+    await page.locator('.gallery__link').first().click();
+    for (const sel of ['[data-prev]', '[data-next]']) {
+      const box = (await dialog.locator(sel).boundingBox())!;
+      expect(box.width, `${width} ${sel} Breite`).toBeCloseTo(nav, 0);
+      expect(box.height, `${width} ${sel} Höhe`).toBeCloseTo(nav, 0);
+    }
+    const close = (await dialog.locator('[data-close]').boundingBox())!;
+    expect(close.width).toBeCloseTo(48, 0);
+    await dialog.locator('[data-close]').click();
+  }
+});
+
 test.describe('ohne JavaScript', () => {
   test.use({ javaScriptEnabled: false });
   test('Fotos sind sichtbar und verlinken auf die große Version', async ({ page }) => {
