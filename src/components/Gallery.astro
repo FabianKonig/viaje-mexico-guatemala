@@ -249,6 +249,14 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
   .lightbox__info[hidden] {
     display: none;
   }
+  /* Handy: kleinere Schrift, damit das Feld im Verhältnis zum Foto nicht zu groß wirkt */
+  @media (max-width: 699px) {
+    .lightbox__info {
+      padding: 5px 8px;
+      font-size: 0.7rem;
+      line-height: 1.35;
+    }
+  }
   .lightbox__caption {
     margin: 0;
     text-align: center;

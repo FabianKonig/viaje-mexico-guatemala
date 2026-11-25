@@ -134,6 +134,23 @@ test('veröffentlichte Fotos (auch aus GPS- und HEIC-Originalen) sind ohne GPS u
   }
 });
 
+test('Lightbox: Kamerafeld hat am Handy eine kleinere Schrift als am Computer', async ({
+  page,
+}) => {
+  await page.goto(EXAMPLE);
+  const info = page.locator('dialog[data-lightbox] [data-info]');
+  const sizeAt = async (width: number) => {
+    await page.setViewportSize({ width, height: 800 });
+    await page.locator('.gallery__link').first().click();
+    await expect(info).toBeVisible();
+    const px = await info.evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+    await page.locator('dialog[data-lightbox] [data-close]').click();
+    return px;
+  };
+  expect(await sizeAt(390)).toBeLessThan(12);
+  expect(await sizeAt(1280)).toBeGreaterThan(14);
+});
+
 test('Lightbox: Kamerafeld (schwarz, weiße Schrift, so breit wie das Foto), fehlt ohne Angaben', async ({
   page,
   request,
