@@ -1,6 +1,7 @@
 /** Zugriff auf die vom Bildskript erzeugten Bilder (.cache/media-manifest.json). */
 import fs from 'node:fs';
 import path from 'node:path';
+import type { Post } from './content';
 
 export interface PhotoMedia {
   width: number;
@@ -23,6 +24,8 @@ export interface ClipMedia {
 export interface MediaManifest {
   photos: Record<string, PhotoMedia>;
   clips: Record<string, ClipMedia>;
+  /** Gezeichnete Titelbilder je Beitrag (Schlüssel: slug). */
+  covers?: Record<string, PhotoMedia>;
   profile: { 240: string; 132: string } | null;
 }
 
@@ -52,4 +55,18 @@ export function clipMedia(slug: string, file: string): ClipMedia {
   if (!m)
     throw new Error(`Video ${slug}/${file} wurde nicht verarbeitet. Bildskript erneut ausführen.`);
   return m;
+}
+
+/** Titelbild eines Beitrags (Foto aus `cover`/erstes Foto oder gezeichnetes Titelbild). */
+export function postCover(post: Post): { media: PhotoMedia; alt: string } | undefined {
+  if (post.generatedCover) {
+    const media = loadManifest().covers?.[post.slug];
+    if (!media)
+      throw new Error(
+        `Titelbild ${post.slug}/${post.generatedCover.file} wurde nicht verarbeitet. Bildskript erneut ausführen.`,
+      );
+    return { media, alt: post.generatedCover.alt };
+  }
+  if (post.cover) return { media: photoMedia(post.slug, post.cover.file), alt: post.cover.alt };
+  return undefined;
 }

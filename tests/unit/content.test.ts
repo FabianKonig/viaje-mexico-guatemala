@@ -183,6 +183,28 @@ describe('Inhalte: Frontmatter-Prüfung', () => {
     expect(run(5).errors.join()).toMatch(/cover muss ein Dateiname/);
   });
 
+  it('coverGenerated: gezeichnetes Titelbild im Beitragsordner, nicht in photos', () => {
+    const dir = tmpPost(['01.jpg']);
+    fs.writeFileSync(path.join(dir, 'cover.jpg'), 'x');
+    const photos = [{ file: '01.jpg', alt: 'Test' }];
+    const run = (extra: Record<string, unknown>) =>
+      validatePost('2026-11-24-hola', dir, { ...base(), photos, ...extra }, original, places);
+    const r = run({ coverGenerated: 'cover.jpg' });
+    expect(r.errors).toEqual([]);
+    expect(r.post?.generatedCover?.file).toBe('cover.jpg');
+    // kein Foto wird Titelbild, die Galerie bleibt unverändert
+    expect(r.post?.cover).toBeUndefined();
+    expect(r.post?.photos.map((p) => p.file)).toEqual(['01.jpg']);
+    expect(run({ coverGenerated: 'fehlt.jpg' }).errors.join()).toMatch(
+      /fehlt\.jpg existiert nicht/,
+    );
+    expect(run({ coverGenerated: 'photos/01.jpg' }).errors.join()).toMatch(/ohne Ordner/);
+    expect(run({ coverGenerated: 'cover.gif' }).errors.join()).toMatch(/Format nicht unterstützt/);
+    expect(run({ coverGenerated: 'cover.jpg', cover: '01.jpg' }).errors.join()).toMatch(
+      /schließen sich aus/,
+    );
+  });
+
   it('Bewegtfoto: motion muss eine vorhandene .mp4 in photos/ sein', () => {
     const dir = tmpPost(['01.jpg', '01.mp4']);
     const photo = { file: '01.jpg', alt: 'Test', motion: '01.mp4' };
