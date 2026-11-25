@@ -300,16 +300,40 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
 
 - **Bildskript** `scripts/images.mjs` (läuft bei `npm run build` und `npm run dev` vor Astro):
   verarbeitet nur Fotos, die im Frontmatter stehen (nicht verlinkte Dateien werden nie veröffentlicht),
-  dekodiert HEIC/HEIF mit heic-convert, dreht nach EXIF-Ausrichtung, entfernt **alle** Metadaten,
+  dekodiert HEIC/HEIF mit heic-convert, dreht nach EXIF-Ausrichtung, entfernt **alle** Metadaten
+  bis auf die erlaubten Kameraangaben (siehe „Kameraangaben“ unten; nur im großen Bild),
   erzeugt WebP (Qualität 80) in 400 und 800 px Breite (Vorschau) und max. 1600 px lange Seite (groß),
   nie vergrößert; für das erste Foto eines Beitrags zusätzlich ein Open-Graph-Bild 1200×630 (JPEG).
   Dateinamen enthalten einen Inhalts-Hash (`<name>-<hash>-<größe>.webp`), daher dauerhaft
   zwischenspeicherbar. Zwischenspeicher `.cache/media/`, Ausgabe `public/media/`, Manifest
-  `.cache/media-manifest.json` (Maße für `width`/`height`). Das Manifest enthält auch `clips`
-  (Video und Standbild, siehe 7.7).
+  `.cache/media-manifest.json` (Maße für `width`/`height`, `info` = Kamera-Textzeile, nur wenn das
+  Foto Kameraangaben hat). Das Manifest enthält auch `clips` (Video und Standbild, siehe 7.7).
 - **Prüfung:** Nach der Verarbeitung und nach `astro build` werden alle Bilder im Ausgabeordner auf
   EXIF, GPS, XMP und IPTC geprüft (sharp-Metadaten und Byte-Marker); HEIC/TIFF/RAW dürfen nicht
-  veröffentlicht werden. Jeder Fund bricht den Build ab.
+  veröffentlicht werden. Jeder Fund bricht den Build ab. Ausnahme: Das große Bild (`*-1600.webp`)
+  und das Import-Foto dürfen EXIF mit den erlaubten Kameraangaben tragen (Positivliste, siehe
+  unten); jedes andere Tag, GPS, Vorschaubild, XMP oder IPTC bleibt ein Fehler. Vorschaubilder
+  (400/800 px) und das Open-Graph-Bild bleiben ohne jede Metadaten.
+- **Kameraangaben** (`scripts/lib/camera.mjs`, Wunsch des Autors): Der Import (`shrinkPhoto`) und
+  das Bildskript (nur große Version) behalten aus dem EXIF **ausschließlich** diese Angaben, alles
+  andere wird entfernt (Positivliste, nie Negativliste): Kamera (`Make`, `Model`), Objektiv
+  (`LensMake`, `LensModel`), `FNumber`, `ExposureTime`, `ISO`, `FocalLength`,
+  `FocalLengthIn35mmFilm`, `DateTimeOriginal` (ohne Zeitzone und Sekundenbruchteile),
+  `ExposureProgram`, `ExposureBiasValue`, `MeteringMode`, `Flash`, `WhiteBalance`. Dazu schreibt
+  libvips rein technische Pflichtfelder (Ausrichtung, Auflösung, Pixelmaße, Versionen, Farbraum). Nie
+  übernommen werden GPS, Seriennummern, Besitzer/Autor, Software, Beschreibungen, Kommentare,
+  MakerNote, Vorschaubild, XMP, IPTC. Hat ein Foto keine dieser Angaben, bleibt es ganz ohne EXIF.
+  Videos sind nicht betroffen (weiter ohne Metadaten).
+  **Textzeile** (`cameraLine`, im Manifest als `info`): feste Reihenfolge Kamera · Objektiv · Blende ·
+  Verschlusszeit · ISO · Brennweite, getrennt durch Mittelpunkt mit Leerzeichen (` · `); fehlt eine
+  Angabe, entfällt sie ersatzlos, die Reihenfolge bleibt; ohne jede Angabe gibt es keine Zeile.
+  Formate: Kamera = Hersteller + Modell ohne Doppelung (`Canon` + `Canon EOS R5` → `Canon EOS R5`;
+  Herstellernamen in Großbuchstaben oder Kleinbuchstaben bekommen normale Schreibweise, Zusätze wie
+  „Corporation“ entfallen; Modellkürzel wie `SM-S918B` stehen unverändert da); Objektiv wie gespeichert;
+  Blende `f/1,8` (deutsches Komma, ohne überflüssige Null: `f/2`); Verschlusszeit `1/250 s` bzw. `2,5 s`;
+  `ISO 100`; Brennweite `6,8 mm (24 mm KB)` (echte Brennweite, Kleinbild-Äquivalent in Klammern, nur
+  wenn es sich unterscheidet; fehlt die echte, `24 mm KB`). Bestehende Fotos ohne Kameraangaben
+  bekommen kein Feld; sie werden erst durch einen neuen Import aus den Originalen damit ausgestattet.
 - **Profilfoto:** `content/profile.(jpg|png|webp|heic)` → quadratisch 240 und 132 px (3× für 76/44 px, WebP Qualität 92),
   sonst Platzhalter.
 - **Galerie:** Raster `.media-grid` (global.css, gemeinsam mit den Videos) mit fester Spaltenzahl:
@@ -329,6 +353,11 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   Knöpfe Schließen/Vor/Zurück (48px), Tastatur Esc/←/→, Wischen (Pointer-Events, mind. 50px
   waagerecht), Klick auf den Hintergrund schließt. Große Version wird erst beim Öffnen geladen,
   Nachbarbilder vorgeladen. Fokus startet auf „Schließen“ und kehrt zum Foto zurück.
+  **Kamerafeld:** Unter dem Foto steht die Kamera-Textzeile (`data-info` am Link, Text vom Build) in
+  einem schwarzen Feld mit weißer Schrift (zentriert, `0.9rem`, bricht am Handy um), im selben
+  Rahmen wie das Foto und genau so breit wie das Foto (die Foto-Höhe ist Bühne minus Kamerafeld
+  minus Bildunterschrift; `lightbox.ts` misst das Feld und setzt `--reserve`). Ohne Kameraangaben
+  entfällt das Feld; eine Bildunterschrift steht darunter.
 - **Bewegtfotos** (`motion`, `src/scripts/motion.ts`): Über dem Standbild liegt ein `<video muted loop
   playsinline preload="none" aria-hidden tabindex="-1">`, zunächst durchsichtig (`opacity: 0`, nicht
   `hidden`, weil ein verstecktes Element nie „im Bild“ ist). Ein `IntersectionObserver` startet es,
@@ -376,7 +405,8 @@ Alle Videos sind eigene Clips (`clips:`, Komponente `Videos.astro`, Klasse `.cli
   Dateinamen (`PXL_20261124_153012345`, `IMG_20261124_153012`). Gleiche Zeit: nach Dateiname; Dateien ohne
   Zeit stehen am Ende der Gruppe. Das Titelbild ist davon getrennt: Es steht im Feld `cover` (siehe 6.1)
   und ändert die Reihenfolge nicht; ohne `cover` gilt `photos[0]`; mit `coverGenerated` ist kein Foto Titelbild. `node scripts/import-media.mjs --times <ordner>` zeigt nur die Zeiten, ohne zu schreiben.
-  Fotos: JPEG Qualität 85, lange Seite höchstens 1600 px, ohne Metadaten, `photos/NN.jpg`.
+  Fotos: JPEG Qualität 85, lange Seite höchstens 1600 px, ohne Metadaten bis auf die erlaubten
+  Kameraangaben (siehe 7.6), `photos/NN.jpg`.
   **Android-Bewegtfotos** (Motion Photo: JPEG mit angehängtem MP4, erkennbar an `*.MP.jpg`; `extractMotionVideo`
   liest XMP `Item:Semantic="MotionPhoto"` mit `Item:Length` bzw. das ältere `MicroVideoOffset`) werden zu
   Foto **plus** stummer Schleife `photos/NN.mp4` (gleiche Umwandlung wie Videos, ohne Ton; das Foto
@@ -556,7 +586,7 @@ Befehle: [AGENTS.md › Tests](AGENTS.md#tests). Jede neue Funktion bekommt eine
 | --- | --- | --- |
 | Lint | `npm run lint` | Prettier, eingecheckte-aber-ignorierte Dateien, THIRD-PARTY-NOTICES aktuell, kein starkes Copyleft |
 | Sicherheit | CI | `npm audit --audit-level=moderate` |
-| Unit | `tests/unit` (Vitest) | Pfade, Datumshilfen, Reisetag (vor Start, Tag 1, Tag 72, 3.2., danach, Monats-/Jahreswechsel, Zeitzonengrenzen), Ortsliste/Nummerierung, Zusammenfassung naher Orte, Kartenerzeugung, Beitrags-Parser (gemischt, nur Spanisch, nur Deutsch), Frontmatter-Prüfung (Pflichtfelder, Ort existiert, Fotos existieren, max. 20), Bild-Pipeline (GPS rein → ohne Metadaten raus, Größe, Drehung, HEIC, Abbruch), Medien-Import (Reihenfolge nach Aufnahmezeit, Foto und Video verkleinern, Standort entfernen, Ton behalten, Hochformat, Nummerierung, Bewegtfoto → Foto + Schleife; nur mit ffmpeg), Skill `neuer-beitrag` (vorhanden, verweist auf existierende AGENTS-Abschnitte), Videos im Bildskript (Manifest, Standort-Abbruch), Größenprüfung der Seite, PWA-Logik (Videos nie über den Service Worker), Lizenzen, SPEC↔Code (Versionen, Farben, Texte, Workflows) |
+| Unit | `tests/unit` (Vitest) | Pfade, Datumshilfen, Reisetag (vor Start, Tag 1, Tag 72, 3.2., danach, Monats-/Jahreswechsel, Zeitzonengrenzen), Ortsliste/Nummerierung, Zusammenfassung naher Orte, Kartenerzeugung, Beitrags-Parser (gemischt, nur Spanisch, nur Deutsch), Frontmatter-Prüfung (Pflichtfelder, Ort existiert, Fotos existieren, max. 20), Bild-Pipeline (GPS rein → ohne Metadaten raus, Größe, Drehung, HEIC, Abbruch), Kameraangaben (Positivliste: erlaubte Werte bleiben, GPS/Seriennummer/Besitzer nie; Textzeile: Reihenfolge, fehlende Angaben, Formate; Prüfung nur im großen Bild), Medien-Import (Reihenfolge nach Aufnahmezeit, Foto und Video verkleinern, Standort entfernen, Ton behalten, Hochformat, Nummerierung, Bewegtfoto → Foto + Schleife; nur mit ffmpeg), Skill `neuer-beitrag` (vorhanden, verweist auf existierende AGENTS-Abschnitte), Videos im Bildskript (Manifest, Standort-Abbruch), Größenprüfung der Seite, PWA-Logik (Videos nie über den Service Worker), Lizenzen, SPEC↔Code (Versionen, Farben, Texte, Workflows) |
 | Build | `npm run build` | Bildskript mit GPS-Prüfung (Fotos und Videos), Größe der Seite (Warnung/Fehler), HTML-Validierung, interne Links, erlaubte externe Links, noindex/Copyright/og:image je Seite, Seitengewicht |
 | Browser | `tests/e2e` (Playwright) | Smoke (keine Konsolenfehler, keine fehlgeschlagenen oder Drittanbieter-Anfragen), Startseite, Beitragsseite, Originaltreue (byte-gleich), Schalter, Lightbox (Maus, Tastatur, Wischen), Videos (keine Anfrage vor Klick; Clips: Standbild vorab, Video erst nach „Play“, Ton nicht stumm, Teilabrufe, ohne JavaScript), Bewegtfotos (unsichtbar und ungeladen bis zum Hineinscrollen, stumm, „Bewegung reduzieren“ und ohne JavaScript nur Standbild), Karte (Pillen, Ausschnitte, Markergröße am Handy), Reisetag mit festgestellter Uhrzeit, PWA (Manifest, Service Worker, Cache-Bereinigung, offline, keine Vorschau-Registrierung), Rechtliches (Crawl aller Seiten: noindex, Copyright, Links, OG, keine Cookies), Layout (320–2560px, kein Überlauf, Profilbild rechts oben, Zoom, große Schrift), Barrierefreiheit (axe WCAG 2.2 AA inkl. Kontrast, Tastatur, Touch-Ziele), Unterpfad, 404, ohne JavaScript |
 | Grenzfälle | `tests/fixtures/content` | Beitrag ohne Fotos, mit 20 Fotos, sehr langer Titel, sehr langer Text, ohne Ort, nur Deutsch, nur Spanisch, Sonderzeichen, GPS-/HEIC-Foto, Bewegtfoto, eigener Clip, Route mit 12 Orten |

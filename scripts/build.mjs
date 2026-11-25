@@ -28,7 +28,9 @@ try {
   await processAll({ contentDir: process.env.CONTENT_DIR || 'content' });
   run('npx', ['astro', 'build']);
   const n = await verifyDir(outDir);
-  console.log(`Metadaten-Prüfung ${outDir}: ${n} Bilder ohne EXIF/GPS/XMP/IPTC.`);
+  console.log(
+    `Metadaten-Prüfung ${outDir}: ${n} Bilder ohne GPS/XMP/IPTC und ohne EXIF außer den erlaubten Kameraangaben.`,
+  );
   let base = process.env.BASE_PATH || '/';
   if (!base.endsWith('/')) base += '/';
   const r = await checkDist(outDir, base);

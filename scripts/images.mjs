@@ -324,7 +324,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   try {
     if (process.argv[2] === '--verify') {
       const n = await verifyDir(process.argv[3] || 'dist');
-      console.log(`Metadaten-Prüfung: ${n} Bilder ohne EXIF/GPS/XMP/IPTC.`);
+      console.log(
+        `Metadaten-Prüfung: ${n} Bilder ohne GPS/XMP/IPTC und ohne EXIF außer den erlaubten Kameraangaben.`,
+      );
     } else {
       await processAll({ contentDir: process.env.CONTENT_DIR || 'content' });
     }

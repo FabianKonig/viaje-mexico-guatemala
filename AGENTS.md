@@ -75,7 +75,7 @@ content/posts/<JJJJ-MM-TT-slug>/
   index.md                       Frontmatter (Titel, Datum, Ort, Fotos, Übersetzung)
   original.md                    Originaltext, byte-genau
   cover.jpg, cover.svg           optional: selbst gezeichnetes Titelbild und seine Zeichnung (Quelle)
-  photos/                        Fotos dieses Beitrags (vom Import verkleinert, ohne GPS)
+  photos/                        Fotos dieses Beitrags (vom Import verkleinert, ohne GPS, mit Kameraangaben)
   clips/                         eigene Videos: NN.mp4 + NN.jpg (Standbild), vom Import erzeugt
 src/config.ts                    Name, Adresse, Reisedaten, Links
 src/lib/                         testbare Logik
@@ -162,7 +162,7 @@ Hash berechnen: `node scripts/hash-original.mjs content/posts/<ordner>/original.
    siehe „Medien holen“ unten) in einen Ordner **außerhalb von `content/`** legen (z. B. im
    Scratchpad oder `_originals/`) und dann
    `node scripts/import-media.mjs <quellordner> <JJJJ-MM-TT-slug>` ausführen. Das Skript verkleinert
-   und entfernt GPS/Metadaten, schreibt `photos/NN.jpg` bzw. `clips/NN.mp4` + `NN.jpg` und druckt
+   und entfernt GPS/Metadaten (nur die erlaubten Kameraangaben bleiben), schreibt `photos/NN.jpg` bzw. `clips/NN.mp4` + `NN.jpg` und druckt
    einen Frontmatter-Vorschlag. **Originale nie einchecken, nie ohne den Import in `photos/` oder
    `clips/` legen.** Dann `photos:` und `clips:` in `index.md` eintragen, mit den **neutralen
    Standardtexten** des Skripts (`alt: 'Foto N von M'`, `title: 'Video N'`). **Die Mediendateien nicht
@@ -358,8 +358,14 @@ Beitrag), Verlauf der Beiträge (Datum, Link zur Lern-Datei).
 
 - Höchstens 30 Fotos und 10 Videos (`clips`) pro Beitrag. Eingangsformate: JPG, PNG, WebP, HEIC.
 - Der **Import** (`scripts/import-media.mjs`) macht aus jedem Foto ein JPEG mit höchstens 1600 px und
-  ohne Metadaten (EXIF/GPS). Das Bildskript (`scripts/images.mjs`) erzeugt beim Build die
-  Vorschaubilder (400/800 px) und prüft das Ergebnis. Bei GPS-Resten bricht der Build ab.
+  ohne Metadaten (EXIF/GPS), **bis auf eine feste Liste von Kameraangaben** (Kamera, Objektiv, Blende,
+  Verschlusszeit, ISO, Brennweite, Aufnahmezeit, Belichtung, Blitz, Weißabgleich; Positivliste in
+  `scripts/lib/camera.mjs`, siehe SPEC.md 7.6). Die Großansicht zeigt davon eine Zeile unter dem Foto.
+  Das Bildskript (`scripts/images.mjs`) erzeugt beim Build die Vorschaubilder (400/800 px, ohne
+  Metadaten) und prüft das Ergebnis. Bei GPS oder anderen Resten bricht der Build ab.
+  **Die Kameraangaben nie erweitern, ohne den Autor zu fragen** (Seriennummer, Besitzer, GPS bleiben tabu).
+  Fotos, die vor dieser Funktion importiert wurden, haben keine Kameraangaben; sie bekommen sie nur
+  durch einen neuen Import aus den Originalen.
 - Weil erst der Import verkleinert und GPS entfernt, landen **nie** Originale mit GPS in der
   Git-Historie. Unbearbeitete Originale gehören nicht ins Repository (höchstens lokal in `_originals/`).
 - **Menschen:** Jedes Foto, das der Autor gibt, wird ohne Rückfrage übernommen. Nicht prüfen, ob
@@ -473,7 +479,7 @@ npm test                 # alles: lint, unit, build, e2e
 npm run format           # Prettier anwenden (VOR den Tests ausführen)
 npm run lint             # Prettier-Prüfung + .gitignore-Prüfung
 npm run images           # nur Bildskript (Fotos verarbeiten und prüfen)
-node scripts/import-media.mjs <quellordner> <slug>   # Handy-Originale verkleinern, GPS entfernen
+node scripts/import-media.mjs <quellordner> <slug>   # Handy-Originale verkleinern, GPS entfernen (Kameraangaben bleiben)
 npm run test:unit        # Vitest
 npm run build:e2e        # baut dist/ (echte Inhalte) und dist-preview/ (Testinhalte aus
                          # tests/fixtures/content unter /pr-preview/pr-1/)
@@ -512,7 +518,8 @@ Service Worker wird beim Build erzeugt; neue Dateiarten im Zweifel network-first
 
 - Das Spanisch (oder Deutsch) des Autors korrigieren, glätten oder „verbessern“.
 - Die Lern-Datei (Korrekturen, Fehleranalyse) ins Repository, in die Seite oder in Pull-Requests legen.
-- Originalfotos mit GPS-/EXIF-Daten veröffentlichen oder unbearbeitete Originale einchecken.
+- Originalfotos mit GPS-/EXIF-Daten veröffentlichen oder unbearbeitete Originale einchecken. (Erlaubt
+  sind nur die Kameraangaben der Positivliste, die der Import selbst schreibt.)
 - Externe Dienste, Tracker, Analytics, Cookies, CDNs oder Google Fonts einbinden.
 - Eine Open-Source- oder Creative-Commons-Lizenz für die Inhalte oder den Code hinzufügen.
 - Einen Ort auf der Karte raten.
