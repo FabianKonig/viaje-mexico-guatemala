@@ -284,7 +284,7 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
     }
   }
   /* Bildunterschrift (nur in der Großansicht): höchstens 30 % der Bühnenhöhe, längere Texte scrollen,
-     damit das Foto nicht immer kleiner wird. Am Handy Abstand zu den Pfeilen (je 48 px + 8 px Rand). */
+     damit das Foto nicht immer kleiner wird. Am Handy Abstand zu den Pfeilen (je 32 px + 6 px Rand). */
   .lightbox__caption {
     flex: none;
     box-sizing: border-box;
@@ -341,6 +341,22 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
   }
   .lightbox__nav[hidden] {
     display: none;
+  }
+  /* Handy: kleinere Vor-/Zurück-Pfeile (32 px statt 48 px), damit sie weniger vom Foto verdecken.
+     Der Schließen-Knopf bleibt 48 px. Am Computer ändert sich nichts. */
+  @media (max-width: 699px) {
+    .lightbox__nav {
+      width: 32px;
+      height: 32px;
+      font-size: 1.5rem;
+      box-shadow: 2px 2px 0 var(--ink);
+    }
+    .lightbox__prev {
+      left: max(6px, env(safe-area-inset-left));
+    }
+    .lightbox__next {
+      right: max(6px, env(safe-area-inset-right));
+    }
   }
   @media (prefers-reduced-motion: reduce) {
     .gallery__link:hover {
