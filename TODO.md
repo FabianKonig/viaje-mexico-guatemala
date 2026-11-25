@@ -28,8 +28,9 @@
 
 ## Kameraangaben (Positivliste, Großansicht)
 
-- [ ] **Bestehende Fotos neu importieren** (Beiträge 1 und 2): Sie haben noch keine Kameraangaben und
-      zeigen deshalb kein schwarzes Feld. Geht nur aus den Originalen (Import neu laufen lassen).
+- [x] **Bestehende Fotos neu importieren** (Beiträge 1 und 2): aus den Originalen im Drive neu
+      importiert, Nummern und `index.md` unverändert (Stand 25.11.2026: 19 Fotos, alle mit
+      Kamerafeld). Spätere Beiträge brauchen das nicht, der Import behält die Angaben von selbst.
 - [ ] HEIC-Fotos: `heic-convert` übernimmt das EXIF nicht, daher entfällt bei HEIC das Kamerafeld.
       Falls nötig, EXIF aus dem HEIC-Container lesen (bisher nur JPEG/Handy-Android getestet).
 
