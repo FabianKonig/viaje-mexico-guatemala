@@ -358,7 +358,7 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   **Kamera-Kasten:** Unter dem weiß umrandeten Foto (außerhalb des Rahmens, Abstand `10px`) steht die
   Kamera-Textzeile (`data-info` am Link, Text vom Build) in einem eigenen schwarzen Kasten mit weißer
   Schrift, schmalem weißem Rand (`1px`) und abgerundeten Ecken. Er ist zentriert, nur so breit wie
-  sein Text und nie breiter als das Foto (zentriert, `0.9rem`; unter 700 px Breite `0.7rem` mit weniger
+  sein Text und nie breiter als das Foto (zentriert, `0.9rem`; unter 700 px Breite `0.65rem` mit weniger
   Innenabstand). Ist der Text länger, bricht er um, aber **nur zwischen den Angaben** (Kamera, Blende,
   Verschlusszeit, ISO, Brennweite; `lightbox.ts` teilt die Zeile in `.lightbox__info-part` mit
   `display: inline-block`, der Mittelpunkt bleibt am Ende des vorherigen Stücks, der Text ändert sich
