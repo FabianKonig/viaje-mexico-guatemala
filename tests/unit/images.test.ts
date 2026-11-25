@@ -12,6 +12,7 @@ import {
   LARGE,
 } from '../../scripts/images.mjs';
 import { exifHasGps } from '../../scripts/lib/exif.mjs';
+import { exifProblems, readCamera } from '../../scripts/lib/camera.mjs';
 
 const tmp = (p: string) => fs.mkdtempSync(path.join(os.tmpdir(), p));
 
@@ -45,12 +46,20 @@ describe('Bild-Pipeline', () => {
     expect(Math.max(r.large.info.width, r.large.info.height)).toBe(LARGE);
     expect(r.thumbs[400].info.width).toBe(400);
     expect(r.thumbs[800].info.width).toBe(800);
+    // Das große Bild behält nur die erlaubten Kameraangaben (hier: Make), nie GPS
+    const largeExif = (await sharp(r.large.data).metadata()).exif;
+    expect(exifHasGps(largeExif)).toBe(false);
+    expect(exifProblems(largeExif)).toEqual([]);
+    expect(readCamera(largeExif)).toMatchObject({ make: 'TestKamera' });
+    for (const buf of [r.thumbs[400].data, r.thumbs[800].data, r.og!]) {
+      expect((await sharp(buf).metadata()).exif).toBeUndefined();
+    }
     for (const buf of [r.large.data, r.thumbs[400].data, r.thumbs[800].data, r.og!]) {
       const m = await sharp(buf).metadata();
-      expect(m.exif).toBeUndefined();
       expect(m.xmp).toBeUndefined();
       expect(m.iptc).toBeUndefined();
-      expect(m.orientation).toBeUndefined();
+      // nie gedreht gespeichert: entweder keine Angabe oder 1 (aufrecht)
+      expect([undefined, 1]).toContain(m.orientation);
     }
     const og = await sharp(r.og!).metadata();
     expect([og.format, og.width, og.height]).toEqual(['jpeg', 1200, 630]);
@@ -77,12 +86,16 @@ describe('Bild-Pipeline', () => {
   it('Prüfung bricht bei GPS-Resten ab', async () => {
     const dir = tmp('verify-');
     fs.writeFileSync(
-      path.join(dir, 'sauber.webp'),
+      path.join(dir, 'sauber-1600.webp'),
       (await renderPhoto(await gpsJpeg(400, 300))).large.data,
     );
     await expect(verifyDir(dir)).resolves.toBe(1);
     fs.writeFileSync(path.join(dir, 'mit-gps.jpg'), await gpsJpeg(400, 300));
     expect(await inspectImage(path.join(dir, 'mit-gps.jpg'))).toContain('EXIF mit GPS');
+    // auch dort, wo Kameraangaben erlaubt sind, bleibt GPS ein Fehler
+    expect(await inspectImage(path.join(dir, 'mit-gps.jpg'), { camera: true })).toContain(
+      'EXIF mit GPS',
+    );
     await expect(verifyDir(dir)).rejects.toThrow(/GPS/);
     fs.rmSync(path.join(dir, 'mit-gps.jpg'));
     fs.writeFileSync(path.join(dir, 'original.heic'), 'x');

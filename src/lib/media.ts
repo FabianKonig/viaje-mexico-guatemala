@@ -14,6 +14,8 @@ export interface PhotoMedia {
   og?: string;
   /** Bewegtfoto: stummes Schleifenvideo (MP4). */
   motion?: string;
+  /** Kamera-Textzeile für die Großansicht („Kamera · Objektiv · f/1,8 · …“); fehlt ohne Kameraangaben. */
+  info?: string;
 }
 
 export interface ClipMedia {

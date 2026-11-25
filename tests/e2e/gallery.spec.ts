@@ -117,7 +117,7 @@ test('Beitrag ohne Fotos hat keine Galerie', async ({ page }) => {
   await expect(page.locator('.gallery')).toHaveCount(0);
 });
 
-test('veröffentlichte Fotos (auch aus GPS- und HEIC-Originalen) sind ohne Metadaten', async ({
+test('veröffentlichte Fotos (auch aus GPS- und HEIC-Originalen) sind ohne GPS und sonstige Metadaten', async ({
   page,
   request,
 }) => {
@@ -128,9 +128,50 @@ test('veröffentlichte Fotos (auch aus GPS- und HEIC-Originalen) sind ohne Metad
   expect(links).toHaveLength(3); // GPS-Foto, HEIC-Foto, Bewegtfoto
   for (const url of links) {
     const body = await (await request.get(url)).body();
-    expect(body.includes(Buffer.from('Exif\0\0', 'latin1')), url).toBe(false);
     expect(body.includes(Buffer.from('GPS', 'latin1')), url).toBe(false);
+    expect(body.includes(Buffer.from('http://ns.adobe.com/xap', 'latin1')), url).toBe(false);
+    expect(body.includes(Buffer.from('Photoshop 3.0', 'latin1')), url).toBe(false);
   }
+});
+
+test('Lightbox: Kamerafeld (schwarz, weiße Schrift, so breit wie das Foto), fehlt ohne Angaben', async ({
+  page,
+  request,
+}) => {
+  await page.goto(EXAMPLE);
+  const dialog = page.locator('dialog[data-lightbox]');
+  const info = dialog.locator('[data-info]');
+  await page.locator('.gallery__link').first().click();
+  await expect(info).toBeVisible();
+  // feste Reihenfolge, Mittelpunkt als Trenner, Kleinbild in Klammern
+  await expect(info).toHaveText(
+    'Apple iPhone 15 Pro · f/1,8 · 1/120 s · ISO 80 · 6,8 mm (24 mm KB)',
+  );
+  await expect(info).toHaveCSS('background-color', 'rgb(0, 0, 0)');
+  await expect(info).toHaveCSS('color', 'rgb(255, 255, 255)');
+  // unter dem Foto und genau so breit wie das Foto
+  const [img, box] = await Promise.all([
+    dialog.locator('[data-img]').boundingBox(),
+    info.boundingBox(),
+  ]);
+  expect(box!.y).toBeGreaterThanOrEqual(img!.y + img!.height - 1);
+  expect(Math.abs(box!.width - img!.width)).toBeLessThanOrEqual(4);
+  // fehlende Angaben entfallen, die Reihenfolge bleibt
+  await dialog.getByRole('button', { name: 'Nächstes Foto' }).click();
+  await expect(info).toHaveText('Google Pixel 8 · f/1,7 · 1/500 s · ISO 50 · 6,9 mm');
+  // Foto ohne Kameraangaben: kein leeres schwarzes Feld
+  await dialog.getByRole('button', { name: 'Nächstes Foto' }).click();
+  await expect(info).toBeHidden();
+  // das große Bild trägt die Kameraangaben, aber weder GPS noch Seriennummer oder Besitzer
+  const large = await page.locator('.gallery__link').first().getAttribute('href');
+  const body = await (await request.get(new URL(large!, page.url()).href)).body();
+  expect(body.includes(Buffer.from('iPhone 15 Pro', 'latin1'))).toBe(true);
+  for (const secret of ['GPS', 'Geheim', 'X1'])
+    expect(body.includes(Buffer.from(secret, 'latin1')), secret).toBe(false);
+  // Vorschaubilder bleiben ohne Metadaten
+  const thumb = await page.locator('.gallery__link img').first().getAttribute('src');
+  const thumbBody = await (await request.get(new URL(thumb!, page.url()).href)).body();
+  expect(thumbBody.includes(Buffer.from('iPhone', 'latin1'))).toBe(false);
 });
 
 test.describe('ohne JavaScript', () => {

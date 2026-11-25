@@ -14,6 +14,7 @@ export function initLightbox(doc: Document = document) {
 
   const img = dialog.querySelector<HTMLImageElement>('[data-img]')!;
   const caption = dialog.querySelector<HTMLElement>('[data-caption]')!;
+  const info = dialog.querySelector<HTMLElement>('[data-info]')!;
   const count = dialog.querySelector<HTMLElement>('[data-count]')!;
   const prev = dialog.querySelector<HTMLButtonElement>('[data-prev]')!;
   const next = dialog.querySelector<HTMLButtonElement>('[data-next]')!;
@@ -38,21 +39,37 @@ export function initLightbox(doc: Document = document) {
     const text = link.dataset.caption ?? '';
     caption.textContent = text;
     caption.hidden = text === '';
+    const camera = link.dataset.info ?? '';
+    info.textContent = camera;
+    info.hidden = camera === '';
     count.textContent = `${index + 1} / ${links.length}`;
     const single = links.length < 2;
     prev.hidden = single;
     next.hidden = single;
+    fit();
     if (!single) {
       preload(index + 1);
       preload(index - 1);
     }
   }
 
+  /** Platz für Kamerafeld und Bildunterschrift, damit das Foto in die Höhe passt (siehe Gallery.astro). */
+  const frame = dialog.querySelector<HTMLElement>('.lightbox__frame')!;
+  function fit() {
+    if (!dialog!.open) return;
+    for (let pass = 0; pass < 2; pass++) {
+      const gap = caption.hidden ? 0 : caption.offsetHeight + 10;
+      frame.style.setProperty('--reserve', `${info.offsetHeight + gap}px`);
+    }
+  }
+  window.addEventListener('resize', fit);
+
   function open(i: number, from: HTMLElement) {
     opener = from;
     show(i);
     doc.documentElement.classList.add('has-lightbox');
     dialog!.showModal();
+    fit();
     close.focus();
   }
 
