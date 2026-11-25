@@ -1,1 +1,1 @@
-Las fotografías dicen más que unas mil palabras
+Hoy he tenido mi primer día en Ciudad de México. No quiero escribir mucho, pero mira las fotos. Las fotografías dicen más que mil palabras.

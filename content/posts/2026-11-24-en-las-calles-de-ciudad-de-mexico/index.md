@@ -42,11 +42,11 @@ photos:
   - file: 18.jpg
     alt: 'Foto 18 von 18'
 translation:
-  source_sha256: '95fb826a81602f2d42298a342ed4a87bfd932b144aebbab18ea9a946f1b14704'
+  source_sha256: 'dff0ea51fd23bc959929c0c39f3e32f544ef674304ae8c5360caaeffa1220c59'
   segments:
     - lang: es
       text: |-
-        Las fotografías dicen más que unas mil palabras
+        Hoy he tenido mi primer día en Ciudad de México. No quiero escribir mucho, pero mira las fotos. Las fotografías dicen más que mil palabras.
       de: |-
-        Fotos sagen mehr als tausend Worte.
+        Heute hatte ich meinen ersten Tag in Mexiko-Stadt. Ich möchte nicht viel schreiben, aber schau dir die Fotos an. Fotos sagen mehr als tausend Worte.
 ---
