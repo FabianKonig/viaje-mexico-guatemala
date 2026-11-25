@@ -680,6 +680,7 @@ const fsState = (page: import('@playwright/test').Page) =>
 test.describe('Vollbild (nachgebildete API)', () => {
   // WebKit mit iPhone-Emulation hat die Vollbild-API für Elemente nicht (wie ein echtes iPhone) und entfernt
   // auch die nachgebildete wieder; dort gilt nur der Test „ohne Vollbild-Unterstützung“ unten.
+  test.use({ autoFullscreen: true });
   test.beforeEach(({}, testInfo) => {
     test.skip(testInfo.project.name === 'mobile-safari', 'iPhone-WebKit: keine Vollbild-API');
   });

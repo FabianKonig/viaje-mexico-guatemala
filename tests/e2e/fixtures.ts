@@ -52,7 +52,25 @@ export function watchPage(page: Page): PageProblems {
   return problems;
 }
 
-export const test = base.extend<{ problems: PageProblems }>({
+export const test = base.extend<{ problems: PageProblems; autoFullscreen: boolean }>({
+  // Auf Touchgeräten (Pixel, Galaxy) startet die Großansicht sonst das echte Vollbild; ein Fenster im
+  // Vollbild lässt sich nicht mehr verkleinern (page.setViewportSize schlägt in der CI fehl). Darum ist die
+  // Sitzungswahl „kein Vollbild“ vorbelegt; nur die Vollbild-Tests schalten es mit test.use() ein
+  // (dort ist die Vollbild-API nachgebildet).
+  autoFullscreen: [false, { option: true }],
+  page: async ({ page, autoFullscreen }, use) => {
+    if (!autoFullscreen) {
+      await page.addInitScript(() => {
+        try {
+          if (sessionStorage.getItem('lightbox-fullscreen') === null)
+            sessionStorage.setItem('lightbox-fullscreen', 'off');
+        } catch {
+          /* kein Speicher: egal */
+        }
+      });
+    }
+    await use(page);
+  },
   problems: async ({ page }, use) => {
     const problems = watchPage(page);
     await use(problems);
