@@ -74,6 +74,7 @@ content/profile.jpg              Profilfoto (optional)
 content/posts/<JJJJ-MM-TT-slug>/
   index.md                       Frontmatter (Titel, Datum, Ort, Fotos, Übersetzung)
   original.md                    Originaltext, byte-genau
+  cover.jpg, cover.svg           optional: selbst gezeichnetes Titelbild und seine Zeichnung (Quelle)
   photos/                        Fotos dieses Beitrags (vom Import verkleinert, ohne GPS)
   clips/                         eigene Videos: NN.mp4 + NN.jpg (Standbild), vom Import erzeugt
 src/config.ts                    Name, Adresse, Reisedaten, Links
@@ -105,6 +106,7 @@ titleDe: 'Hallo, Mexiko!'          # optional: Übersetzung des Titels
 date: 2026-11-23                   # Datum des Beitrags (JJJJ-MM-TT)
 place: ciudad-de-mexico            # id aus content/places.yaml (optional, siehe Kartenregeln)
 cover: 01.jpg                      # optional: Titelbild (Datei aus photos/), sonst das erste Foto
+# coverGenerated: cover.jpg        # statt cover: selbst gezeichnetes Titelbild (Datei im Beitragsordner)
 photos:                            # optional, höchstens 30, chronologisch (älteste zuerst)
   - file: 01.jpg                   # Datei in photos/
     alt: 'Foto 1 von 18'           # Pflicht: kurzer deutscher Alt-Text, Standard „Foto N von M“ (kein Bildinhalt)
@@ -170,17 +172,54 @@ Hash berechnen: `node scripts/hash-original.mjs content/posts/<ordner>/original.
    übernommen (Videos mit Ton, nicht stumm). Zu lange Videos (über 180 s) meldet das Skript; dann dem
    Autor sagen, dass er es kürzen soll. Braucht ffmpeg
    (`sudo apt-get install -y ffmpeg`, falls es fehlt).
-7. **Ort klären:** Ist der Ort aus dem **Text** **eindeutig** erkennbar (nie aus den Medien)? Wenn nicht: **den Autor
+7. **Titelbild-Anweisung im Google Doc** prüfen (Abschnitt „Titelbild“ unten): Dateiname →
+   `cover:`, Beschreibung → Bild zeichnen mit `scripts/make-cover.mjs` und `coverGenerated:`.
+8. **Ort klären:** Ist der Ort aus dem **Text** **eindeutig** erkennbar (nie aus den Medien)? Wenn nicht: **den Autor
    fragen, wo er gerade ist. Nie raten.**
-8. **Karte und Ortsliste aktualisieren:** Neuer Ort → am Ende von `content/places.yaml` eintragen
+9. **Karte und Ortsliste aktualisieren:** Neuer Ort → am Ende von `content/places.yaml` eintragen
    (wird automatisch „Aquí estoy“). Bekannter Ort → nur `place:` im Beitrag setzen.
-9. **Tests:** `npm test`. Screenshots von Startseite und Beitrag (Handy und Computer) nur zur
+10. **Tests:** `npm test`. Screenshots von Startseite und Beitrag (Handy und Computer) nur zur
    **Layoutprüfung** ansehen (Anordnung, Überlauf, Abstände), nicht um Bildinhalte zu beschreiben.
-10. **Pull-Request** öffnen: kurze Beschreibung, erkannte Sprachen, offene Fragen (Ort, Titel).
-11. **Lern-Datei** (nur bei Beiträgen mit spanischen Passagen): sobald der Autor „fertig“ sagt, das
+11. **Pull-Request** öffnen: kurze Beschreibung, erkannte Sprachen, offene Fragen (Ort, Titel).
+12. **Lern-Datei** (nur bei Beiträgen mit spanischen Passagen): sobald der Autor „fertig“ sagt, das
     Google Doc `Lernhilfe-<slug>` im Drive-Unterordner des Beitrags anlegen und das Sammel-Doc
     `Lernhilfe-Übersicht` aktualisieren (Regeln: Abschnitt „Spanisch-Lernhilfe“). In der
     Abschlussmeldung den Link nennen.
+
+## Titelbild (Anweisung im Google Doc)
+
+Der Autor kann im Text-Doc des Beitrags mit einem **eigenen Satz** (Absatz) sagen, welches Titelbild
+gelten soll. Solche Sätze sind **Anweisungen und nie Beitragstext**: sie kommen weder in
+`original.md` noch in die Übersetzung noch in die Lern-Datei. Sie stehen irgendwo im Doc, meist
+beginnen sie mit „Titelbild“ (z. B. „Titelbild: 07.jpg“ oder „Titelbild: ein Sonnenuntergang über
+den Pyramiden, warme Farben“). **Ist unklar, ob ein Satz Anweisung oder Beitragstext ist, oder liegt
+ein genannter Dateiname nicht im Ordner: den Autor fragen, nie raten.** Nennt das Doc zwei
+verschiedene Titelbilder: ebenfalls nachfragen.
+
+- **Dateiname** (Foto im Drive-Ordner): `cover: <datei>` im Frontmatter (Datei aus `photos/` nach dem
+  Import). Das Foto bleibt chronologisch auch in der Medienliste unten, wie bisher.
+- **Beschreibung** (ein Bild soll gezeichnet werden): Ich zeichne eine **flache Illustration als SVG**
+  (im Scratchpad zeichnen; das Skript legt sie als Quelle ab) in den Seitenfarben (`--sand #f6ebd9`, `--terracotta #c4552d`,
+  `--turquoise #0e7c86`, `--turquoise-dark #0b5d66`, `--marigold #f2a900`, `--pink #d4457a`,
+  `--ink #2b1d16`), **ohne Schrift** (kein `<text>`, keine `<image>`, keine Skripte oder externen
+  Verweise; das Skript lehnt sie ab), Seitenverhältnis 4:3 (viewBox `0 0 1600 1200`) und mit dem
+  Wichtigen in der **mittleren Bildhälfte** (die WhatsApp-Vorschau 1200×630 beschneidet oben und
+  unten). Dann `node scripts/make-cover.mjs <slug> <zeichnung.svg>`: kopiert die Zeichnung nach
+  `content/posts/<slug>/cover.svg` (Quelle, eingecheckt, nie veröffentlicht), schreibt daraus
+  `content/posts/<slug>/cover.jpg` und trägt `coverGenerated: cover.jpg` ein (ersetzt `cover:`).
+  Es gibt **kein** KI-Bildwerkzeug und keinen externen Dienst; das Bild ist immer eine gezeichnete
+  Grafik. Dieses selbst gezeichnete Bild **darf ich ansehen** und nachbessern (Ausnahme zur Regel
+  „Medien nicht inhaltlich auswerten“, die nur für Medien des Autors gilt). Alt-Text: „Titelbild“.
+- Das gezeichnete Titelbild steht **nur als Vorschau** (Startseiten-Kachel, WhatsApp-Bild), nicht in
+  `photos` und nicht in der Medienliste. **Alle anderen Medien im Ordner** erscheinen wie immer nur
+  in der Liste unten auf der Beitragsseite; oben im Beitrag gibt es kein Titelbild.
+- Steht keine Anweisung im Doc, gilt wie bisher das erste Foto.
+- **Reproduzierbar:** Aus derselben `cover.svg` entsteht immer dasselbe `cover.jpg`
+  (`node scripts/make-cover.mjs <slug>` ohne SVG rendert neu aus der Quelle). Ändert der Autor
+  **Text, Fotos oder Videos**, bleibt das Titelbild **unberührt** (nicht neu zeichnen, auch nicht
+  beim Neuaufbau eines Beitrags: `cover.svg`, `cover.jpg` und `coverGenerated` bleiben stehen).
+  Neu gezeichnet wird nur, wenn der Autor die **Beschreibung im Doc ändert** (neue SVG, überschreibt
+  Quelle und Bild).
 
 ## Bestehenden Beitrag ändern (Medien oder Text)
 
@@ -331,7 +370,7 @@ Beitrag), Verlauf der Beiträge (Datum, Link zur Lern-Datei).
   Bilddatei öffnen (kein `Read` auf Bilder, keine Bildbetrachter, keine Video-Einzelbilder ansehen).
   `alt` und `title` bekommen die neutralen Standardtexte (`Foto N von M`, `Video N`); eine echte
   Beschreibung nur, wenn der Autor sie selbst liefert (z. B. im Google Doc). Der Ort kommt aus dem
-  Text, das Titelbild nennt der Autor mit Dateinamen. Der Drive-Konnektor zeigt heruntergeladene
+  Text, das Titelbild nennt der Autor mit Dateinamen oder beschreibt es zum Zeichnen (Abschnitt „Titelbild“). Der Drive-Konnektor zeigt heruntergeladene
   Bilder von selbst im Chat an; das lässt sich nicht abstellen, davon wird nichts verwendet.
   Technische Prüfungen (Größe, Format, Metadaten, Laufzeit, Layout per Screenshot) bleiben erlaubt.
 - **Videos:** Eigene Videos kommen als `clips:` ins Repository, aber **nur nach dem Import** (720p,
@@ -359,6 +398,8 @@ im Arbeitsordner).
 2. **Text:** `download_file_content` mit `exportMimeType: text/plain` (oder `read_file_content`).
    Text so übernehmen, wie das Doc ihn liefert (nur Export-Artefakte wie BOM entfernen), nie
    korrigieren. Titel und Titelbild stehen im Doc; ist etwas unklar, den Autor fragen.
+   **Sätze mit der Titelbild-Anweisung (Abschnitt „Titelbild“) gehören nicht zum Text:** nicht in
+   `original.md` übernehmen.
 3. **Dateien bis 10 MB:** `download_file_content`. Die Datei wird automatisch im Ordner
    `…/tool-results/` gespeichert (Pfad steht in der Antwort; Bilder werden zusätzlich angezeigt).
    Größe mit `fileSize` aus der Suche vergleichen. Dateien nie von Hand abtippen oder einfügen.
@@ -383,7 +424,7 @@ Thema `environment.network`).
 Der Import nummeriert nach **Aufnahmezeit** (Zeitpunkt des Auslösens; erst alle Fotos, dann alle Videos,
 je Gruppe älteste zuerst). Die Reihenfolge in `photos:` und `clips:` ist **streng chronologisch**, ohne
 Ausnahme. Das **Titelbild** (Vorschaubild, WhatsApp-Bild) wählt der Autor (Dateiname im Google Doc oder
-im Chat) und wird mit `cover: <datei>` (Name der Datei in `photos/`) oben im Frontmatter eingetragen; es
+im Chat; oder eine Beschreibung zum Zeichnen, siehe „Titelbild“) und wird mit `cover: <datei>` (Name der Datei in `photos/`) oben im Frontmatter eingetragen; es
 verschiebt nichts. Nennt er keines, gilt das erste (älteste) Foto. Bei späteren
 Ergänzungen die neuen Einträge nach Aufnahmezeit einsortieren: Zeiten der Originale zeigt
 `node scripts/import-media.mjs --times <ordner>`.

@@ -16,6 +16,8 @@ import {
 export const MAX_PHOTOS = 30;
 export const MAX_CLIPS = 10;
 export const PHOTO_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif'];
+export const GENERATED_COVER_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp'];
+export const GENERATED_COVER_ALT = 'Titelbild';
 
 export interface Place {
   id: string;
@@ -54,6 +56,8 @@ export interface Post {
   photos: PhotoRef[];
   /** Titelbild (Vorschau, WhatsApp): `cover` im Frontmatter, sonst das erste Foto. */
   cover?: PhotoRef;
+  /** Selbst gezeichnetes Titelbild (Datei im Beitragsordner, kein Eintrag in `photos`, nicht in der Galerie). */
+  generatedCover?: { file: string; alt: string };
   clips: ClipRef[];
   /** Originaltext, byte-genau aus original.md. */
   original: string;
@@ -189,6 +193,23 @@ export function validatePost(
       if (!cover) at(`cover "${data.cover}" ist kein Foto aus photos`);
     }
   }
+  let generatedCover: Post['generatedCover'];
+  if (data.coverGenerated !== undefined) {
+    const f = data.coverGenerated;
+    if (data.cover !== undefined)
+      at(
+        'cover und coverGenerated schließen sich aus (entweder ein Foto oder ein gezeichnetes Titelbild)',
+      );
+    if (typeof f !== 'string' || !f || f.includes('/') || f.includes('\\'))
+      at('coverGenerated muss ein Dateiname im Beitragsordner sein (ohne Ordner)');
+    else if (!GENERATED_COVER_EXTENSIONS.includes(path.extname(f).toLowerCase()))
+      at(`coverGenerated: Format nicht unterstützt (${GENERATED_COVER_EXTENSIONS.join(', ')})`);
+    else if (!fs.existsSync(path.join(dir, f))) at(`coverGenerated: ${f} existiert nicht`);
+    else {
+      generatedCover = { file: f, alt: GENERATED_COVER_ALT };
+      cover = undefined;
+    }
+  }
   if (data.videos !== undefined)
     at('videos (YouTube) gibt es nicht mehr: eigene Videos als clips eintragen (Import-Skript)');
   const clips: ClipRef[] = [];
@@ -245,6 +266,7 @@ export function validatePost(
       ...(place ? { place } : {}),
       photos,
       ...(cover ? { cover } : {}),
+      ...(generatedCover ? { generatedCover } : {}),
       clips,
       original: original as string,
       translationData,

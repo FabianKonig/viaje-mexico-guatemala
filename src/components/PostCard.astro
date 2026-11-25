@@ -4,7 +4,7 @@ import { formatDateDe } from '../lib/dates';
 import { tripDayNumber } from '../lib/travelDay';
 import { excerpt } from '../lib/translation';
 import { href } from '../lib/site';
-import { photoMedia } from '../lib/media';
+import { postCover } from '../lib/media';
 
 interface Props {
   post: Post;
@@ -14,7 +14,7 @@ const day = tripDayNumber(post.date);
 const url = href(`entradas/${post.slug}/`);
 const photoCount = post.photos.length;
 const langs = post.translation.hasSpanish ? 'ES · DE' : 'DE';
-const cover = post.cover ? photoMedia(post.slug, post.cover.file) : undefined;
+const cover = postCover(post)?.media;
 const langLabel = post.translation.hasSpanish ? 'Spanisch mit deutscher Übersetzung' : 'Deutsch';
 ---
 

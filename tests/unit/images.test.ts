@@ -157,6 +157,34 @@ describe('Titelbild (cover)', () => {
   });
 });
 
+describe('Gezeichnetes Titelbild (coverGenerated)', () => {
+  it('bekommt das OG-Bild, steht unter covers und nimmt kein Foto als Titelbild', async () => {
+    const content = tmp('content-');
+    const post = path.join(content, 'posts', '2026-11-24-gemalt');
+    fs.mkdirSync(path.join(post, 'photos'), { recursive: true });
+    fs.writeFileSync(path.join(post, 'photos', 'a.jpg'), await gpsJpeg(900, 700));
+    fs.writeFileSync(path.join(post, 'cover.jpg'), await gpsJpeg(1600, 1200));
+    fs.writeFileSync(
+      path.join(post, 'index.md'),
+      '---\ntitle: T\ncoverGenerated: cover.jpg\nphotos:\n  - file: a.jpg\n    alt: A\n---\n',
+    );
+    const cache = tmp('cache-');
+    const m = await processAll({
+      contentDir: content,
+      outDir: tmp('out-'),
+      cacheDir: cache,
+      manifestFile: path.join(cache, 'm.json'),
+      log: () => {},
+    });
+    expect(m.covers['2026-11-24-gemalt'].og).toMatch(/-og\.jpg$/);
+    expect(m.covers['2026-11-24-gemalt'].thumb400).toMatch(/-400\.webp$/);
+    // das erste Foto bleibt ein normales Galeriefoto ohne OG-Bild
+    expect(m.photos['2026-11-24-gemalt/a.jpg'].og).toBeUndefined();
+    // das Titelbild steht nicht in der Galerie
+    expect(Object.keys(m.photos)).toEqual(['2026-11-24-gemalt/a.jpg']);
+  });
+});
+
 describe('Videos im Bildskript', () => {
   const mp4 = (extra: Buffer = Buffer.alloc(0)) =>
     Buffer.concat([

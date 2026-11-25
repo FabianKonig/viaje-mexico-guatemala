@@ -130,6 +130,7 @@ Ein Beitrag ist ein Ordner `content/posts/JJJJ-MM-TT-slug/` mit `index.md` (nur 
 | `date` | ja | `JJJJ-MM-TT` |
 | `place` | nein | `id` aus `places.yaml`; fehlt der Ort, zeigt der Beitrag nur den Tag |
 | `cover` | nein | Titelbild: `file` eines Fotos aus `photos` (Beitragskarte, Vorschau, WhatsApp-Bild). Fehlt es, gilt das erste Foto. Die Reihenfolge der Fotos bleibt chronologisch, das Titelbild muss nicht das erste sein |
+| `coverGenerated` | nein | selbst gezeichnetes Titelbild: Dateiname (`.jpg`/`.png`/`.webp`) direkt im Beitragsordner, erzeugt mit `scripts/make-cover.mjs` (flache SVG-Zeichnung, als Quelle `cover.svg` im Beitragsordner eingecheckt und nie veröffentlicht → `cover.jpg`, 1600×1200, reproduzierbar: gleiche SVG, gleiches Bild). Nur als Vorschau (Beitragskarte, WhatsApp-Bild), **nicht** in `photos` und nicht in der Medienliste; ersetzt das Foto-Titelbild. Schließt `cover` aus (Build-Fehler). Alt-Text „Titelbild“ |
 | `photos[]` | nein | `file` (in `photos/`), `alt` (Pflicht; Standard `Foto N von M`, siehe 7.6), `caption` (optional), `motion` (optional: stumme Schleife eines Bewegtfotos, `.mp4` in `photos/`); höchstens 30 |
 | `clips[]` | nein | eigenes Video: `file` (`.mp4` in `clips/`, dazu `clips/<name>.jpg` als Standbild), `title` (Pflicht; Standard `Video N`), `width`, `height`, `duration` (trägt der Import ein); höchstens 10 |
 | `translation.source_sha256` | ja | SHA-256 von `original.md` |
@@ -340,7 +341,7 @@ Alle Videos sind eigene Clips (`clips:`, Komponente `Videos.astro`, Klasse `.cli
   `DateTimeDigitized`/`DateTime`; Video `creation_time` im Container (ffprobe); sonst ein Zeitstempel im
   Dateinamen (`PXL_20261124_153012345`, `IMG_20261124_153012`). Gleiche Zeit: nach Dateiname; Dateien ohne
   Zeit stehen am Ende der Gruppe. Das Titelbild ist davon getrennt: Es steht im Feld `cover` (siehe 6.1)
-  und ändert die Reihenfolge nicht; ohne `cover` gilt `photos[0]`. `node scripts/import-media.mjs --times <ordner>` zeigt nur die Zeiten, ohne zu schreiben.
+  und ändert die Reihenfolge nicht; ohne `cover` gilt `photos[0]`; mit `coverGenerated` ist kein Foto Titelbild. `node scripts/import-media.mjs --times <ordner>` zeigt nur die Zeiten, ohne zu schreiben.
   Fotos: JPEG Qualität 85, lange Seite höchstens 1600 px, ohne Metadaten, `photos/NN.jpg`.
   **Android-Bewegtfotos** (Motion Photo: JPEG mit angehängtem MP4, erkennbar an `*.MP.jpg`; `extractMotionVideo`
   liest XMP `Item:Semantic="MotionPhoto"` mit `Item:Length` bzw. das ältere `MicroVideoOffset`) werden zu
