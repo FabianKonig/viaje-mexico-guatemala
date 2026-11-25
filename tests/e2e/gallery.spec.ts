@@ -145,7 +145,7 @@ test('Lightbox: Kamerafeld (schwarz, weiße Schrift, so breit wie das Foto), feh
   await expect(info).toBeVisible();
   // feste Reihenfolge, Mittelpunkt als Trenner, Kleinbild in Klammern
   await expect(info).toHaveText(
-    'Apple iPhone 15 Pro · iPhone 15 Pro back triple camera 6.765mm f/1.78 · f/1,8 · 1/120 s · ISO 80 · 6,8 mm (24 mm KB)',
+    'Apple iPhone 15 Pro · f/1,8 · 1/120 s · ISO 80 · 6,8 mm (24 mm KB)',
   );
   await expect(info).toHaveCSS('background-color', 'rgb(0, 0, 0)');
   await expect(info).toHaveCSS('color', 'rgb(255, 255, 255)');

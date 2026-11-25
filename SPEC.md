@@ -323,13 +323,15 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   libvips rein technische Pflichtfelder (Ausrichtung, Auflösung, Pixelmaße, Versionen, Farbraum). Nie
   übernommen werden GPS, Seriennummern, Besitzer/Autor, Software, Beschreibungen, Kommentare,
   MakerNote, Vorschaubild, XMP, IPTC. Hat ein Foto keine dieser Angaben, bleibt es ganz ohne EXIF.
+  Das **Objektiv** (`LensMake`, `LensModel`) bleibt in den Metadaten der Datei, wird aber **nie angezeigt**
+  (Wunsch des Autors; Objektivnamen sind oft lang und wiederholen Kamera, Blende und Brennweite).
   Videos sind nicht betroffen (weiter ohne Metadaten).
-  **Textzeile** (`cameraLine`, im Manifest als `info`): feste Reihenfolge Kamera · Objektiv · Blende ·
+  **Textzeile** (`cameraLine`, im Manifest als `info`): feste Reihenfolge Kamera · Blende ·
   Verschlusszeit · ISO · Brennweite, getrennt durch Mittelpunkt mit Leerzeichen (` · `); fehlt eine
   Angabe, entfällt sie ersatzlos, die Reihenfolge bleibt; ohne jede Angabe gibt es keine Zeile.
   Formate: Kamera = Hersteller + Modell ohne Doppelung (`Canon` + `Canon EOS R5` → `Canon EOS R5`;
   Herstellernamen in Großbuchstaben oder Kleinbuchstaben bekommen normale Schreibweise, Zusätze wie
-  „Corporation“ entfallen; Modellkürzel wie `SM-S918B` stehen unverändert da); Objektiv wie gespeichert;
+  „Corporation“ entfallen; Modellkürzel wie `SM-S918B` stehen unverändert da);
   Blende `f/1,8` (deutsches Komma, ohne überflüssige Null: `f/2`); Verschlusszeit `1/250 s` bzw. `2,5 s`;
   `ISO 100`; Brennweite `6,8 mm (24 mm KB)` (echte Brennweite, Kleinbild-Äquivalent in Klammern, nur
   wenn es sich unterscheidet; fehlt die echte, `24 mm KB`). Bestehende Fotos ohne Kameraangaben

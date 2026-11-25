@@ -27,7 +27,7 @@ import { exifHasGps, rawMetadataMarkers } from './lib/exif.mjs';
 import { cameraLine, cameraToSharpExif, exifProblems, readCamera } from './lib/camera.mjs';
 import { mp4Problems } from './lib/video.mjs';
 
-export const PIPELINE_VERSION = 2;
+export const PIPELINE_VERSION = 3;
 export const LARGE = 1600;
 export const THUMBS = [400, 800];
 export const QUALITY = 80;

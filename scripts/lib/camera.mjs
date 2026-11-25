@@ -8,7 +8,8 @@
  *
  *   readCamera(exif)       → die erlaubten Angaben als schlichtes Objekt (oder null)
  *   cameraToSharpExif(c)   → Argument für sharp().withExif(…)
- *   cameraLine(c)          → Textzeile für die Großansicht: „Kamera · Objektiv · f/1,8 · …“
+ *   cameraLine(c)          → Textzeile für die Großansicht: „Kamera · f/1,8 · 1/120 s · …“
+ *                            (das Objektiv bleibt im EXIF, wird aber nie angezeigt)
  *   exifProblems(exif)     → Befunde, wenn der Block etwas außerhalb der Liste enthält
  */
 
@@ -253,19 +254,15 @@ export function formatFocal(c) {
 }
 
 /**
- * Textzeile für die Großansicht in fester Reihenfolge: Kamera, Objektiv, Blende, Verschlusszeit,
- * ISO, Brennweite, getrennt durch einen Mittelpunkt. Fehlende Angaben entfallen, die Reihenfolge
- * bleibt. Leerer Text, wenn keine einzige Angabe vorhanden ist.
+ * Textzeile für die Großansicht in fester Reihenfolge: Kamera, Blende, Verschlusszeit, ISO,
+ * Brennweite, getrennt durch einen Mittelpunkt. Fehlende Angaben entfallen, die Reihenfolge
+ * bleibt. Leerer Text, wenn keine einzige Angabe vorhanden ist. Das Objektiv steht bewusst nicht
+ * darin (Wunsch des Autors), bleibt aber in den EXIF-Daten der Datei.
  */
 export function cameraLine(c) {
   if (!c) return '';
   const parts = [
     cameraName(c),
-    c.lensModel
-      ? c.lensMake && !c.lensModel.toLowerCase().startsWith(c.lensMake.toLowerCase())
-        ? `${c.lensMake} ${c.lensModel}`
-        : c.lensModel
-      : '',
     c.fNumber && c.fNumber.n > 0 ? formatAperture(c.fNumber) : '',
     c.exposureTime ? formatShutter(c.exposureTime) : '',
     c.iso ? `ISO ${c.iso}` : '',

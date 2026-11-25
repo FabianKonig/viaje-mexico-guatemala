@@ -360,7 +360,8 @@ Beitrag), Verlauf der Beiträge (Datum, Link zur Lern-Datei).
 - Der **Import** (`scripts/import-media.mjs`) macht aus jedem Foto ein JPEG mit höchstens 1600 px und
   ohne Metadaten (EXIF/GPS), **bis auf eine feste Liste von Kameraangaben** (Kamera, Objektiv, Blende,
   Verschlusszeit, ISO, Brennweite, Aufnahmezeit, Belichtung, Blitz, Weißabgleich; Positivliste in
-  `scripts/lib/camera.mjs`, siehe SPEC.md 7.6). Die Großansicht zeigt davon eine Zeile unter dem Foto.
+  `scripts/lib/camera.mjs`, siehe SPEC.md 7.6). Die Großansicht zeigt davon eine Zeile unter dem Foto
+  (Kamera, Blende, Verschlusszeit, ISO, Brennweite; **das Objektiv wird nie angezeigt**, bleibt aber im EXIF).
   Das Bildskript (`scripts/images.mjs`) erzeugt beim Build die Vorschaubilder (400/800 px, ohne
   Metadaten) und prüft das Ergebnis. Bei GPS oder anderen Resten bricht der Build ab.
   **Die Kameraangaben nie erweitern, ohne den Autor zu fragen** (Seriennummer, Besitzer, GPS bleiben tabu).

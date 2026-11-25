@@ -208,13 +208,18 @@ describe('Textzeile für die Großansicht', () => {
 
   it('feste Reihenfolge, Mittelpunkt als Trenner', () => {
     expect(cameraLine(c(full))).toBe(
-      'Apple iPhone 15 Pro · iPhone 15 Pro back triple camera 6.765mm f/1.78 · f/1,8 · 1/120 s · ISO 80 · 6,8 mm (24 mm KB)',
+      'Apple iPhone 15 Pro · f/1,8 · 1/120 s · ISO 80 · 6,8 mm (24 mm KB)',
     );
   });
 
+  it('Objektiv wird nie angezeigt, bleibt aber in den Metadaten', () => {
+    expect(cameraLine(c(full))).not.toMatch(/back triple|6\.765mm/);
+    expect(cameraLine(c({ lensMake: 'SIGMA', lensModel: 'SIGMA 18-50mm F2.8' }))).toBe('');
+  });
+
   it('fehlende Angaben entfallen, die Reihenfolge bleibt', () => {
-    expect(cameraLine(c({ ...full, lensModel: undefined }))).toBe(
-      'Apple iPhone 15 Pro · f/1,8 · 1/120 s · ISO 80 · 6,8 mm (24 mm KB)',
+    expect(cameraLine(c({ ...full, fNumber: undefined, iso: undefined }))).toBe(
+      'Apple iPhone 15 Pro · 1/120 s · 6,8 mm (24 mm KB)',
     );
     expect(cameraLine(c({ model: 'Pixel 8', iso: 200, focalLength: { n: 6.9 } }))).toBe(
       'Pixel 8 · ISO 200 · 6,9 mm',
