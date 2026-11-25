@@ -53,16 +53,23 @@ export function initLightbox(doc: Document = document) {
     }
   }
 
-  /** Platz für Kamerafeld und Bildunterschrift, damit das Foto in die Höhe passt (siehe Gallery.astro). */
-  const frame = dialog.querySelector<HTMLElement>('.lightbox__frame')!;
+  /** Platz für Kamera-Kasten (samt Abstand) und Bildunterschrift, damit das Foto in die Höhe passt (siehe Gallery.astro). */
+  const photo = dialog.querySelector<HTMLElement>('.lightbox__photo')!;
   function fit() {
     if (!dialog!.open) return;
-    for (let pass = 0; pass < 2; pass++) {
+    // Von der vollen Foto-Größe aus messen: Ein altes --reserve könnte das Foto (und damit den Kasten) schmal halten
+    photo.style.removeProperty('--reserve');
+    for (let pass = 0; pass < 3; pass++) {
       const gap = caption.hidden ? 0 : caption.offsetHeight + 10;
-      frame.style.setProperty('--reserve', `${info.offsetHeight + gap}px`);
+      const box = info.hidden
+        ? 0
+        : info.offsetHeight + (parseFloat(getComputedStyle(info).marginTop) || 0);
+      photo.style.setProperty('--reserve', `${box + gap}px`);
     }
   }
   window.addEventListener('resize', fit);
+  // Solange das Foto lädt, hat es keine Breite; erst danach stimmt die Höhe des Kamera-Kastens
+  img.addEventListener('load', fit);
 
   function open(i: number, from: HTMLElement) {
     opener = from;

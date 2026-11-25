@@ -86,8 +86,10 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
     </button>
   </div>
   <figure class="lightbox__stage" data-stage>
-    <div class="lightbox__frame">
-      <img class="lightbox__img" src={EMPTY_IMAGE} alt="" data-img />
+    <div class="lightbox__photo">
+      <div class="lightbox__frame">
+        <img class="lightbox__img" src={EMPTY_IMAGE} alt="" data-img />
+      </div>
       <p class="lightbox__info" data-info hidden></p>
     </div>
     <figcaption class="lightbox__caption" lang="es" data-caption hidden></figcaption>
@@ -213,6 +215,14 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
     user-select: none;
     -webkit-user-select: none;
   }
+  /* Foto mit weißem Rahmen; darunter (außerhalb des Rahmens) der Kamera-Kasten, beide gleich breit */
+  .lightbox__photo {
+    --info-gap: 8px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    max-width: 100%;
+  }
   .lightbox__frame {
     display: flex;
     flex-direction: column;
@@ -222,8 +232,8 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
     border-radius: 6px;
     overflow: hidden;
   }
-  /* Höhe: Platz der Bühne minus Kamerafeld und Bildunterschrift (--reserve, misst lightbox.ts), damit
-     das Foto – und damit das Kamerafeld darunter – nie breiter als das Foto selbst wird */
+  /* Höhe: Platz der Bühne minus Kamera-Kasten und Bildunterschrift (--reserve, misst lightbox.ts), damit
+     das Foto – und damit der Kamera-Kasten darunter – nie breiter als das Foto selbst wird */
   .lightbox__img {
     display: block;
     min-height: 0;
@@ -234,11 +244,18 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
     object-fit: contain;
     -webkit-user-drag: none;
   }
-  /* Kameraangaben: schwarzes Feld mit weißer Schrift direkt unter dem Foto, so breit wie das Foto */
+  /* Kameraangaben: eigener schwarzer Kasten mit weißer Schrift und weißem Rand, mit kleinem Abstand
+     unter dem Rahmen des Fotos und so breit wie das Foto (width: 0 + min-width: 100%: der Text
+     macht den Kasten nie breiter als das Foto) */
   .lightbox__info {
     flex: none;
-    margin: 0;
+    box-sizing: border-box;
+    width: 0;
+    min-width: 100%;
+    margin: var(--info-gap) 0 0;
     padding: 8px 12px;
+    border: 2px solid var(--card);
+    border-radius: 6px;
     background: #000;
     color: #fff;
     font-size: 0.9rem;
@@ -249,10 +266,10 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
   .lightbox__info[hidden] {
     display: none;
   }
-  /* Handy: kleinere Schrift, damit das Feld im Verhältnis zum Foto nicht zu groß wirkt */
+  /* Handy: kleinere Schrift, damit der Kasten im Verhältnis zum Foto nicht zu groß wirkt */
   @media (max-width: 699px) {
     .lightbox__info {
-      padding: 5px 8px;
+      padding: 4px 8px;
       font-size: 0.7rem;
       line-height: 1.35;
     }
