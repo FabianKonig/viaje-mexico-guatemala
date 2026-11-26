@@ -3,6 +3,7 @@ import Base from '../../../layouts/Base.astro';
 import Bilingual from '../../../components/Bilingual.astro';
 import Gallery from '../../../components/Gallery.astro';
 import Videos from '../../../components/Videos.astro';
+import PostNav from '../../../components/PostNav.astro';
 import { getContent } from '../../../lib/data';
 import type { Post } from '../../../lib/content';
 import { formatDateDe } from '../../../lib/dates';
@@ -10,15 +11,22 @@ import { tripDayNumber } from '../../../lib/travelDay';
 import { excerpt } from '../../../lib/translation';
 import { href } from '../../../lib/site';
 import { postCover } from '../../../lib/media';
+import { neighbours } from '../../../lib/postNav';
 
 export function getStaticPaths() {
-  return getContent().posts.map((post) => ({ params: { slug: post.slug }, props: { post } }));
+  const { posts } = getContent();
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post, ...neighbours(posts, post.slug) },
+  }));
 }
 
 interface Props {
   post: Post;
+  prev?: Post;
+  next?: Post;
 }
-const { post } = Astro.props;
+const { post, prev, next } = Astro.props;
 const day = tripDayNumber(post.date);
 const description = post.titleDe
   ? `${post.titleDe}: ${excerpt(post.original, 140)}`
@@ -57,6 +65,8 @@ const ogImage = cover?.media.og
     <Gallery slug={post.slug} photos={post.photos} />
 
     <Videos slug={post.slug} clips={post.clips} />
+
+    <PostNav prev={prev} next={next} />
 
     <p class="post__back">
       <a href={href() + '#entradas'}>
