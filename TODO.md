@@ -34,10 +34,11 @@
 - [ ] HEIC-Fotos: `heic-convert` übernimmt das EXIF nicht, daher entfällt bei HEIC das Kamerafeld
       (und ein vorhandener Standort). Falls nötig, EXIF aus dem HEIC-Container lesen (bisher nur
       JPEG/Handy-Android getestet).
-- [ ] Die Positivliste ist am 26.11.2026 erweitert worden (Standort der Fotos, Zeitzone,
-      Sekundenbruchteile, Farbprofil, einige Belichtungsfelder). Die Fotos der Beiträge vom 23. und
-      24.11. sind davon nicht betroffen (bewusst unverändert, Wunsch des Autors). Wer sie nachziehen
-      will, importiert sie aus den Drive-Originalen neu.
+- [x] Die Positivliste ist am 26.11.2026 erweitert worden (Standort der Fotos, Zeitzone,
+      Sekundenbruchteile, Farbprofil, einige Belichtungsfelder). Die 21 Fotos der Beiträge vom 23. und
+      24.11. sind am 26.11.2026 auf Wunsch des Autors aus den Drive-Originalen neu importiert worden
+      (Dateinamen und `index.md` unverändert). Die Originale tragen keinen Standort; neu sind
+      Zeitzone und Sekundenbruchteile (Pixel-Fotos) und das Farbprofil (wo das Original eines hat).
 - [ ] **Von Hand:** Wer die Seite teilt, sollte wissen, dass Fotos jetzt ihren Aufnahmeort in der
       Datei tragen (Link ist nicht öffentlich auffindbar, aber wer ihn kennt, kann Bilder
       herunterladen). Fotos von zu Hause oder von der Unterkunft verraten die Adresse.

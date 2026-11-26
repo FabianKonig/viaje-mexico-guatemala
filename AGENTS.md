@@ -389,10 +389,10 @@ Beitrag), Verlauf der Beiträge (Datum, Link zur Lern-Datei).
   Seriennummer, Besitzer, Texte, MakerNote, XMP) bricht der Build ab.
   **Die Liste nie erweitern, ohne den Autor zu fragen** (Seriennummer, Besitzer, Texte, MakerNote, XMP
   bleiben tabu).
-  Fotos, die vor dieser Funktion importiert wurden (Beiträge vom 23. und 24.11.), haben nicht alle
-  Angaben (kein Standort, keine Zeitzone); sie bekommen sie nur durch einen neuen Import aus den
-  Originalen (Wunsch des Autors: bisher unverändert lassen). HEIC-Fotos verlieren beim Import das
-  EXIF (auch den Standort), siehe TODO.md.
+  Die Fotos der Beiträge vom 23. und 24.11. sind am 26.11.2026 auf Wunsch des Autors aus den
+  Drive-Originalen neu importiert worden (Dateinamen und `index.md` unverändert). Ein Standort steht
+  nur in der Datei, wenn das Original ihn trägt (bei diesen Fotos war keiner im Original).
+  HEIC-Fotos verlieren beim Import das EXIF (auch den Standort), siehe TODO.md.
 - Weil erst der Import verkleinert und alles außerhalb der Liste entfernt, landen **nie** unbearbeitete
   Originale in der Git-Historie. Unbearbeitete Originale gehören nicht ins Repository (höchstens lokal in `_originals/`).
 - **Menschen:** Jedes Foto, das der Autor gibt, wird ohne Rückfrage übernommen. Nicht prüfen, ob
