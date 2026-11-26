@@ -300,6 +300,22 @@ test('Bildunterschrift: Text linksbündig', async ({ page }) => {
   await expect(caption).toHaveCSS('text-align', 'left');
 });
 
+test('Bildunterschrift: Handy hochkant so breit wie das Foto, kleinere Schrift', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(EXAMPLE);
+  await page.locator('.gallery__link').nth(2).click();
+  const dialog = page.locator('dialog[data-lightbox]');
+  const caption = dialog.locator('[data-caption]');
+  await expect(caption).toBeVisible();
+  const frame = (await dialog.locator('.lightbox__frame').boundingBox())!;
+  const c = (await caption.boundingBox())!;
+  expect(Math.abs(c.x - frame.x)).toBeLessThanOrEqual(1);
+  expect(Math.abs(c.width - frame.width)).toBeLessThanOrEqual(1);
+  await expect(caption).toHaveCSS('font-size', '13.6px');
+});
+
 test('Lightbox: Vor-/Zurück-Pfeile stehen auf halber Höhe des Fotos, auch mit langer Bildunterschrift', async ({
   page,
 }) => {

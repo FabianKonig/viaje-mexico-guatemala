@@ -137,6 +137,10 @@ export function initLightbox(doc: Document = document) {
     // Handy quer: Bildunterschrift steht neben dem Foto (Bühne als Zeile) und braucht keine Höhe
     const side = getComputedStyle(stage).flexDirection === 'row';
     for (let pass = 0; pass < 3; pass++) {
+      // Bildunterschrift so breit wie das Foto (nur Handy hochkant, siehe Gallery.astro); ihre Höhe hängt davon ab
+      const photoWidth = frame.getBoundingClientRect().width;
+      if (photoWidth > 0) caption.style.setProperty('--photo-w', `${photoWidth}px`);
+      else caption.style.removeProperty('--photo-w');
       const gap = caption.hidden || side ? 0 : caption.offsetHeight + 10;
       // die Zeile enthält Kasten und Abstand darüber (leer, wenn das Foto keine Kameraangaben hat)
       photo.style.setProperty('--reserve', `${infoRow.offsetHeight + gap}px`);

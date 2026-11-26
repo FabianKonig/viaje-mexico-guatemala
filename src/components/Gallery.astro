@@ -320,9 +320,13 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
       transparent 100%
     );
   }
+  /* Handy hochkant: Text so breit wie das Foto (--photo-w setzt lightbox.ts), links bündig mit dem Foto,
+     kleinere Schrift */
   @media (max-width: 699px) {
     .lightbox__caption {
-      padding-inline: 44px;
+      width: var(--photo-w, auto);
+      padding-inline: 0;
+      font-size: 0.85rem;
     }
   }
   .lightbox__btn {
@@ -437,9 +441,10 @@ const items = photos.map((p) => ({ ...p, media: photoMedia(slug, p.file) }));
       min-width: 12ch;
       max-width: min(36ch, 30cqw);
       max-height: 100cqh;
+      width: auto;
       padding-inline: 0;
       text-align: left;
-      font-size: 0.85rem;
+      font-size: 0.75rem;
     }
     .lightbox__img {
       max-height: calc(100cqh - var(--reserve, 0px) - 4px);
