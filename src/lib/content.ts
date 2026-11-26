@@ -13,8 +13,9 @@ import {
   type TranslationData,
 } from './translation';
 
-export const MAX_PHOTOS = 30;
-export const MAX_CLIPS = 10;
+// Grenzen pro Beitrag: Sie verhindern, dass sich zu viele Dateien im Repository sammeln und es aufblähen.
+export const MAX_PHOTOS = 60;
+export const MAX_CLIPS = 20;
 export const PHOTO_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif'];
 export const GENERATED_COVER_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp'];
 export const GENERATED_COVER_ALT = 'Titelbild';
