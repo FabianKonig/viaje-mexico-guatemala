@@ -292,6 +292,14 @@ test('Bildunterschrift: nicht in der Fotoliste, in der Großansicht bei langem T
   expect(await fade()).toEqual({ top: '0px', bottom: '0px' }); // kurzer Text: kein Verlauf
 });
 
+test('Bildunterschrift: Text linksbündig', async ({ page }) => {
+  await page.goto(EXAMPLE);
+  await page.locator('.gallery__link').nth(2).click();
+  const caption = page.locator('dialog[data-lightbox] [data-caption]');
+  await expect(caption).toBeVisible();
+  await expect(caption).toHaveCSS('text-align', 'left');
+});
+
 test('Lightbox: Vor-/Zurück-Pfeile stehen auf halber Höhe des Fotos, auch mit langer Bildunterschrift', async ({
   page,
 }) => {

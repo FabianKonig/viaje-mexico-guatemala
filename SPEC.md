@@ -390,7 +390,8 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   Kasten. Die Foto-Höhe ist Bühne minus Kasten (samt Abstand) minus Bildunterschrift; `lightbox.ts`
   misst die Zeile `[data-info-row]` und setzt `--reserve` (gemessen von der vollen Foto-Größe aus,
   neu nach dem Laden des Fotos). Ohne Kameraangaben entfällt der Kasten; die Bildunterschrift steht
-  ganz unten, unter dem Kasten. Sie ist höchstens 30 % der Bühnenhöhe hoch (`max-height: 30cqh`); längere Texte scrollen
+  ganz unten, unter dem Kasten. Der Textblock steht mittig unter dem Foto (höchstens 60 Zeichen breit), der
+  Text darin ist **linksbündig** (`text-align: left`, auch am Computer und am Handy hochkant). Sie ist höchstens 30 % der Bühnenhöhe hoch (`max-height: 30cqh`); längere Texte scrollen
   (`overflow-y: auto`), damit das Foto nicht kleiner wird. Am Handy hat sie seitlich 44 px Abstand, damit die
   Pfeil-Knöpfe nicht über dem Text liegen. Als Scroll-Hinweis (Handys zeigen keinen Scrollbalken) blendet ein weicher Verlauf (`mask-image`, 28 px,
   `--fade-top`/`--fade-bottom` setzt `lightbox.ts`) oben und unten den Text aus, solange dort noch Text verborgen ist; bei kurzem Text oder am Ende entfällt er. Die Pfeil-Knöpfe stehen immer auf halber Höhe des Fotos
