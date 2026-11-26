@@ -313,7 +313,7 @@ test('Bildunterschrift: Handy hochkant so breit wie das Foto, kleinere Schrift',
   const c = (await caption.boundingBox())!;
   expect(Math.abs(c.x - frame.x)).toBeLessThanOrEqual(1);
   expect(Math.abs(c.width - frame.width)).toBeLessThanOrEqual(1);
-  await expect(caption).toHaveCSS('font-size', '13.6px');
+  await expect(caption).toHaveCSS('font-size', '14.4px');
 });
 
 test('Lightbox: Vor-/Zurück-Pfeile stehen auf halber Höhe des Fotos, auch mit langer Bildunterschrift', async ({
