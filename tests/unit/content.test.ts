@@ -275,6 +275,35 @@ describe('Inhalte: Frontmatter-Prüfung', () => {
   });
 });
 
+describe('Inhalte: mehrere Beiträge pro Tag', () => {
+  it('gleiches Datum: drei Beiträge, Reihenfolge nach Slug absteigend', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'content-'));
+    fs.writeFileSync(
+      path.join(dir, 'places.yaml'),
+      '- {id: a, name: A, lat: 19, lon: -99, country: MX, arrived: 2026-11-23}\n',
+    );
+    for (const slug of ['2026-11-27-1-morgens', '2026-11-27-3-nachts', '2026-11-27-2-abends']) {
+      const postDir = path.join(dir, 'posts', slug);
+      fs.mkdirSync(postDir, { recursive: true });
+      fs.writeFileSync(path.join(postDir, 'original.md'), original);
+      const fm = { ...base(), place: 'a', date: '2026-11-27' };
+      fs.writeFileSync(path.join(postDir, 'index.md'), `---\n${JSON.stringify(fm)}\n---\n`);
+    }
+    fs.mkdirSync(path.join(dir, 'posts', '2026-11-28-spaeter'));
+    fs.writeFileSync(path.join(dir, 'posts', '2026-11-28-spaeter', 'original.md'), original);
+    fs.writeFileSync(
+      path.join(dir, 'posts', '2026-11-28-spaeter', 'index.md'),
+      `---\n${JSON.stringify({ ...base(), place: 'a', date: '2026-11-28' })}\n---\n`,
+    );
+    expect(loadPosts(dir).map((p) => p.slug)).toEqual([
+      '2026-11-28-spaeter',
+      '2026-11-27-3-nachts',
+      '2026-11-27-2-abends',
+      '2026-11-27-1-morgens',
+    ]);
+  });
+});
+
 describe('Inhalte: Ortsliste', () => {
   it('prüft Felder, doppelte IDs und Reihenfolge der Daten', () => {
     const ok = validatePlaces(places);

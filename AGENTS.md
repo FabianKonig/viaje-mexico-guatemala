@@ -168,6 +168,9 @@ Hash berechnen: `node scripts/hash-original.mjs content/posts/<ordner>/original.
    einen bestimmten echten Beitrag festlegen: sie nehmen `latestRealPost()` aus `tests/e2e/fixtures.ts`.)
 2. **Ordner** `content/posts/<JJJJ-MM-TT-slug>/` anlegen (Datum des Beitrags, kurzer Slug ohne
    Sonderzeichen).
+   Mehrere Beiträge am selben Tag sind erlaubt: gleiches Datum, verschiedener Slug. Die Reihenfolge
+   bei gleichem Datum bestimmt der Slug absteigend (alphabetisch Späteres steht oben); wünscht der Autor
+   eine feste Reihenfolge, eine Zahl voranstellen (`2026-11-27-1-morgens`, `2026-11-27-2-abends`).
 3. **Originaltext übernehmen:** Text des Autors unverändert in `original.md` schreiben, Zeichen für
    Zeichen. Nichts korrigieren, nicht glätten, keine Akzente ergänzen, keine Leerzeichen ändern.
 4. **Sprachen erkennen und übersetzen:** spanische Passagen als `lang: es` mit natürlicher,
