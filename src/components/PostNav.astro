@@ -1,0 +1,39 @@
+---
+import { href } from '../lib/site';
+
+interface Props {
+  /** Zeitlich vorheriger (älterer) Beitrag. */
+  prev?: { slug: string };
+  /** Zeitlich nächster (neuerer) Beitrag. */
+  next?: { slug: string };
+}
+const { prev, next } = Astro.props;
+---
+
+{(prev || next) && (
+  <nav class="post-nav" aria-label="Weitere Beiträge">
+    {prev && (
+      <a class="btn btn--light post-nav__prev" href={href(`entradas/${prev.slug}/`)} rel="prev">
+        <span aria-hidden="true">←</span> Vorheriger Beitrag
+      </a>
+    )}
+    {next && (
+      <a class="btn btn--light post-nav__next" href={href(`entradas/${next.slug}/`)} rel="next">
+        Nächster Beitrag <span aria-hidden="true">→</span>
+      </a>
+    )}
+  </nav>
+)}
+
+<style>
+  .post-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 40px;
+  }
+  /* Rechts ausgerichtet, auch wenn es nur den Knopf „Nächster Beitrag“ gibt */
+  .post-nav__next {
+    margin-left: auto;
+  }
+</style>

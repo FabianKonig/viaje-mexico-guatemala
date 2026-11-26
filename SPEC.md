@@ -298,7 +298,15 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   Leerzeilen. Sie ergeben im Original nur einen kleinen Absatzabstand (0,6 × `--fs-text`, wie zwischen
   den Absätzen der Übersetzung), egal wie viele Leerzeilen es sind. Die Zeilenumbrüche bleiben im Text
   (`textContent` byte-gleich); die überzähligen stecken in `<span class="para-gap">` ohne Zeilenhöhe.
-- Darunter die Fotogalerie, Videos und der Link „← Alle Beiträge“ (zur Startseite `#entradas`).
+- Darunter die Fotogalerie und Videos.
+- **Beitrags-Navigation** (Komponente `PostNav`, nur unten, nicht oben): zwei helle Pillen-Knöpfe
+  „← Vorheriger Beitrag“ (links, zum zeitlich älteren Beitrag) und „Nächster Beitrag →“ (rechts, zum
+  neueren), gleicher Stil wie die übrigen Knöpfe (`btn btn--light`, mindestens 48px hoch). Die
+  Reihenfolge ist die der Startseite (neueste zuerst; `neighbours()` in `src/lib/postNav.ts`). Der
+  neueste Beitrag hat nur „Vorheriger Beitrag“, der älteste nur „Nächster Beitrag“ (der bleibt
+  rechts), ein einziger Beitrag keinen von beiden. Am Handy umbrechen die Knöpfe untereinander.
+  Der Knöpfe-Block hat `aria-label="Weitere Beiträge"` und `rel="prev"`/`rel="next"`.
+- Zuletzt der Link „← Alle Beiträge“ (zur Startseite `#entradas`), unter den Navigationsknöpfen.
 
 ### 7.6 Fotos und Lightbox
 
