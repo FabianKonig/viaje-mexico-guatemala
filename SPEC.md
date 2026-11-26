@@ -506,7 +506,6 @@ YouTube wird nicht verwendet. `videos:` im Frontmatter ist ein Fehler (Hinweis a
   größere Schrift. Umschaltung per CSS zwischen zwei SVGs (kein JavaScript).
 - **Legende** (`<ol>`): Nummer und spanischer Name, aktueller Ort mit Etikett „Aquí estoy“ und
   rosa Nummer, Orte in Ausschnitten mit gelber Nummer. Am Computer mehrspaltig, am Handy einspaltig.
-  Darunter: „Schematische Skizze, die Umrisse sind nur ungefähr.“
 - Barrierefreiheit: Jede Karte ist ein `role="img"` mit Beschreibung; die Legende enthält alle Informationen.
 
 ### 7.9 Reisetag-Anzeige (`src/lib/travelDay.ts`, `TravelDay.astro`)

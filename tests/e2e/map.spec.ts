@@ -10,7 +10,7 @@ test('Startseite: Karte mit Ciudad de México als „Aquí estoy“ (Computer)',
   await expect(legend.locator('li').first()).toContainText('Ciudad de México');
   await expect(legend.locator('li.is-current')).toContainText('Aquí estoy');
   await expect(map.locator('svg.map--desktop [data-here]')).toContainText('Aquí estoy');
-  await expect(map).toContainText('Schematische Skizze, die Umrisse sind nur ungefähr.');
+  await expect(map).not.toContainText('Schematische Skizze');
 });
 
 test('Ortsnamen stehen nur in der Legende, nicht in der Karte', async ({ page }) => {
