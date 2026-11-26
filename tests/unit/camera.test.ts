@@ -35,6 +35,11 @@ async function phoneJpeg(width = 3000, height = 2000) {
         ExposureProgram: '2',
         ISOSpeedRatings: '80',
         DateTimeOriginal: '2026:11:24 19:42:10',
+        OffsetTimeOriginal: '-06:00',
+        SubSecTimeOriginal: '123',
+        ExposureMode: '0',
+        SceneCaptureType: '0',
+        DigitalZoomRatio: '1/1',
         ExposureBiasValue: '0/1',
         MeteringMode: '5',
         Flash: '16',
@@ -49,11 +54,20 @@ async function phoneJpeg(width = 3000, height = 2000) {
       },
       IFD3: {
         GPSLatitudeRef: 'N',
-        GPSLatitude: '1/1 0/1 0/1',
-        GPSLongitudeRef: 'E',
-        GPSLongitude: '1/1 0/1 0/1',
+        GPSLatitude: '19/1 25/1 5000/100',
+        GPSLongitudeRef: 'W',
+        GPSLongitude: '99/1 7/1 3000/100',
+        GPSAltitudeRef: '0',
+        GPSAltitude: '2240/1',
+        GPSTimeStamp: '19/1 42/1 10/1',
+        GPSDateStamp: '2026:11:24',
+        GPSImgDirectionRef: 'T',
+        GPSImgDirection: '90/1',
+        GPSProcessingMethod: 'ASCII\0\0\0FUSED',
+        GPSAreaInformation: 'ASCII\0\0\0Zuhause',
       },
     })
+    .withIccProfile('p3')
     .toBuffer();
 }
 
@@ -98,7 +112,7 @@ async function jpegWithThumbnail() {
 }
 
 describe('Kameraangaben lesen und schreiben', () => {
-  it('Vorschaubild und GPS aus dem Original kommen nie ins Ergebnis', async () => {
+  it('Vorschaubild aus dem Original kommt nie ins Ergebnis, ein ungültiger GPS-Verweis auch nicht', async () => {
     const src = await jpegWithThumbnail();
     const srcExif = (await sharp(src).metadata()).exif!;
     expect(exifProblems(srcExif).join()).toMatch(/Vorschaubild/); // Gegenprobe
@@ -106,6 +120,7 @@ describe('Kameraangaben lesen und schreiben', () => {
       const exif = (await sharp(out).metadata()).exif!;
       expect(exifProblems(exif)).toEqual([]);
       expect(readCamera(exif)).toMatchObject({ make: 'FUJIFILM' });
+      expect(readCamera(exif)?.gps).toBeUndefined(); // Verweis zeigt ins Leere
       expect(exif.includes(Buffer.from([0xff, 0xd8]))).toBe(false); // kein Mini-JPEG darin
     }
   });
@@ -114,15 +129,25 @@ describe('Kameraangaben lesen und schreiben', () => {
     const exif = (await sharp(await phoneJpeg()).metadata()).exif!;
     expect(exifHasGps(exif)).toBe(true);
     expect(exif.includes(Buffer.from('GEHEIM-123'))).toBe(true);
-    expect(exifProblems(exif).join()).toMatch(/GPS/);
+    // Seriennummer, Besitzer, Texte und freie GPS-Texte sind Befunde
+    expect(exifProblems(exif).join()).toMatch(/EXIF-Tag/);
+    expect(exifProblems(exif).join()).toMatch(/\(GPS\)/);
   });
 
   it('Import behält nur die erlaubten Angaben, nichts anderes', async () => {
     const out = await shrinkPhoto(await phoneJpeg());
     const exif = (await sharp(out.data).metadata()).exif!;
     expect(exifProblems(exif)).toEqual([]);
-    expect(exifHasGps(exif)).toBe(false);
-    for (const secret of ['GEHEIM-123', 'Test Person', 'Testbeschreibung', 'Kommentar', '26.1'])
+    expect(exifHasGps(exif)).toBe(true);
+    for (const secret of [
+      'GEHEIM-123',
+      'Test Person',
+      'Testbeschreibung',
+      'Kommentar',
+      '26.1',
+      'FUSED',
+      'Zuhause',
+    ])
       expect(out.data.includes(Buffer.from(secret)), secret).toBe(false);
     const c = readCamera(exif);
     expect(c).toMatchObject({
@@ -135,12 +160,106 @@ describe('Kameraangaben lesen und schreiben', () => {
       meteringMode: 5,
       flash: 16,
       whiteBalance: 0,
+      exposureMode: 0,
+      sceneCaptureType: 0,
       dateTimeOriginal: '2026:11:24 19:42:10',
+      offsetTimeOriginal: '-06:00',
+      subSecTimeOriginal: '123',
     });
+    expect(c.digitalZoomRatio.n).toBe(1);
     expect(c.exposureTime.n).toBeCloseTo(1 / 120);
     expect(c.fNumber.n).toBeCloseTo(1.78);
     expect(c.focalLength.n).toBeCloseTo(6.765);
     expect(c.exposureBias.n).toBe(0);
+  });
+
+  it('Standort bleibt in der Datei erhalten, freie GPS-Texte nicht', async () => {
+    const out = await shrinkPhoto(await phoneJpeg());
+    const c = readCamera((await sharp(out.data).metadata()).exif)!;
+    expect(c.gps).toMatchObject({
+      latRef: 'N',
+      lat: [
+        [19, 1],
+        [25, 1],
+        [5000, 100],
+      ],
+      lonRef: 'W',
+      lon: [
+        [99, 1],
+        [7, 1],
+        [3000, 100],
+      ],
+      altRef: 0,
+      alt: [2240, 1],
+      day: '2026:11:24',
+      dirRef: 'T',
+      dir: [90, 1],
+    });
+    expect(c.gps.time).toEqual([
+      [19, 1],
+      [42, 1],
+      [10, 1],
+    ]);
+    // Das Ergebnis von Import und Build ist identisch, auch im großen Bild
+    const large = await renderPhoto(out.data);
+    expect(readCamera((await sharp(large.large.data).metadata()).exif)).toEqual(c);
+    // Die Textzeile zeigt den Standort nie
+    expect(large.info).toBe('Apple iPhone 15 Pro · f/1,8 · 1/120 s · ISO 80 · 6,8 mm (24 mm KB)');
+    // Vorschaubilder tragen weder Standort noch EXIF
+    for (const t of [400, 800])
+      expect((await sharp(large.thumbs[t].data).metadata()).exif).toBeUndefined();
+    // Farbprofil bleibt im Import-Foto und im großen Bild
+    expect((await sharp(out.data).metadata()).icc).toBeDefined();
+    expect((await sharp(large.large.data).metadata()).icc).toBeDefined();
+  });
+
+  it('ungültiger Standort (falsche Richtung, Wert außerhalb) wird nicht übernommen', async () => {
+    const base = {
+      GPSLatitudeRef: 'N',
+      GPSLatitude: '10/1 0/1 0/1',
+      GPSLongitudeRef: 'E',
+      GPSLongitude: '10/1 0/1 0/1',
+    };
+    const gps = async (extra: object) =>
+      readCamera(
+        (
+          await sharp({ create: { width: 10, height: 10, channels: 3, background: '#fff' } })
+            .jpeg()
+            .withExif({ IFD0: { Make: 'X' }, IFD3: { ...base, ...extra } })
+            .toBuffer()
+            .then((b) => sharp(b).metadata())
+        ).exif,
+      )?.gps;
+    await Promise.all([
+      gps({}).then((g) => expect(g).toMatchObject({ latRef: 'N' })),
+      gps({ GPSLatitudeRef: 'X' }).then((g) => expect(g).toBeUndefined()),
+      gps({ GPSLatitude: '95/1 0/1 0/1' }).then((g) => expect(g).toBeUndefined()),
+      gps({ GPSLongitude: '181/1 0/1 0/1' }).then((g) => expect(g).toBeUndefined()),
+      gps({ GPSLatitude: '10/0 0/1 0/1' }).then((g) => expect(g).toBeUndefined()),
+    ]);
+  });
+
+  it('Zeitzone und Sekundenbruchteile gelten nur mit Aufnahmezeit und nur im festen Format', async () => {
+    const read = async (ifd2: object) =>
+      readCamera(
+        (
+          await sharp(
+            await sharp({ create: { width: 10, height: 10, channels: 3, background: '#fff' } })
+              .jpeg()
+              .withExif({ IFD0: { Make: 'X' }, IFD2: ifd2 })
+              .toBuffer(),
+          ).metadata()
+        ).exif,
+      )!;
+    expect(
+      await read({ DateTimeOriginal: '2026:11:24 19:42:10', OffsetTimeOriginal: 'Mexiko' }),
+    ).not.toHaveProperty('offsetTimeOriginal');
+    expect(
+      await read({ DateTimeOriginal: '2026:11:24 19:42:10', SubSecTimeOriginal: 'abc' }),
+    ).not.toHaveProperty('subSecTimeOriginal');
+    expect(
+      await read({ OffsetTimeOriginal: '-06:00', SubSecTimeOriginal: '12' }),
+    ).not.toHaveProperty('offsetTimeOriginal');
   });
 
   it('Werte bleiben beim erneuten Verarbeiten (Build) unverändert', async () => {
@@ -170,6 +289,19 @@ describe('Kameraangaben lesen und schreiben', () => {
     expect(cameraToSharpExif(null)).toEqual({});
   });
 
+  it('Farbprofil bleibt auch ohne Kameraangaben', async () => {
+    const plain = await sharp({
+      create: { width: 800, height: 600, channels: 3, background: '#0e7c86' },
+    })
+      .withIccProfile('p3')
+      .jpeg()
+      .toBuffer();
+    const out = await shrinkPhoto(plain);
+    const m = await sharp(out.data).metadata();
+    expect(m.exif).toBeUndefined();
+    expect(m.icc).toBeDefined();
+  });
+
   it('Prüfung: Kameraangaben nur im großen Bild und im Import-Foto erlaubt', async () => {
     const dir = tmp('cam-');
     const r = await renderPhoto(await phoneJpeg(800, 600));
@@ -187,9 +319,12 @@ describe('Kameraangaben lesen und schreiben', () => {
     await expect(verifyDir(dir)).rejects.toThrow(/EXIF-Tag/);
     const file = path.join(dir, 'x.jpg');
     fs.writeFileSync(file, await phoneJpeg(400, 300));
+    // Originalfoto mit Seriennummer, Besitzer und freien GPS-Texten: auch mit Erlaubnis ein Fehler
     expect(await inspectImage(file, { camera: true })).toEqual(
-      expect.arrayContaining(['EXIF mit GPS']),
+      expect.arrayContaining([expect.stringMatching(/EXIF-Tag .* \(GPS\)/)]),
     );
+    // ohne Erlaubnis (Vorschau): schon der Standort allein ist ein Fehler
+    expect(await inspectImage(file)).toContain('EXIF mit GPS');
   });
 });
 

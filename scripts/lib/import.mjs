@@ -1,6 +1,6 @@
 /**
  * Import: nimmt einen Ordner mit Handy-Originalen (Fotos, Videos) und legt verkleinerte, von
- * Metadaten (GPS usw.) befreite Dateien im Beitragsordner ab; nur die erlaubten Kameraangaben bleiben. Die Originale werden nur gelesen,
+ * Metadaten befreite Dateien im Beitragsordner ab; nur die erlaubten Angaben (Kamera, Aufnahmezeit, Standort) bleiben. Die Originale werden nur gelesen,
  * nie kopiert. Erst danach darf committet werden.
  *
  *   Fotos  → content/posts/<slug>/photos/NN.jpg  (lange Seite höchstens 1600 px, JPEG)
@@ -12,7 +12,14 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import sharp from 'sharp';
-import { decodeInput, encodeWithCamera, inspectImage, IMAGE_EXT, LARGE } from '../images.mjs';
+import {
+  decodeInput,
+  encodeWithCamera,
+  inspectImage,
+  keepsIcc,
+  IMAGE_EXT,
+  LARGE,
+} from '../images.mjs';
 import { readCamera } from './camera.mjs';
 import {
   containerCaptureTime,
@@ -94,10 +101,12 @@ export async function listByCaptureTime(source) {
 
 /**
  * Verkleinertes Foto (JPEG, lange Seite höchstens 1600 px) ohne Metadaten bis auf die erlaubten
- * Kameraangaben (scripts/lib/camera.mjs). GPS, Seriennummer usw. werden nie übernommen.
+ * Angaben (scripts/lib/camera.mjs: Kamera, Belichtung, Aufnahmezeit, Standort) und das Farbprofil.
+ * Seriennummer, Besitzer, Texte usw. werden nie übernommen.
  */
 export async function shrinkPhoto(input) {
-  const camera = readCamera((await sharp(input, { failOn: 'none' }).metadata()).exif);
+  const meta = await sharp(input, { failOn: 'none' }).metadata();
+  const camera = readCamera(meta.exif);
   return encodeWithCamera(
     sharp(input, { failOn: 'error' })
       .rotate()
@@ -105,6 +114,7 @@ export async function shrinkPhoto(input) {
       .flatten({ background: '#ffffff' }),
     camera,
     (p) => p.jpeg({ quality: PHOTO_JPEG_QUALITY, mozjpeg: true }),
+    { icc: keepsIcc(meta) },
   );
 }
 

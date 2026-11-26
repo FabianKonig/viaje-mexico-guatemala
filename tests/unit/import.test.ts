@@ -84,7 +84,7 @@ describe('Videohilfen (ohne ffmpeg)', () => {
 });
 
 describe.skipIf(!ffmpeg)('Import (mit ffmpeg)', () => {
-  it('Video: 720p, ohne Standort, mit Ton, Standbild; Foto: 1600 px ohne GPS', async () => {
+  it('Video: 720p, ohne Standort, mit Ton, Standbild; Foto: 1600 px mit Standort', async () => {
     const source = tmp('quelle-');
     const postDir = path.join(tmp('post-'), '2026-11-25-test');
     makeVideo(path.join(source, 'b-video.mp4'));
@@ -115,7 +115,8 @@ describe.skipIf(!ffmpeg)('Import (mit ffmpeg)', () => {
 
     const photo = path.join(postDir, 'photos', '01.jpg');
     expect(await inspectImage(photo, { camera: true })).toEqual([]);
-    expect(exifHasGps((await sharp(photo).metadata()).exif)).toBe(false);
+    // Das Foto behält seinen Standort (Wunsch des Autors), das Video nicht
+    expect(exifHasGps((await sharp(photo).metadata()).exif)).toBe(true);
     const pm = await sharp(photo).metadata();
     expect(Math.max(pm.width!, pm.height!)).toBe(1600);
 
@@ -242,7 +243,7 @@ describe('Bewegtfotos (Motion Photo)', () => {
   });
 
   it.skipIf(!ffmpeg)(
-    'Import legt Standbild und stumme Schleife nebeneinander ab, ohne GPS',
+    'Import legt Standbild und stumme Schleife nebeneinander ab, die Schleife ohne Standort',
     async () => {
       const source = tmp('quelle-');
       const postDir = path.join(tmp('post-'), '2026-11-25-test');

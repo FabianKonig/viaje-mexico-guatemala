@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
  * Bildskript: verarbeitet die Fotos aller Beiträge und das Profilfoto.
- *  - entfernt ALLE Metadaten (EXIF/GPS, XMP, IPTC), dreht nach der EXIF-Ausrichtung; nur das große
- *    Bild behält die erlaubten Kameraangaben (Positivliste, scripts/lib/camera.mjs), nie GPS
+ *  - entfernt alle Metadaten (EXIF, XMP, IPTC), dreht nach der EXIF-Ausrichtung; nur das große
+ *    Bild behält die erlaubten Angaben (Positivliste, scripts/lib/camera.mjs: Kamera, Belichtung,
+ *    Aufnahmezeit, Standort/GPS) und das Farbprofil; Vorschaubilder haben nie Metadaten
  *  - HEIC/HEIF → über heic-convert dekodiert
  *  - erzeugt 400 und 800 px breite Vorschaubilder, eine große Version (max. 1600 px lange Seite,
  *    WebP Qualität 80) und für das Titelbild jedes Beitrags (`coverGenerated`, sonst `cover`, sonst das
@@ -27,13 +28,13 @@ import { exifHasGps, rawMetadataMarkers } from './lib/exif.mjs';
 import { cameraLine, cameraToSharpExif, exifProblems, readCamera } from './lib/camera.mjs';
 import { mp4Problems } from './lib/video.mjs';
 
-export const PIPELINE_VERSION = 3;
+export const PIPELINE_VERSION = 4;
 export const LARGE = 1600;
 export const THUMBS = [400, 800];
 export const QUALITY = 80;
 export const IMAGE_EXT = /\.(jpe?g|png|webp|avif|gif|heic|heif)$/i;
 const PUBLISHED_EXT = /\.(jpe?g|png|webp|avif|gif)$/i;
-/** Nur das große Bild eines Fotos darf die erlaubten Kameraangaben tragen (siehe scripts/lib/camera.mjs). */
+/** Nur das große Bild eines Fotos darf die erlaubten Angaben tragen (siehe scripts/lib/camera.mjs). */
 const KEEPS_CAMERA = /-1600\.webp$/i;
 
 sharp.cache(false);
@@ -49,32 +50,53 @@ export async function decodeInput(file) {
 }
 
 /**
- * Kodiert ein bearbeitetes Bild und schreibt die erlaubten Kameraangaben hinein. Das Bild wird dafür
- * zuerst ohne jede Metadaten als Rohpixel ausgegeben und dann neu kodiert: So kann nichts aus dem
- * EXIF des Originals durchrutschen (Fotos aus Kameras tragen ein eingebettetes Vorschaubild, das
- * sharp beim bloßen Ersetzen einzelner Tags mitnimmt). `encode` wählt Format und Qualität.
+ * Das Farbprofil eines Fotos darf bleiben, wenn es ein RGB-Profil für ein RGB-Bild ist (Beispiel:
+ * Display P3 von iPhones). Andere Profile (CMYK, Graustufen) würden den Farbraum verfälschen.
+ * `meta` sind die sharp-Metadaten des Eingangsbilds.
  */
-export async function encodeWithCamera(pipeline, camera, encode) {
+export function keepsIcc(meta) {
+  return (
+    Boolean(meta?.icc) &&
+    meta.space === 'srgb' &&
+    meta.icc.subarray(16, 20).toString('latin1') === 'RGB '
+  );
+}
+
+/**
+ * Kodiert ein bearbeitetes Bild und schreibt die erlaubten Angaben (Kamera, Aufnahmezeit, Standort)
+ * hinein. Das Bild wird dafür zuerst ohne EXIF, XMP und IPTC (nur mit dem Farbprofil) als
+ * verlustfreies Zwischenbild ausgegeben und dann neu kodiert: So kann nichts aus dem EXIF des
+ * Originals durchrutschen (Fotos aus Kameras tragen ein eingebettetes Vorschaubild, das sharp beim
+ * bloßen Ersetzen einzelner Tags mitnimmt). `encode` wählt Format und Qualität, `icc` behält das
+ * Farbprofil (siehe keepsIcc).
+ */
+export async function encodeWithCamera(pipeline, camera, encode, { icc = false } = {}) {
   const exif = cameraToSharpExif(camera);
-  if (!Object.keys(exif).length) return encode(pipeline).toBuffer({ resolveWithObject: true });
-  const { data, info } = await pipeline.raw().toBuffer({ resolveWithObject: true });
-  const fresh = sharp(data, {
-    raw: { width: info.width, height: info.height, channels: info.channels },
+  const keep = (p) => (icc ? p.keepIccProfile() : p);
+  if (!Object.keys(exif).length)
+    return keep(encode(pipeline)).toBuffer({ resolveWithObject: true });
+  const { data } = await keep(pipeline).tiff({ compression: 'none' }).toBuffer({
+    resolveWithObject: true,
   });
-  return encode(fresh).withExif(exif).toBuffer({ resolveWithObject: true });
+  return keep(encode(sharp(data)))
+    .withExif(exif)
+    .toBuffer({ resolveWithObject: true });
 }
 
 /**
  * Verarbeitet ein Foto in alle Größen. Liefert Puffer und Maße. Nur das große Bild behält die
- * erlaubten Kameraangaben (`camera`, Textzeile in `info`), alles andere bleibt ohne Metadaten.
+ * erlaubten Angaben (`camera`, Textzeile in `info`) und das Farbprofil, alles andere bleibt ohne
+ * Metadaten (Vorschaubilder sind sRGB).
  */
 export async function renderPhoto(input, { og = false } = {}) {
   const base = () => sharp(input, { failOn: 'error' }).rotate();
-  const camera = readCamera((await sharp(input, { failOn: 'error' }).metadata()).exif);
+  const meta = await sharp(input, { failOn: 'error' }).metadata();
+  const camera = readCamera(meta.exif);
   const large = await encodeWithCamera(
     base().resize({ width: LARGE, height: LARGE, fit: 'inside', withoutEnlargement: true }),
     camera,
     (p) => p.webp({ quality: QUALITY }),
+    { icc: keepsIcc(meta) },
   );
   const thumbs = {};
   for (const w of THUMBS) {
@@ -107,8 +129,8 @@ export async function renderProfile(input) {
 
 /**
  * Prüft eine einzelne Bilddatei auf Metadaten. Liefert Probleme (leer = sauber).
- * Mit `camera: true` sind die erlaubten Kameraangaben (EXIF-Positivliste) in Ordnung, alles
- * andere (GPS, Seriennummer, Vorschaubild, XMP, IPTC …) bleibt ein Problem.
+ * Mit `camera: true` sind die erlaubten Angaben (EXIF-Positivliste inklusive Standort) in Ordnung,
+ * alles andere (Seriennummer, Vorschaubild, Freitexte, XMP, IPTC …) bleibt ein Problem.
  */
 export async function inspectImage(file, { camera = false } = {}) {
   const buf = fs.readFileSync(file);
@@ -148,7 +170,7 @@ export async function verifyDir(dir) {
   if (fs.existsSync(dir)) await walk(dir);
   if (bad.length) {
     throw new Error(
-      'Metadaten (z. B. GPS) in veröffentlichten Bildern gefunden:\n  ' + bad.join('\n  '),
+      'Unerlaubte Metadaten in veröffentlichten Bildern gefunden:\n  ' + bad.join('\n  '),
     );
   }
   return count;
@@ -340,7 +362,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     if (process.argv[2] === '--verify') {
       const n = await verifyDir(process.argv[3] || 'dist');
       console.log(
-        `Metadaten-Prüfung: ${n} Bilder ohne GPS/XMP/IPTC und ohne EXIF außer den erlaubten Kameraangaben.`,
+        `Metadaten-Prüfung: ${n} Bilder ohne XMP/IPTC und ohne EXIF außer den erlaubten Angaben (Kamera, Aufnahmezeit, Standort nur im großen Bild).`,
       );
     } else {
       await processAll({ contentDir: process.env.CONTENT_DIR || 'content' });

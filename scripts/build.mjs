@@ -3,7 +3,7 @@
  * Build-Ablauf:
  *   1. Bilder verarbeiten (scripts/images.mjs) → public/media, .cache/media-manifest.json
  *   2. astro build → OUT_DIR (Standard dist)
- *   3. Prüfungen des Ergebnisses: keine Metadaten/GPS in veröffentlichten Bildern
+ *   3. Prüfungen des Ergebnisses: nur erlaubte Metadaten in veröffentlichten Bildern
  * Umgebungsvariablen: SITE_URL, BASE_PATH, OUT_DIR, CONTENT_DIR, PREVIEW (siehe SPEC.md).
  * Bricht bei jedem Fehler mit Exit-Code ≠ 0 ab.
  */
@@ -29,7 +29,7 @@ try {
   run('npx', ['astro', 'build']);
   const n = await verifyDir(outDir);
   console.log(
-    `Metadaten-Prüfung ${outDir}: ${n} Bilder ohne GPS/XMP/IPTC und ohne EXIF außer den erlaubten Kameraangaben.`,
+    `Metadaten-Prüfung ${outDir}: ${n} Bilder ohne XMP/IPTC und ohne EXIF außer den erlaubten Angaben (Kamera, Aufnahmezeit, Standort nur im großen Bild).`,
   );
   let base = process.env.BASE_PATH || '/';
   if (!base.endsWith('/')) base += '/';

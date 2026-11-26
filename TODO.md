@@ -31,8 +31,16 @@
 - [x] **Bestehende Fotos neu importieren** (Beiträge 1 und 2): aus den Originalen im Drive neu
       importiert, Nummern und `index.md` unverändert (Stand 25.11.2026: 19 Fotos, alle mit
       Kamerafeld). Spätere Beiträge brauchen das nicht, der Import behält die Angaben von selbst.
-- [ ] HEIC-Fotos: `heic-convert` übernimmt das EXIF nicht, daher entfällt bei HEIC das Kamerafeld.
-      Falls nötig, EXIF aus dem HEIC-Container lesen (bisher nur JPEG/Handy-Android getestet).
+- [ ] HEIC-Fotos: `heic-convert` übernimmt das EXIF nicht, daher entfällt bei HEIC das Kamerafeld
+      (und ein vorhandener Standort). Falls nötig, EXIF aus dem HEIC-Container lesen (bisher nur
+      JPEG/Handy-Android getestet).
+- [ ] Die Positivliste ist am 26.11.2026 erweitert worden (Standort der Fotos, Zeitzone,
+      Sekundenbruchteile, Farbprofil, einige Belichtungsfelder). Die Fotos der Beiträge vom 23. und
+      24.11. sind davon nicht betroffen (bewusst unverändert, Wunsch des Autors). Wer sie nachziehen
+      will, importiert sie aus den Drive-Originalen neu.
+- [ ] **Von Hand:** Wer die Seite teilt, sollte wissen, dass Fotos jetzt ihren Aufnahmeort in der
+      Datei tragen (Link ist nicht öffentlich auffindbar, aber wer ihn kennt, kann Bilder
+      herunterladen). Fotos von zu Hause oder von der Unterkunft verraten die Adresse.
 
 ## Medien-Import (Fotos und Videos vom Handy)
 

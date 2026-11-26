@@ -39,18 +39,21 @@ describe('Bild-Pipeline', () => {
     expect(exifHasGps(m.exif)).toBe(true);
   });
 
-  it('entfernt alle Metadaten, dreht nach Ausrichtung, hält 1600 px ein', async () => {
+  it('Vorschaubilder ohne Metadaten, große Version mit Standort, gedreht, 1600 px', async () => {
     const r = await renderPhoto(await gpsJpeg(), { og: true });
     // Ausrichtung 6 = 90° gedreht: aus 3000×2000 wird Hochformat
     expect(r.large.info.width).toBeLessThan(r.large.info.height);
     expect(Math.max(r.large.info.width, r.large.info.height)).toBe(LARGE);
     expect(r.thumbs[400].info.width).toBe(400);
     expect(r.thumbs[800].info.width).toBe(800);
-    // Das große Bild behält nur die erlaubten Kameraangaben (hier: Make), nie GPS
+    // Das große Bild behält die erlaubten Angaben (hier: Make und Standort), sonst nichts
     const largeExif = (await sharp(r.large.data).metadata()).exif;
-    expect(exifHasGps(largeExif)).toBe(false);
+    expect(exifHasGps(largeExif)).toBe(true);
     expect(exifProblems(largeExif)).toEqual([]);
-    expect(readCamera(largeExif)).toMatchObject({ make: 'TestKamera' });
+    expect(readCamera(largeExif)).toMatchObject({
+      make: 'TestKamera',
+      gps: { latRef: 'N', lonRef: 'E' },
+    });
     for (const buf of [r.thumbs[400].data, r.thumbs[800].data, r.og!]) {
       expect((await sharp(buf).metadata()).exif).toBeUndefined();
     }
@@ -83,7 +86,47 @@ describe('Bild-Pipeline', () => {
     expect((await sharp(r.large.data).metadata()).exif).toBeUndefined();
   });
 
-  it('Prüfung bricht bei GPS-Resten ab', async () => {
+  it('behält das Farbprofil (Display P3) im großen Bild, nicht in den Vorschaubildern', async () => {
+    const p3 = await sharp({
+      create: { width: 900, height: 600, channels: 3, background: '#0e7c86' },
+    })
+      .withIccProfile('p3')
+      .jpeg({ quality: 95 })
+      .withExif({ IFD0: { Make: 'TestKamera' } })
+      .toBuffer();
+    const r = await renderPhoto(p3, { og: true });
+    expect((await sharp(r.large.data).metadata()).icc?.length).toBeGreaterThan(100);
+    // ohne Kameraangaben (kein EXIF) bleibt das Profil ebenfalls
+    const noExif = await sharp({
+      create: { width: 900, height: 600, channels: 3, background: '#0e7c86' },
+    })
+      .withIccProfile('p3')
+      .jpeg()
+      .toBuffer();
+    expect((await sharp((await renderPhoto(noExif)).large.data).metadata()).icc).toBeDefined();
+    // Vorschaubilder und OG-Bild: sRGB ohne Profil, Farben bleiben richtig
+    for (const buf of [r.thumbs[400].data, r.thumbs[800].data, r.og!])
+      expect((await sharp(buf).metadata()).icc).toBeUndefined();
+    const px = async (buf: Buffer) => [...(await sharp(buf).raw().toBuffer()).subarray(0, 3)];
+    const [a, b] = [await px(r.large.data), await px(r.thumbs[400].data)];
+    for (const i of [0, 1, 2]) expect(Math.abs(a[i] - b[i])).toBeLessThanOrEqual(6);
+    expect(Math.abs(b[0] - 14) + Math.abs(b[1] - 124) + Math.abs(b[2] - 134)).toBeLessThanOrEqual(
+      12,
+    );
+  });
+
+  it('übernimmt CMYK- oder Graustufenprofile nicht (würde den Farbraum verfälschen)', async () => {
+    const gray = await sharp({
+      create: { width: 200, height: 100, channels: 3, background: '#888' },
+    })
+      .toColourspace('b-w')
+      .jpeg()
+      .toBuffer();
+    const r = await renderPhoto(gray);
+    expect((await sharp(r.large.data).metadata()).icc).toBeUndefined();
+  });
+
+  it('Prüfung: Standort nur im großen Bild erlaubt, überall sonst ein Fehler', async () => {
     const dir = tmp('verify-');
     fs.writeFileSync(
       path.join(dir, 'sauber-1600.webp'),
@@ -91,12 +134,9 @@ describe('Bild-Pipeline', () => {
     );
     await expect(verifyDir(dir)).resolves.toBe(1);
     fs.writeFileSync(path.join(dir, 'mit-gps.jpg'), await gpsJpeg(400, 300));
+    // Vorschau und andere Bilder (ohne Kameraerlaubnis): EXIF mit Standort bleibt ein Fehler
     expect(await inspectImage(path.join(dir, 'mit-gps.jpg'))).toContain('EXIF mit GPS');
-    // auch dort, wo Kameraangaben erlaubt sind, bleibt GPS ein Fehler
-    expect(await inspectImage(path.join(dir, 'mit-gps.jpg'), { camera: true })).toContain(
-      'EXIF mit GPS',
-    );
-    await expect(verifyDir(dir)).rejects.toThrow(/GPS/);
+    await expect(verifyDir(dir)).rejects.toThrow(/EXIF mit GPS/);
     fs.rmSync(path.join(dir, 'mit-gps.jpg'));
     fs.writeFileSync(path.join(dir, 'original.heic'), 'x');
     await expect(verifyDir(dir)).rejects.toThrow(/Originalformat/);

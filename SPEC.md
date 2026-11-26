@@ -23,7 +23,7 @@ keine Kommentare.
 | --- | --- |
 | **Astro** (statisch, `output: 'static'`), nur `.astro`-Komponenten, kein UI-Framework | Erzeugt reines HTML/CSS, JavaScript nur wo nötig; Markdown/YAML gut handhabbar |
 | Eigener Beitrags-Loader (`src/lib/posts.ts`) statt Astro Content Collections | Volle Kontrolle über Originaltreue (Byte-Gleichheit), mit Vitest direkt testbar |
-| Bilder: eigenes Skript mit **sharp**, HEIC über **heic-convert** | Metadaten sicher entfernen, Größen erzeugen, GPS-Prüfung, keine Cloud-Dienste |
+| Bilder: eigenes Skript mit **sharp**, HEIC über **heic-convert** | Metadaten bis auf die erlaubten Angaben entfernen, Größen erzeugen, Metadaten-Prüfung, keine Cloud-Dienste |
 | Tests: **Vitest** (Unit), **Playwright** (Browser), **axe-core** (Barrierefreiheit) | Standardwerkzeuge, laufen lokal und in GitHub Actions |
 | Formatierung: **Prettier** | Ein Werkzeug, wenig Abhängigkeiten |
 | Kein CSS-Framework, keine Icon-Bibliothek | Wenig Abhängigkeiten, eigene SVGs (Urheberrecht) |
@@ -313,7 +313,7 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
 - **Bildskript** `scripts/images.mjs` (läuft bei `npm run build` und `npm run dev` vor Astro):
   verarbeitet nur Fotos, die im Frontmatter stehen (nicht verlinkte Dateien werden nie veröffentlicht),
   dekodiert HEIC/HEIF mit heic-convert, dreht nach EXIF-Ausrichtung, entfernt **alle** Metadaten
-  bis auf die erlaubten Kameraangaben (siehe „Kameraangaben“ unten; nur im großen Bild),
+  bis auf die erlaubten Angaben und das Farbprofil (siehe „Kameraangaben und Standort“ unten; nur im großen Bild),
   erzeugt WebP (Qualität 80) in 400 und 800 px Breite (Vorschau) und max. 1600 px lange Seite (groß),
   nie vergrößert; für das erste Foto eines Beitrags zusätzlich ein Open-Graph-Bild 1200×630 (JPEG).
   Dateinamen enthalten einen Inhalts-Hash (`<name>-<hash>-<größe>.webp`), daher dauerhaft
@@ -321,20 +321,32 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   `.cache/media-manifest.json` (Maße für `width`/`height`, `info` = Kamera-Textzeile, nur wenn das
   Foto Kameraangaben hat). Das Manifest enthält auch `clips` (Video und Standbild, siehe 7.7).
 - **Prüfung:** Nach der Verarbeitung und nach `astro build` werden alle Bilder im Ausgabeordner auf
-  EXIF, GPS, XMP und IPTC geprüft (sharp-Metadaten und Byte-Marker); HEIC/TIFF/RAW dürfen nicht
+  EXIF, XMP und IPTC geprüft (sharp-Metadaten und Byte-Marker); HEIC/TIFF/RAW dürfen nicht
   veröffentlicht werden. Jeder Fund bricht den Build ab. Ausnahme: Das große Bild (`*-1600.webp`)
-  und das Import-Foto dürfen EXIF mit den erlaubten Kameraangaben tragen (Positivliste, siehe
-  unten); jedes andere Tag, GPS, Vorschaubild, XMP oder IPTC bleibt ein Fehler. Vorschaubilder
+  und das Import-Foto dürfen EXIF mit den erlaubten Angaben tragen (Positivliste inklusive Standort,
+  siehe unten); jedes andere Tag, ein Vorschaubild im EXIF, XMP oder IPTC bleibt ein Fehler;
+  in allen anderen Bildern ist schon ein EXIF-Block (auch mit Standort) ein Fehler. Vorschaubilder
   (400/800 px) und das Open-Graph-Bild bleiben ohne jede Metadaten.
-- **Kameraangaben** (`scripts/lib/camera.mjs`, Wunsch des Autors): Der Import (`shrinkPhoto`) und
-  das Bildskript (nur große Version) behalten aus dem EXIF **ausschließlich** diese Angaben, alles
-  andere wird entfernt (Positivliste, nie Negativliste): Kamera (`Make`, `Model`), Objektiv
-  (`LensMake`, `LensModel`), `FNumber`, `ExposureTime`, `ISO`, `FocalLength`,
-  `FocalLengthIn35mmFilm`, `DateTimeOriginal` (ohne Zeitzone und Sekundenbruchteile),
-  `ExposureProgram`, `ExposureBiasValue`, `MeteringMode`, `Flash`, `WhiteBalance`. Dazu schreibt
-  libvips rein technische Pflichtfelder (Ausrichtung, Auflösung, Pixelmaße, Versionen, Farbraum). Nie
-  übernommen werden GPS, Seriennummern, Besitzer/Autor, Software, Beschreibungen, Kommentare,
-  MakerNote, Vorschaubild, XMP, IPTC. Hat ein Foto keine dieser Angaben, bleibt es ganz ohne EXIF.
+- **Kameraangaben und Standort** (`scripts/lib/camera.mjs`, Wunsch des Autors): Der Import
+  (`shrinkPhoto`) und das Bildskript (nur große Version) behalten aus dem EXIF **ausschließlich**
+  diese Angaben, alles andere wird entfernt (Positivliste, nie Negativliste): Kamera (`Make`,
+  `Model`), Objektiv (`LensMake`, `LensModel`), `FNumber`, `ExposureTime`, `ISO`, `FocalLength`,
+  `FocalLengthIn35mmFilm`, `ExposureProgram`, `ExposureBiasValue`, `ExposureMode`, `MeteringMode`,
+  `Flash`, `WhiteBalance`, `SceneCaptureType`, `DigitalZoomRatio`; die Aufnahmezeit
+  `DateTimeOriginal` **mit Zeitzone** (`OffsetTimeOriginal`) **und Sekundenbruchteilen**
+  (`SubSecTimeOriginal`; beide nur zusammen mit `DateTimeOriginal` und nur im festen Format); der
+  **Standort (GPS)**: Breite und Länge samt Himmelsrichtung, Höhe, GPS-Zeit und -Datum,
+  Blickrichtung, Geschwindigkeit, Kartenbezug (`GPSMapDatum`) und Version. Der Standort wird nur
+  übernommen, wenn die Position gültig ist (Breite ≤ 90°, Länge ≤ 180°, Richtung N/S und E/W); sonst
+  entfällt das ganze GPS-Verzeichnis. Dazu bleibt das **Farbprofil** (ICC, z. B. Display P3 von
+  iPhones), sofern es ein RGB-Profil für ein RGB-Bild ist; CMYK- und Graustufenprofile entfallen.
+  Dazu schreibt libvips rein technische Pflichtfelder (Ausrichtung, Auflösung, Pixelmaße,
+  Versionen, Farbraum). Nie übernommen werden Seriennummern, Besitzer/Autor, Software,
+  Beschreibungen, Kommentare (auch die freien GPS-Texte `GPSProcessingMethod` und
+  `GPSAreaInformation`), MakerNote, Vorschaubild, XMP, IPTC. Hat ein Foto keine dieser Angaben,
+  bleibt es ganz ohne EXIF. Der Standort steht **nur in der Datei** (große Version, auch im
+  Import-Foto), die Seite zeigt ihn **nie** an und verlinkt keine Karte. Vorschaubilder (400/800 px)
+  und das Open-Graph-Bild haben nie Metadaten, auch keinen Standort und kein Farbprofil (sRGB).
   Das **Objektiv** (`LensMake`, `LensModel`) bleibt in den Metadaten der Datei, wird aber **nie angezeigt**
   (Wunsch des Autors; Objektivnamen sind oft lang und wiederholen Kamera, Blende und Brennweite).
   Videos sind nicht betroffen (weiter ohne Metadaten).
@@ -447,7 +459,7 @@ Alle Videos sind eigene Clips (`clips:`, Komponente `Videos.astro`, Klasse `.cli
   Zeit stehen am Ende der Gruppe. Das Titelbild ist davon getrennt: Es steht im Feld `cover` (siehe 6.1)
   und ändert die Reihenfolge nicht; ohne `cover` gilt `photos[0]`; mit `coverGenerated` ist kein Foto Titelbild. `node scripts/import-media.mjs --times <ordner>` zeigt nur die Zeiten, ohne zu schreiben.
   Fotos: JPEG Qualität 85, lange Seite höchstens 1600 px, ohne Metadaten bis auf die erlaubten
-  Kameraangaben (siehe 7.6), `photos/NN.jpg`.
+  Angaben (Kamera, Aufnahmezeit, Standort) und Farbprofil (siehe 7.6), `photos/NN.jpg`.
   **Android-Bewegtfotos** (Motion Photo: JPEG mit angehängtem MP4, erkennbar an `*.MP.jpg`; `extractMotionVideo`
   liest XMP `Item:Semantic="MotionPhoto"` mit `Item:Length` bzw. das ältere `MicroVideoOffset`) werden zu
   Foto **plus** stummer Schleife `photos/NN.mp4` (gleiche Umwandlung wie Videos, ohne Ton; das Foto
@@ -628,7 +640,7 @@ Befehle: [AGENTS.md › Tests](AGENTS.md#tests). Jede neue Funktion bekommt eine
 | Lint | `npm run lint` | Prettier, eingecheckte-aber-ignorierte Dateien, THIRD-PARTY-NOTICES aktuell, kein starkes Copyleft |
 | Sicherheit | CI | `npm audit --audit-level=moderate` |
 | Unit | `tests/unit` (Vitest) | Pfade, Datumshilfen, Reisetag (vor Start, Tag 1, Tag 72, 3.2., danach, Monats-/Jahreswechsel, Zeitzonengrenzen), Ortsliste/Nummerierung, Zusammenfassung naher Orte, Kartenerzeugung, Beitrags-Parser (gemischt, nur Spanisch, nur Deutsch), Frontmatter-Prüfung (Pflichtfelder, Ort existiert, Fotos existieren, max. 60 Fotos und 20 Videos), Bild-Pipeline (GPS rein → ohne Metadaten raus, Größe, Drehung, HEIC, Abbruch), Kameraangaben (Positivliste: erlaubte Werte bleiben, GPS/Seriennummer/Besitzer nie; Textzeile: Reihenfolge, fehlende Angaben, Formate; Prüfung nur im großen Bild), Medien-Import (Reihenfolge nach Aufnahmezeit, Foto und Video verkleinern, Standort entfernen, Ton behalten, Hochformat, Nummerierung, Bewegtfoto → Foto + Schleife; nur mit ffmpeg), Skill `neuer-beitrag` (vorhanden, verweist auf existierende AGENTS-Abschnitte), Videos im Bildskript (Manifest, Standort-Abbruch), Größenprüfung der Seite, PWA-Logik (Videos nie über den Service Worker), Lizenzen, SPEC↔Code (Versionen, Farben, Texte, Workflows) |
-| Build | `npm run build` | Bildskript mit GPS-Prüfung (Fotos und Videos), Größe der Seite (Warnung/Fehler), HTML-Validierung, interne Links, erlaubte externe Links, noindex/Copyright/og:image je Seite, Seitengewicht |
+| Build | `npm run build` | Bildskript mit Metadaten-Prüfung (Fotos: nur erlaubte Angaben, Videos: kein Standort), Größe der Seite (Warnung/Fehler), HTML-Validierung, interne Links, erlaubte externe Links, noindex/Copyright/og:image je Seite, Seitengewicht |
 | Browser | `tests/e2e` (Playwright) | Smoke (keine Konsolenfehler, keine fehlgeschlagenen oder Drittanbieter-Anfragen), Startseite, Beitragsseite, Originaltreue (byte-gleich), Schalter, Lightbox (Maus, Tastatur, Wischen), Videos (keine Anfrage vor Klick; Clips: Standbild vorab, Video erst nach „Play“, Ton nicht stumm, Teilabrufe, ohne JavaScript), Bewegtfotos (unsichtbar und ungeladen bis zum Hineinscrollen, stumm, „Bewegung reduzieren“ und ohne JavaScript nur Standbild), Karte (Pillen, Ausschnitte, Markergröße am Handy), Reisetag mit festgestellter Uhrzeit, PWA (Manifest, Service Worker, Cache-Bereinigung, offline, keine Vorschau-Registrierung), Rechtliches (Crawl aller Seiten: noindex, Copyright, Links, OG, keine Cookies), Layout (320–2560px, kein Überlauf, Profilbild rechts oben, Zoom, große Schrift), Barrierefreiheit (axe WCAG 2.2 AA inkl. Kontrast, Tastatur, Touch-Ziele), Unterpfad, 404, ohne JavaScript |
 | Grenzfälle | `tests/fixtures/content` | Beitrag ohne Fotos, mit 20 Fotos, sehr langer Titel, sehr langer Text, ohne Ort, nur Deutsch, nur Spanisch, Sonderzeichen, GPS-/HEIC-Foto, Bewegtfoto, eigener Clip, Route mit 12 Orten |
 | Nächtlich | `nightly.yml` | alle Browser-Projekte inkl. Edge/Chrome/iPad/Galaxy, Erreichbarkeit von Palabrita, `npm audit` |

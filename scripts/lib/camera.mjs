@@ -1,9 +1,10 @@
 /**
  * Kameraangaben (EXIF) ohne Abhängigkeiten.
  *
- * Importierte Fotos und das große veröffentlichte Bild behalten eine feste Liste von Kameraangaben
- * (siehe SPEC.md „Kameraangaben“). Alles andere bleibt entfernt: GPS, Seriennummern, Besitzer,
- * Hersteller-Notizen (MakerNote), Vorschaubild, XMP, IPTC. Die Liste ist eine Positivliste: Was
+ * Importierte Fotos und das große veröffentlichte Bild behalten eine feste Liste von Angaben
+ * (siehe SPEC.md „Kameraangaben“): Kamera, Objektiv, Belichtung, Aufnahmezeit mit Zeitzone und
+ * Sekundenbruchteilen und den Standort (GPS). Alles andere bleibt entfernt: Seriennummern, Besitzer,
+ * Texte, Hersteller-Notizen (MakerNote), Vorschaubild, XMP, IPTC. Die Liste ist eine Positivliste: Was
  * nicht darauf steht, wird nie geschrieben und bricht die Prüfung ab.
  *
  *   readCamera(exif)       → die erlaubten Angaben als schlichtes Objekt (oder null)
@@ -21,14 +22,39 @@ const EXIF_TAGS = {
   0x8822: 'ExposureProgram',
   0x8827: 'ISO',
   0x9003: 'DateTimeOriginal',
+  0x9011: 'OffsetTimeOriginal',
   0x9204: 'ExposureBias',
   0x9207: 'MeteringMode',
   0x9209: 'Flash',
   0x920a: 'FocalLength',
+  0x9291: 'SubSecTimeOriginal',
+  0xa402: 'ExposureMode',
   0xa403: 'WhiteBalance',
+  0xa404: 'DigitalZoomRatio',
   0xa405: 'FocalLength35',
+  0xa406: 'SceneCaptureType',
   0xa433: 'LensMake',
   0xa434: 'LensModel',
+};
+/**
+ * Standort (GPS-Verzeichnis). Erlaubt sind Position, Höhe, Zeit, Blickrichtung, Geschwindigkeit
+ * und Kartenbezug. Freie Texte (Berechnungsmethode, Ortsbeschreibung) und Zielangaben nicht.
+ */
+const GPS_TAGS = {
+  0x0000: 'GPSVersionID',
+  0x0001: 'GPSLatitudeRef',
+  0x0002: 'GPSLatitude',
+  0x0003: 'GPSLongitudeRef',
+  0x0004: 'GPSLongitude',
+  0x0005: 'GPSAltitudeRef',
+  0x0006: 'GPSAltitude',
+  0x0007: 'GPSTimeStamp',
+  0x000c: 'GPSSpeedRef',
+  0x000d: 'GPSSpeed',
+  0x0010: 'GPSImgDirectionRef',
+  0x0011: 'GPSImgDirection',
+  0x0012: 'GPSMapDatum',
+  0x001d: 'GPSDateStamp',
 };
 /**
  * Verweis auf das Exif-Verzeichnis und rein technische Pflichtfelder, die libvips beim Schreiben
@@ -36,8 +62,10 @@ const EXIF_TAGS = {
  * Persönliches.
  */
 const POINTER_EXIF = 0x8769;
+const POINTER_GPS = 0x8825;
 const HARMLESS = new Set([
   POINTER_EXIF,
+  POINTER_GPS,
   0x0112, // Orientation
   0x011a, // XResolution
   0x011b, // YResolution
@@ -104,9 +132,17 @@ function walk(exif) {
   };
 
   const first = entries(u32(4));
-  const ptr = first.map.get(POINTER_EXIF);
-  const sub = ptr && ptr.value?.[0] ? entries(ptr.value[0]).map : new Map();
-  return { ifd0: first.map, exif: sub, hasSecondIfd: first.next !== 0 };
+  // Verweise müssen hinter den Kopf der Datei zeigen (kleinere Werte sind Müll)
+  const sub = (tag) => {
+    const at = first.map.get(tag)?.value?.[0];
+    return Number.isInteger(at) && at >= 8 ? entries(at).map : new Map();
+  };
+  return {
+    ifd0: first.map,
+    exif: sub(POINTER_EXIF),
+    gps: sub(POINTER_GPS),
+    hasSecondIfd: first.next !== 0,
+  };
 }
 
 const num = (r) => (Array.isArray(r) ? (r[1] ? r[0] / r[1] : NaN) : r);
@@ -158,10 +194,69 @@ export function readCamera(exif) {
   int('whiteBalance', w.exif, 0xa403);
   const bias = pick(w.exif, 0x9204)?.[0];
   if (Array.isArray(bias) && Number.isFinite(num(bias))) c.exposureBias = { n: num(bias), r: bias };
+  int('exposureMode', w.exif, 0xa402);
+  int('sceneCaptureType', w.exif, 0xa406);
+  rational('digitalZoomRatio', w.exif, 0xa404);
   const date = text(pick(w.exif, 0x9003));
-  if (/^\d{4}:\d{2}:\d{2} \d{2}:\d{2}:\d{2}$/.test(date)) c.dateTimeOriginal = date;
+  if (/^\d{4}:\d{2}:\d{2} \d{2}:\d{2}:\d{2}$/.test(date)) {
+    c.dateTimeOriginal = date;
+    // Zeitzone und Sekundenbruchteile gehören zur Aufnahmezeit und gelten nur mit ihr
+    const offset = text(pick(w.exif, 0x9011));
+    if (/^[+-]\d{2}:\d{2}$/.test(offset)) c.offsetTimeOriginal = offset;
+    const sub = text(pick(w.exif, 0x9291));
+    if (/^\d{1,9}$/.test(sub)) c.subSecTimeOriginal = sub;
+  }
   if (c.iso === 0) delete c.iso;
+  const gps = readGps(w.gps);
+  if (gps) c.gps = gps;
   return Object.keys(c).length ? c : null;
+}
+
+/** Liste aus genau `count` Brüchen [Zähler, Nenner] mit Nenner > 0, sonst null. */
+function fractions(map, tag, count) {
+  const v = map.get(tag)?.value;
+  if (!Array.isArray(v) || v.length !== count) return null;
+  const ok = v.every(
+    (r) => Array.isArray(r) && r[1] > 0 && Number.isFinite(r[0] / r[1]) && r[0] >= 0,
+  );
+  return ok ? v : null;
+}
+
+/**
+ * Standort aus dem GPS-Verzeichnis. Nur mit gültiger Position (Breite, Länge, Himmelsrichtung, im
+ * Wertebereich); sonst null, dann bleibt auch alles andere aus dem GPS-Verzeichnis weg.
+ */
+function readGps(map) {
+  if (!map?.size) return null;
+  const ascii = (tag, re) => {
+    const t = text(map.get(tag)?.value);
+    return re.test(t) ? t : undefined;
+  };
+  const deg = (r) => r[0][0] / r[0][1] + r[1][0] / r[1][1] / 60 + r[2][0] / r[2][1] / 3600;
+  const latRef = ascii(0x0001, /^[NS]$/);
+  const lonRef = ascii(0x0003, /^[EW]$/);
+  const lat = fractions(map, 0x0002, 3);
+  const lon = fractions(map, 0x0004, 3);
+  if (!latRef || !lonRef || !lat || !lon || deg(lat) > 90 || deg(lon) > 180) return null;
+  const g = { latRef, lat, lonRef, lon };
+  const altRef = map.get(0x0005)?.value?.[0];
+  const alt = fractions(map, 0x0006, 1);
+  if (alt && (altRef === 0 || altRef === 1)) Object.assign(g, { altRef, alt: alt[0] });
+  const time = fractions(map, 0x0007, 3);
+  const day = ascii(0x001d, /^\d{4}:\d{2}:\d{2}$/);
+  if (time && day) Object.assign(g, { time, day });
+  const dirRef = ascii(0x0010, /^[TM]$/);
+  const dir = fractions(map, 0x0011, 1);
+  if (dirRef && dir && dir[0][0] / dir[0][1] <= 360) Object.assign(g, { dirRef, dir: dir[0] });
+  const speedRef = ascii(0x000c, /^[KMN]$/);
+  const speed = fractions(map, 0x000d, 1);
+  if (speedRef && speed) Object.assign(g, { speedRef, speed: speed[0] });
+  const datum = ascii(0x0012, /^[A-Za-z0-9 -]{1,16}$/);
+  if (datum) g.datum = datum;
+  const version = map.get(0x0000)?.value;
+  if (Array.isArray(version) && version.length === 4 && version.every((b) => b >= 0 && b <= 9))
+    g.version = version;
+  return g;
 }
 
 const frac = (x) => `${x.r[0]}/${x.r[1]}`;
@@ -185,30 +280,55 @@ export function cameraToSharpExif(c) {
   if (c.meteringMode != null) ifd2.MeteringMode = String(c.meteringMode);
   if (c.flash != null) ifd2.Flash = String(c.flash);
   if (c.whiteBalance != null) ifd2.WhiteBalance = String(c.whiteBalance);
+  if (c.exposureMode != null) ifd2.ExposureMode = String(c.exposureMode);
+  if (c.sceneCaptureType != null) ifd2.SceneCaptureType = String(c.sceneCaptureType);
+  if (c.digitalZoomRatio) ifd2.DigitalZoomRatio = frac(c.digitalZoomRatio);
   if (c.dateTimeOriginal) ifd2.DateTimeOriginal = c.dateTimeOriginal;
+  if (c.offsetTimeOriginal) ifd2.OffsetTimeOriginal = c.offsetTimeOriginal;
+  if (c.subSecTimeOriginal) ifd2.SubSecTimeOriginal = c.subSecTimeOriginal;
+  const ifd3 = c.gps ? gpsToSharp(c.gps) : {};
   const out = {};
   if (Object.keys(ifd0).length) out.IFD0 = ifd0;
   if (Object.keys(ifd2).length) out.IFD2 = ifd2;
+  if (Object.keys(ifd3).length) out.IFD3 = ifd3;
+  return out;
+}
+
+const fracs = (list) => list.map((r) => `${r[0]}/${r[1]}`).join(' ');
+
+/** GPS-Angaben als Zeichenketten für sharp (Verzeichnis IFD3). */
+function gpsToSharp(g) {
+  const out = {
+    GPSLatitudeRef: g.latRef,
+    GPSLatitude: fracs(g.lat),
+    GPSLongitudeRef: g.lonRef,
+    GPSLongitude: fracs(g.lon),
+  };
+  if (g.version) out.GPSVersionID = g.version.join(' ');
+  if (g.alt) Object.assign(out, { GPSAltitudeRef: String(g.altRef), GPSAltitude: fracs([g.alt]) });
+  if (g.time) Object.assign(out, { GPSTimeStamp: fracs(g.time), GPSDateStamp: g.day });
+  if (g.dir) Object.assign(out, { GPSImgDirectionRef: g.dirRef, GPSImgDirection: fracs([g.dir]) });
+  if (g.speed) Object.assign(out, { GPSSpeedRef: g.speedRef, GPSSpeed: fracs([g.speed]) });
+  if (g.datum) out.GPSMapDatum = g.datum;
   return out;
 }
 
 /**
  * Prüft einen EXIF-Block gegen die Positivliste. Liefert Befunde (leer = erlaubt).
- * GPS, Vorschaubild (zweites Verzeichnis), MakerNote, Seriennummern, Besitzer usw. sind Befunde,
- * ebenso ein Block, den wir nicht lesen können.
+ * Vorschaubild (zweites Verzeichnis), MakerNote, Seriennummern, Besitzer, Freitexte, GPS-Tags
+ * außerhalb der Liste usw. sind Befunde, ebenso ein Block, den wir nicht lesen können.
  */
 export function exifProblems(exif) {
   const w = walk(exif);
   if (!w) return ['EXIF nicht lesbar'];
   const problems = [];
   const hex = (t) => '0x' + t.toString(16).padStart(4, '0');
-  for (const t of w.ifd0.keys()) {
-    if (t === 0x8825) problems.push('EXIF mit GPS');
-    else if (!(t in IFD0_TAGS) && !HARMLESS.has(t))
+  for (const t of w.ifd0.keys())
+    if (!(t in IFD0_TAGS) && !HARMLESS.has(t))
       problems.push(`EXIF-Tag ${hex(t)} (Hauptverzeichnis)`);
-  }
   for (const t of w.exif.keys())
     if (!(t in EXIF_TAGS) && !HARMLESS.has(t)) problems.push(`EXIF-Tag ${hex(t)} (Exif)`);
+  for (const t of w.gps.keys()) if (!(t in GPS_TAGS)) problems.push(`EXIF-Tag ${hex(t)} (GPS)`);
   if (w.hasSecondIfd) problems.push('EXIF mit Vorschaubild');
   return problems;
 }
