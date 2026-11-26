@@ -117,7 +117,7 @@ test('Beitrag ohne Fotos hat keine Galerie', async ({ page }) => {
   await expect(page.locator('.gallery')).toHaveCount(0);
 });
 
-test('veröffentlichte Fotos (auch aus GPS- und HEIC-Originalen) sind ohne GPS und sonstige Metadaten', async ({
+test('veröffentlichte Fotos (auch aus GPS- und HEIC-Originalen) haben kein XMP, IPTC und keine Metadaten in den Vorschaubildern', async ({
   page,
   request,
 }) => {
@@ -126,11 +126,23 @@ test('veröffentlichte Fotos (auch aus GPS- und HEIC-Originalen) sind ohne GPS u
     .locator('.gallery__link')
     .evaluateAll((els) => els.map((e) => (e as HTMLAnchorElement).href));
   expect(links).toHaveLength(3); // GPS-Foto, HEIC-Foto, Bewegtfoto
+  // große Bilder: EXIF (Kamera, Standort) erlaubt, aber nie XMP oder IPTC
   for (const url of links) {
     const body = await (await request.get(url)).body();
-    expect(body.includes(Buffer.from('GPS', 'latin1')), url).toBe(false);
     expect(body.includes(Buffer.from('http://ns.adobe.com/xap', 'latin1')), url).toBe(false);
     expect(body.includes(Buffer.from('Photoshop 3.0', 'latin1')), url).toBe(false);
+  }
+  // Vorschaubilder: ohne jede Metadaten
+  const thumbs = await page
+    .locator('.gallery__link img')
+    .evaluateAll((els) =>
+      els.map((e) => (e as HTMLImageElement).currentSrc || e.getAttribute('src')),
+    );
+  expect(thumbs.length).toBeGreaterThan(0);
+  for (const url of thumbs) {
+    const body = await (await request.get(new URL(url!, page.url()).href)).body();
+    expect(body.includes(Buffer.from('EXIF', 'latin1')), url!).toBe(false);
+    expect(body.includes(Buffer.from('Photoshop 3.0', 'latin1')), url!).toBe(false);
   }
 });
 
@@ -185,11 +197,11 @@ test('Lightbox: Kamera-Kasten (schwarz, weiße Schrift, unter dem Foto, nie brei
   // Foto ohne Kameraangaben: kein leeres schwarzes Feld
   await dialog.getByRole('button', { name: 'Nächstes Foto' }).click();
   await expect(info).toBeHidden();
-  // das große Bild trägt die Kameraangaben, aber weder GPS noch Seriennummer oder Besitzer
+  // das große Bild trägt die Kameraangaben, aber weder Seriennummer noch Besitzer
   const large = await page.locator('.gallery__link').first().getAttribute('href');
   const body = await (await request.get(new URL(large!, page.url()).href)).body();
   expect(body.includes(Buffer.from('iPhone 15 Pro', 'latin1'))).toBe(true);
-  for (const secret of ['GPS', 'Geheim', 'X1'])
+  for (const secret of ['Geheim', 'X1'])
     expect(body.includes(Buffer.from(secret, 'latin1')), secret).toBe(false);
   // Vorschaubilder bleiben ohne Metadaten
   const thumb = await page.locator('.gallery__link img').first().getAttribute('src');

@@ -53,8 +53,11 @@ veröffentlicht (`.github/workflows/deploy.yml`). Details: [SPEC.md › Deployme
 Alles, was ins Repository hochgeladen wird, ist **öffentlich und bleibt für immer in der
 Git-Historie**, auch wenn die Datei später gelöscht wird. Handyfotos enthalten oft den genauen
 Aufnahmeort (GPS) in den EXIF-Metadaten. Der Import (`scripts/import-media.mjs`) entfernt alle
-Metadaten bis auf eine feste Liste harmloser Kameraangaben (Kamera, Objektiv, Blende, Verschlusszeit,
-ISO, Brennweite u. a.) und verkleinert die Dateien, **bevor** etwas eingecheckt wird. Wer Fotos trotzdem selbst
+Metadaten bis auf eine feste Liste (Kamera, Objektiv, Blende, Verschlusszeit, ISO, Brennweite,
+Aufnahmezeit, **Standort der Fotos**, Farbprofil u. a.) und verkleinert die Dateien, **bevor** etwas
+eingecheckt wird. Der Standort steht dann in der Fotodatei (wer sie herunterlädt, kann ihn auslesen),
+wird auf der Seite aber nicht angezeigt. Videos behalten keinen Standort. Wer das nicht möchte,
+schaltet den Standort schon auf dem Handy aus (siehe unten). Wer Fotos trotzdem selbst
 ins Repository lädt (z. B. per GitHub im Browser), umgeht das: Dann liegt die Originaldatei samt GPS
 in der Historie. Deshalb Fotos nie direkt hochladen, sondern über den Import, oder zumindest
 **schon auf dem Handy verkleinern und ohne Standort**:
@@ -75,8 +78,8 @@ Historie (z. B. `git filter-repo`) und erneutes Hochladen, und Forks oder Kopien
 trotzdem schon in der Welt.
 
 **Fotos und Videos nie unbearbeitet einchecken.** Der Import (`node scripts/import-media.mjs`, siehe
-AGENTS.md) verkleinert sie vorher: Fotos auf 1600 px, Videos auf 720p mit Ton, jeweils ohne GPS und
-Metadaten (bei Fotos bleiben nur die Kameraangaben). Die Originale bleiben bei dir (z. B. in Google Drive). So bleibt das Repository klein
+AGENTS.md) verkleinert sie vorher: Fotos auf 1600 px, Videos auf 720p mit Ton, jeweils ohne
+unnötige Metadaten (bei Fotos bleiben nur die Kameraangaben und der Standort, Videos behalten keinen Standort). Die Originale bleiben bei dir (z. B. in Google Drive). So bleibt das Repository klein
 (GitHub Pages erlaubt höchstens 1 GB; der Build warnt ab 700 MiB). Eigene Videos werden von der Seite
 selbst ausgeliefert und erst nach dem Antippen von „Play“ geladen. Android-Bewegtfotos laufen als
 stumme Schleife über dem Foto (nicht bei „Bewegung reduzieren“).
