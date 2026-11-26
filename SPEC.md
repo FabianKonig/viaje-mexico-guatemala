@@ -145,6 +145,10 @@ Regeln (geprüft in `src/lib/content.ts` und `src/lib/translation.ts`, Build bri
   Segmenten innerhalb eines Absatzes bleiben erhalten.
 - Gibt es kein `es`-Segment, entfällt die Übersetzungskachel und der Schalter.
 - Sortierung: neueste zuerst (Datum, dann Ordnername absteigend).
+- **Mehrere Beiträge pro Tag** sind erlaubt (keine Obergrenze): gleiches Datum, verschiedener Slug, z. B.
+  `2026-11-27-1-morgens` und `2026-11-27-2-abends`. Bei gleichem Datum entscheidet nur der Slug (absteigend,
+  also steht der alphabetisch spätere oben), nie eine Uhrzeit. Soll die Reihenfolge stimmen, dem Slug eine
+  Zahl voranstellen. Alle Beiträge eines Tages zeigen denselben Reisetag.
 
 ### 6.2 Ortsliste `content/places.yaml`
 
