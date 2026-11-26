@@ -390,14 +390,15 @@ Pink #D4457A erreicht mit Text nur 3,6–4,1:1, deshalb gibt es für Beschriftun
   Kasten. Die Foto-Höhe ist Bühne minus Kasten (samt Abstand) minus Bildunterschrift; `lightbox.ts`
   misst die Zeile `[data-info-row]` und setzt `--reserve` (gemessen von der vollen Foto-Größe aus,
   neu nach dem Laden des Fotos). Ohne Kameraangaben entfällt der Kasten; die Bildunterschrift steht
-  ganz unten, unter dem Kasten. Sie ist höchstens 30 % der Bühnenhöhe hoch (`max-height: 30cqh`); längere Texte scrollen
-  (`overflow-y: auto`), damit das Foto nicht kleiner wird. Am Handy hat sie seitlich 44 px Abstand, damit die
-  Pfeil-Knöpfe nicht über dem Text liegen. Als Scroll-Hinweis (Handys zeigen keinen Scrollbalken) blendet ein weicher Verlauf (`mask-image`, 28 px,
+  ganz unten, unter dem Kasten. Der Textblock steht mittig unter dem Foto (höchstens 60 Zeichen breit), der
+  Text darin ist **linksbündig** (`text-align: left`, auch am Computer und am Handy hochkant). Sie ist höchstens 30 % der Bühnenhöhe hoch (`max-height: 30cqh`); längere Texte scrollen
+  (`overflow-y: auto`), damit das Foto nicht kleiner wird. Am Handy hochkant (unter 700 px Breite) ist sie so breit wie das Foto (`--photo-w`, setzt `lightbox.ts`), der Text beginnt links bündig mit
+  der Fotokante, die Schrift ist `0.85rem` (Computer: `1.0625rem`); die Pfeil-Knöpfe stehen auf halber Höhe des Fotos und liegen so nicht über dem Text. Als Scroll-Hinweis (Handys zeigen keinen Scrollbalken) blendet ein weicher Verlauf (`mask-image`, 28 px,
   `--fade-top`/`--fade-bottom` setzt `lightbox.ts`) oben und unten den Text aus, solange dort noch Text verborgen ist; bei kurzem Text oder am Ende entfällt er. Die Pfeil-Knöpfe stehen immer auf halber Höhe des Fotos
   (nicht des Bildschirms; `lightbox.ts` setzt `--nav-top` nach jedem Layout).
   **Handy quer** (`@media (orientation: landscape) and (max-height: 500px)`): Zähler und Schließen-Knopf
   schweben über dem Foto (kein Platz für eine eigene Zeile), die Bühne ist eine Zeile und die
-  Bildunterschrift steht rechts neben dem Foto (höchstens 36 Zeichen oder 30 % der Breite, `lightbox.ts`
+  Bildunterschrift steht rechts neben dem Foto in `0.75rem` (höchstens 36 Zeichen oder 30 % der Breite, `lightbox.ts`
   zählt ihre Höhe dann nicht zu `--reserve`), der Kamera-Kasten bleibt unter dem Foto in `0.65rem`. Das Foto
   nutzt so fast die ganze Bildschirmhöhe. **Untergrenze:** Das Foto wird nie niedriger als 40 % der
   Bühnenhöhe (`max-height: max(40cqh, …)`); sonst schrumpfte ein schmales Foto in einer Spirale (schmaleres Foto,
