@@ -678,11 +678,14 @@ const fsState = (page: import('@playwright/test').Page) =>
   });
 
 test.describe('Vollbild (nachgebildete API)', () => {
-  // WebKit mit iPhone-Emulation hat die Vollbild-API für Elemente nicht (wie ein echtes iPhone) und entfernt
-  // auch die nachgebildete wieder; dort gilt nur der Test „ohne Vollbild-Unterstützung“ unten.
+  // WebKit mit iPhone- oder iPad-Emulation hat die Vollbild-API für Elemente nicht (wie ein echtes iPhone)
+  // und entfernt auch die nachgebildete wieder; dort gilt nur der Test „ohne Vollbild-Unterstützung“ unten.
   test.use({ autoFullscreen: true });
   test.beforeEach(({}, testInfo) => {
-    test.skip(testInfo.project.name === 'mobile-safari', 'iPhone-WebKit: keine Vollbild-API');
+    test.skip(
+      ['mobile-safari', 'ipad'].includes(testInfo.project.name),
+      'iPhone-/iPad-WebKit: keine Vollbild-API',
+    );
   });
 
   test('Lightbox: am Touchgerät startet das Vollbild automatisch und endet mit dem Schließen', async ({
